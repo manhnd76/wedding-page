@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Bộ họa tiết luxe (Đêm Nhung): khung đường kép + quạt art-deco. Placeholder v1, chờ ui-ux-designer thay bản cuối. -->
+<symbol id="divider" viewBox="0 0 120 24"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M4 12h40M76 12h40M4 15h36M80 15h36"/><path pathLength="100" d="M48 18a12 12 0 0 1 24 0zM60 18V7M60 18l-7-8M60 18l7-8M60 18l-11-3M60 18l11-3"/></g></symbol>
+<symbol id="title" viewBox="0 0 80 16"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M2 7h28M50 7h28M2 10h26M52 10h26"/><path pathLength="100" d="M33 12a7 7 0 0 1 14 0zM40 12V5"/></g></symbol>
+<symbol id="corner" viewBox="0 0 80 80"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="square"><path pathLength="100" d="M6 74V6h68M12 74V12h62"/><path pathLength="100" d="M12 34a22 22 0 0 1 22-22M12 26a14 14 0 0 1 14-14M12 12l20 20"/></g></symbol>
+<symbol id="gift" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path pathLength="100" d="M12 28h40v28H12zM8 20h48v8H8zM32 20v36"/><path pathLength="100" d="M22 20a10 10 0 0 1 20 0"/></g></symbol>
+<symbol id="monogram" viewBox="0 0 120 120"><g fill="none" stroke="currentColor" stroke-width="1"><path pathLength="100" d="M60 4l56 56-56 56L4 60z"/><path pathLength="100" d="M60 12l48 48-48 48-48-48z"/></g></symbol>
+</svg>

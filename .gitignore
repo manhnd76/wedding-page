@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.wp-build/
+coverage/
+*.log
+.DS_Store
+test-results/
+playwright-report/
+*.log

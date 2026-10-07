@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Bộ họa tiết classic-line (Trầm Vàng): cành lá line-art + hình thoi. Placeholder v1, chờ ui-ux-designer thay bản cuối. -->
+<symbol id="divider" viewBox="0 0 120 24"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M4 12H50M70 12h46"/><path pathLength="100" d="M60 5l7 7-7 7-7-7z"/><path pathLength="100" d="M44 12c-4-5-10-6-14-4M76 12c4-5 10-6 14-4M44 12c-4 5-10 6-14 4M76 12c4 5 10 6 14 4"/></g></symbol>
+<symbol id="title" viewBox="0 0 80 16"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M2 8h30M48 8h30"/><path pathLength="100" d="M40 3l5 5-5 5-5-5z"/></g></symbol>
+<symbol id="corner" viewBox="0 0 80 80"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M6 74V20C6 12 12 6 20 6h54"/><path pathLength="100" d="M14 60c4-14 14-24 30-28M22 24c6 2 10 6 12 12M30 18c-2 6-1 11 3 15M40 30c6-2 12-1 16 3"/><circle pathLength="100" cx="14" cy="14" r="3"/></g></symbol>
+<symbol id="gift" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path pathLength="100" d="M12 28h40v28H12zM8 20h48v8H8zM32 20v36"/><path pathLength="100" d="M32 20c-4-8-14-10-14-4s10 4 14 4zm0 0c4-8 14-10 14-4s-10 4-14 4z"/></g></symbol>
+<symbol id="monogram" viewBox="0 0 120 120"><g fill="none" stroke="currentColor" stroke-width="1"><circle pathLength="100" cx="60" cy="60" r="54"/><circle pathLength="100" cx="60" cy="60" r="48" stroke-dasharray="2 4"/></g></symbol>
+</svg>

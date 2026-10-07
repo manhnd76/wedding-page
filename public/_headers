@@ -1,0 +1,42 @@
+# Cloudflare Pages headers. __WP_STYLE_HASHES__ được plugin inject-config-og thay bằng sha256 của <style id="wp-theme"> lúc build.
+/*
+  Content-Security-Policy: default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src https://www.google.com; frame-ancestors 'self'; script-src 'self'; style-src 'self' __WP_STYLE_HASHES__; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/invite/*
+  Cache-Control: no-cache
+
+/content/config.json
+  Cache-Control: no-cache
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/ornaments/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/theme-assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/content/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/content/audio/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/admin/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; connect-src 'self' https://api.github.com https://script.google.com https://script.googleusercontent.com; frame-src 'self'; frame-ancestors 'none'; script-src 'self'; base-uri 'self'; object-src 'none'
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-cache

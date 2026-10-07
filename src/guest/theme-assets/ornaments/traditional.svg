@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Bộ họa tiết traditional (Son Đỏ): mây cát tường + song hỷ giản lược. Placeholder v1, chờ ui-ux-designer thay bản cuối. -->
+<symbol id="divider" viewBox="0 0 120 24"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path pathLength="100" d="M4 14h34M82 14h34"/><path pathLength="100" d="M40 16c0-5 6-7 9-4 1-6 9-7 11-2 2-5 10-4 11 2 3-3 9-1 9 4"/><path pathLength="100" d="M48 18c4 3 8 3 12 0 4 3 8 3 12 0"/></g></symbol>
+<symbol id="title" viewBox="0 0 80 16"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path pathLength="100" d="M2 9h22M56 9h22"/><path pathLength="100" d="M27 11c0-4 5-6 7-3 1-4 7-5 8 0 2-4 7-3 8 2"/></g></symbol>
+<symbol id="corner" viewBox="0 0 80 80"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path pathLength="100" d="M6 74V6h68"/><path pathLength="100" d="M12 40c0-8 9-12 14-6 2-9 14-10 17-2 4-4 11-1 11 5"/><path pathLength="100" d="M12 12h12v12H12zM16 16h4v4h-4z"/></g></symbol>
+<symbol id="gift" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path pathLength="100" d="M12 28h40v28H12zM8 20h48v8H8zM32 20v36"/><path pathLength="100" d="M22 38h6M22 44h6M36 38h6M36 44h6M25 36v12M39 36v12"/></g></symbol>
+<symbol id="monogram" viewBox="0 0 120 120"><g fill="none" stroke="currentColor" stroke-width="1.1"><circle pathLength="100" cx="60" cy="60" r="54"/><path pathLength="100" d="M60 6v8M60 106v8M6 60h8M106 60h8"/></g></symbol>
+</svg>

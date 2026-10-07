@@ -1,0 +1,49 @@
+{
+  "name": "wedding-page",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Thiep cuoi online (guest app vanilla TS + admin Preact o v2)",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run typecheck && vite build && npm run size",
+    "build:only": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "npm run typecheck",
+    "size": "size-limit",
+    "test:e2e": "playwright test",
+    "placeholders": "node scripts/gen-placeholders.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/alex-brush": "^5.3.0",
+    "@fontsource/be-vietnam-pro": "^5.3.0",
+    "@fontsource/charm": "^5.3.0",
+    "@fontsource/cormorant-garamond": "^5.3.0",
+    "@fontsource/dancing-script": "^5.3.0",
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/great-vibes": "^5.3.0",
+    "@fontsource/imperial-script": "^5.3.0",
+    "@fontsource/lora": "^5.3.0",
+    "@fontsource/mulish": "^5.3.0",
+    "@fontsource/noto-serif-display": "^5.3.0",
+    "@fontsource/pinyon-script": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
+    "@fontsource/quicksand": "^5.3.0",
+    "@playwright/test": "^1.63.0",
+    "@size-limit/file": "^12.1.0",
+    "@types/node": "^20.19.43",
+    "size-limit": "^12.1.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.3",
+    "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "uqr": "^0.1.3"
+  }
+}

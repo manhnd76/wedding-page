@@ -1,0 +1,41 @@
+/* Token (design 1.5, 2.4, 5.1). Màu theme (--c-*) + font (--ff-*) được plugin build inline vào :root. */
+:root {
+  /* fallback khi chưa có theme inline (Trầm Vàng) */
+  --c-primary: #8a6a3b; --c-on-primary: #fff; --c-accent: #c9a86a; --c-accent-2: #c9a86a; --c-primary-decor: #8a6a3b;
+  --c-bg: #fbf7f0; --c-surface: #fff; --c-text: #2b2320; --c-muted: #6b5e55; --c-line: #d9cdbe; --c-line-strong: #6b5e55;
+  --c-overlay: rgba(43, 35, 32, .45); --c-success: #2e6b3f; --c-danger: #b3261e;
+  --ff-heading: Georgia, serif; --ff-script: cursive; --ff-body: system-ui, sans-serif;
+  --fs-k: 1;
+
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-7: 48px; --sp-8: 64px; --sp-9: 96px;
+  --section-py: clamp(64px, 12vw, 112px);
+  --gutter: clamp(20px, 5.5vw, 40px);
+  --container: 1080px; --measure: 62ch;
+  --r-sm: 8px; --r-md: 14px; --r-lg: 24px; --r-pill: 999px;
+  --arch: 999px 999px var(--r-md) var(--r-md);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .06), 0 8px 24px -8px rgba(0, 0, 0, .18);
+  --z-content: 1; --z-petals: 20; --z-float: 40; --z-toast: 50; --z-sheet: 60; --z-lightbox: 70; --z-cover: 80;
+
+  --fs-names: calc(clamp(52px, 13.5vw, 96px) * var(--fs-k));
+  --fs-display: calc(clamp(64px, 17vw, 112px) * var(--fs-k));
+  --fs-h2: calc(clamp(32px, 8.5vw, 48px) * var(--fs-k));
+  --fs-h2-script: calc(clamp(40px, 10.5vw, 60px) * var(--fs-k));
+  --fs-h3: calc(clamp(22px, 5.8vw, 28px) * var(--fs-k));
+  --fs-eyebrow: calc(clamp(12px, 3.2vw, 13px) * var(--fs-k));
+  --fs-body: calc(clamp(16px, 4.2vw, 18px) * var(--fs-k));
+  --fs-small: calc(clamp(14px, 3.7vw, 15px) * var(--fs-k));
+  --fs-caption: 13px;
+
+  --dur-micro: 160ms; --dur-ui: 260ms; --dur-reveal: 700ms; --dur-hero: 1200ms;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-inout: cubic-bezier(.65, 0, .35, 1);
+  --ease-pop: cubic-bezier(.34, 1.56, .64, 1);
+  --reveal-distance: 24px;
+  --stagger: 80ms;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
+}
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  :root { --shadow-1: 0 1px 2px color-mix(in srgb, var(--c-text) 8%, transparent), 0 8px 24px -8px color-mix(in srgb, var(--c-primary) 22%, transparent); }
+}
+[data-mode="dark"] { color-scheme: dark; --shadow-1: 0 8px 24px -8px rgba(0, 0, 0, .5); }

@@ -1,0 +1,40 @@
+/* Reveal (design 5.8) + canvas hạt. Trạng thái ẩn chỉ áp khi có data-rva (engine gán theo cấp). */
+.fx-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: var(--z-petals); transition: opacity 300ms; }
+/* đang gõ: ẩn hẳn lớp hạt (canvas đứng yên có thể trùng ô nhập khi bàn phím đẩy trang) */
+.is-typing .fx-canvas { opacity: 0; }
+.cover-on .fx-canvas { opacity: 0; }
+
+[data-rva] { transition: opacity var(--rv-d, 700ms) var(--ease-out), transform var(--rv-d, 700ms) var(--ease-out); transition-delay: calc(var(--i, 0) * var(--stagger)); }
+[data-rva="fade"]:not(.is-in) { opacity: 0; }
+[data-rva="fade"] { --rv-d: 600ms; }
+[data-rva="fade-fast"] { --rv-d: 200ms; transition-delay: 0s; }
+[data-rva="fade-fast"]:not(.is-in) { opacity: 0; }
+[data-rva="fade-up"]:not(.is-in) { opacity: 0; transform: translateY(var(--reveal-distance)); }
+[data-rva="zoom-in"]:not(.is-in) { opacity: 0; transform: scale(.94); }
+[data-rva="zoom-in"] { --rv-d: 600ms; }
+[data-rva="slide-side"]:not(.is-in) { opacity: 0; transform: translateX(-32px); }
+.person--bride[data-rva="slide-side"]:not(.is-in), .couple-grid > :last-child[data-rva="slide-side"]:not(.is-in) { transform: translateX(32px); }
+[data-rva="rise-tilt"]:not(.is-in) { opacity: 0; transform: translateY(32px) rotate(-4deg); }
+[data-rva="rise-tilt"] { transition-timing-function: var(--ease-pop); }
+/* photo-settle: khung đứng yên, ảnh bên trong scale 1.12 -> 1 */
+[data-rva="photo-settle"] { transition: none; }
+[data-rva="photo-settle"] img { transition: transform 1100ms var(--ease-out), opacity 1100ms var(--ease-out); }
+[data-rva="photo-settle"]:not(.is-in) img { opacity: 0; transform: scale(1.12); }
+.fx-kb [data-rva="photo-settle"].is-in .hero-img { transition: none; }
+/* svg-draw: stroke-dasharray kế thừa vào <use> (sprite dùng pathLength=100) */
+[data-rva="svg-draw"] { transition: stroke-dashoffset 1500ms var(--ease-inout), opacity 600ms; stroke-dasharray: 100; }
+[data-rva="svg-draw"]:not(.is-in) { stroke-dashoffset: 100; opacity: .3; }
+.couple-amp[data-rva="svg-draw"]:not(.is-in) { opacity: 0; transform: scale(.6); }
+.couple-amp[data-rva="svg-draw"] { transition: opacity 600ms, transform 600ms var(--ease-pop); }
+.fam-rule[data-rva="svg-draw"]:not(.is-in), .tl-axis[data-rva="svg-draw"]:not(.is-in) { transform: scaleY(0); opacity: 1; }
+.fam-rule[data-rva="svg-draw"], .tl-axis[data-rva="svg-draw"] { transition: transform 900ms var(--ease-inout); }
+/* chữ ký viết tay: clip-path wipe, chừa ±0.3em cho dấu (design 4.12) */
+.ty-sig[data-rva="svg-draw"] { transition: clip-path 1800ms cubic-bezier(.55, .1, .35, 1), opacity 300ms; clip-path: inset(-.3em 0 -.3em 0); }
+.ty-sig[data-rva="svg-draw"]:not(.is-in) { clip-path: inset(-.3em 100% -.3em 0); opacity: 1; }
+.hero-names[data-rva] > span { display: inline-block; }
+/* stagger con trong hero/announcement */
+.hero-content > :nth-child(2) { --i: 1; } .hero-content > :nth-child(3) { --i: 2; } .hero-content > :nth-child(4) { --i: 3; }
+.tl-item:nth-child(3) { --i: 1; } .tl-item:nth-child(4) { --i: 2; } .tl-item:nth-child(5) { --i: 3; } .tl-item:nth-child(n+6) { --i: 4; }
+.ev-card:nth-child(2) { --i: 1.5; } .ev-card:nth-child(3) { --i: 3; }
+.fam-col:last-child { --i: 1.5; }
+[data-fx="off"] [data-rva], [data-fx="reduced"] [data-rva] { transition-delay: 0s; }
