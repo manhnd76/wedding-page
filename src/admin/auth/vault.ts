@@ -1,7 +1,8 @@
 /**
- * Vault: mã hoá token GitHub bằng passphrase (solution 2.4).
- * PBKDF2-HMAC-SHA-256 600.000 vòng, salt 16 byte -> khoá AES-GCM 256 (không extractable),
- * IV 12 byte mỗi lần, tag 128 bit, additionalData = "{owner}/{repo}". Không lưu passphrase.
+ * Vault: mã hoá token GitHub "Ghi nhớ trên máy này" (solution 2.4).
+ * v2.3 (decisions 2026-10-08): khoá lấy từ CHÍNH mật khẩu đăng nhập trang quản lý (bỏ passphrase riêng).
+ * PBKDF2-HMAC-SHA-256 600.000 vòng, salt ngẫu nhiên 16 byte -> khoá AES-GCM 256 (không extractable),
+ * IV 12 byte mỗi lần, tag 128 bit, additionalData = "{owner}/{repo}". Không lưu mật khẩu.
  */
 import { ab, base64ToBytes, bytesToBase64, utf8 } from '@shared/storage/bytes';
 
@@ -9,8 +10,9 @@ export const VAULT_KEY = 'wp_admin_vault_v1';
 export const CONN_KEY = 'wp_admin_conn_v1';
 export const SESSION_KEY = 'wp_admin_session_v1';
 export const LOCK_KEY = 'wp_admin_lock_v1';
+/** sessionStorage: chế độ lưu đã chọn trong tab ('download' | 'dev'); không có = GitHub / chưa kết nối */
+export const MODE_KEY = 'wp_admin_mode_v1';
 export const PBKDF2_ITER = 600_000;
-export const MIN_PASSPHRASE = 8;
 
 export interface VaultRecord {
   v: 1;
@@ -29,7 +31,7 @@ export interface VaultRecord {
 export interface ConnInfo { owner: string; repo: string; branch: string }
 
 export class VaultError extends Error {
-  constructor(public code: 'wrong-passphrase' | 'locked' | 'invalid' | 'weak', message: string, public retryInMs = 0) {
+  constructor(public code: 'wrong-passphrase' | 'wrong-password' | 'locked' | 'invalid', message: string, public retryInMs = 0) {
     super(message);
     this.name = 'VaultError';
   }
@@ -51,19 +53,10 @@ async function deriveKey(passphrase: string, salt: Uint8Array, iter: number): Pr
 
 const aad = (c: ConnInfo) => ab(utf8(`${c.owner}/${c.repo}`));
 
-/** Độ mạnh passphrase dạng chữ (design 8.2b): Yếu / Được / Tốt. */
-export function passphraseStrength(p: string): 'Yếu' | 'Được' | 'Tốt' {
-  const kinds = [/[a-z]/, /[A-Z]/, /\d/, /[^A-Za-z0-9]/].filter((r) => r.test(p)).length;
-  if (p.length >= 14 || (p.length >= 10 && kinds >= 3)) return 'Tốt';
-  if (p.length >= 8 && kinds >= 2) return 'Được';
-  return 'Yếu';
-}
-
 export async function createVault(
   token: string, passphrase: string, conn: ConnInfo, expiresAt: string | null,
   opts: { iter?: number; now?: () => Date } = {},
 ): Promise<VaultRecord> {
-  if (passphrase.length < MIN_PASSPHRASE) throw new VaultError('weak', `Passphrase cần ít nhất ${MIN_PASSPHRASE} ký tự.`);
   const iter = opts.iter ?? PBKDF2_ITER;
   const salt = rand(16);
   const iv = rand(12);
@@ -181,6 +174,24 @@ export async function unlock(rec: VaultRecord, passphrase: string, guard: Unlock
       if (r > 0) throw new VaultError('locked', `Nhập sai ${MAX_FAILS} lần. Thử lại sau ${Math.ceil(r / 1000)} giây.`, r);
     }
     throw e;
+  }
+}
+
+/**
+ * Sau khi đăng nhập: mở token đã "Ghi nhớ" bằng mật khẩu đăng nhập -> phiên GitHub của tab (không gọi mạng;
+ * token hết hạn sẽ lộ ra ở lần gọi GitHub đầu tiên). Vault không mở được bằng mật khẩu này (vault v2.2 dùng
+ * passphrase riêng, hoặc mật khẩu đã đổi) -> xoá vault, lần cần GitHub sẽ hỏi lại token.
+ */
+export async function restoreRememberedToken(local: KV, session: KV, password: string): Promise<'restored' | 'none' | 'dropped'> {
+  const v = loadVault(local);
+  if (!v) return 'none';
+  try {
+    const token = await openVault(v, password);
+    saveSession(session, { owner: v.owner, repo: v.repo, branch: v.branch, token, expiresAt: v.expiresAt });
+    return 'restored';
+  } catch {
+    clearVault(local);
+    return 'dropped';
   }
 }
 

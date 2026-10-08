@@ -93,7 +93,9 @@ legend { padding: 0; }
 .fl-top { width: 44px; height: 44px; justify-self: end; transition: opacity var(--dur-ui), transform var(--dur-ui) var(--ease-out); }
 .fl-top.is-away { opacity: 0; transform: translateY(8px); pointer-events: none; }
 /* tự cuộn (design-review-v1 5.2): nút 44px trên nút nhạc; scroll-top ẩn + pill thu nhỏ khi đang chạy */
-.fl-auto { width: 44px; height: 44px; margin-right: 2px; order: -1; }
+.fl-auto { width: 44px; height: 44px; margin-right: 2px; order: -1; transition: opacity 160ms var(--ease-out); }
+/* E05: đã dừng + khách đang cuộn -> ẩn (không che nội dung), hiện lại sau 1.2s đứng yên */
+.fl-auto.is-hiding { opacity: 0; pointer-events: none; }
 .fl-top { order: -2; }
 html.is-autoscroll { scroll-behavior: auto; }
 .is-autoscroll .fl-top { display: none; }
@@ -112,7 +114,10 @@ html.is-autoscroll { scroll-behavior: auto; }
 .fl-music[data-state="blocked"]::after { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 0 var(--c-primary); animation: pulse 1.2s var(--ease-out) 2; }
 @keyframes disc-spin { to { transform: rotate(1turn); } }
 @keyframes pulse { to { box-shadow: 0 0 0 14px transparent; } }
-.fl-tip { position: absolute; right: 0; bottom: 58px; white-space: nowrap; background: var(--c-text); color: var(--c-bg); font-size: var(--fs-caption); padding: 6px 10px; border-radius: var(--r-sm); opacity: 0; transition: opacity var(--dur-ui); pointer-events: none; }
+/* E10: tooltip nhạc nằm BÊN TRÁI nút nhạc (mũi tên chỉ sang phải) - không đè nút tự cuộn phía trên */
+.fl-tip { position: absolute; right: 60px; bottom: 7px; white-space: nowrap; max-width: calc(100vw - 120px); overflow: hidden; text-overflow: ellipsis; background: var(--c-text); color: var(--c-bg); font-size: var(--fs-caption); line-height: 1.4; padding: 8px 10px; border-radius: var(--r-sm); opacity: 0; transition: opacity var(--dur-ui); pointer-events: none; z-index: 1; }
+.fl-music-wrap::after { content: ""; position: absolute; right: 54px; bottom: 18px; border-style: solid; border-width: 6px 0 6px 6px; border-color: transparent transparent transparent var(--c-text); opacity: 0; transition: opacity var(--dur-ui); pointer-events: none; }
+.fl-music-wrap:has(.fl-tip.is-on)::after { opacity: 1; }
 .fl-tip.is-on { opacity: 1; }
 .fl-left { position: relative; max-width: calc(100vw - 48px - 16px * 3); }
 .pill { display: flex; align-items: stretch; height: 48px; border-radius: var(--r-pill); background: var(--c-primary); color: var(--c-on-primary); box-shadow: var(--shadow-1); overflow: hidden; transition: opacity var(--dur-ui), transform var(--dur-ui) var(--ease-out); }

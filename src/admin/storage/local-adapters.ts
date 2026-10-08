@@ -1,6 +1,7 @@
 /**
- * DevServerAdapter (phương án B: chỉ khi `vite dev`, ghi qua middleware `dev-admin-save`)
- * và DownloadAdapter ("Chế độ không kết nối": xuất .zip để tự commit).
+ * DevServerAdapter (phương án B: chỉ khi `vite dev`, ghi qua middleware `dev-admin-save`),
+ * DownloadAdapter ("Chế độ không kết nối": xuất .zip để tự commit)
+ * và SiteAdapter (v2.3: chưa kết nối GitHub - đọc bản đang xuất bản từ chính site cùng origin).
  */
 import { bytesToBase64, mimeOf, utf8 } from '@shared/storage/bytes';
 import { CONFIG_PATH, parseManifest } from '@shared/storage/manifest';
@@ -137,3 +138,28 @@ export class DownloadAdapter implements StorageAdapter {
     throw new StorageError('unsupported', 'Chế độ không kết nối không có bản sao lưu trên repo. Hãy kết nối GitHub để dùng tính năng này.');
   }
 }
+
+/** commit giả của bản đọc từ site (không phải SHA) */
+export const SITE_COMMIT = 'site';
+
+/**
+ * Đã đăng nhập, chưa kết nối GitHub (decisions 2026-10-08): bản đang xuất bản = `/content/config.json` của chính
+ * site; sửa / xem trước / tải ảnh vào nháp không cần token. Xuất bản / Khôi phục -> `need-connection`
+ * (trang quản lý mở màn Kết nối GitHub rồi tiếp tục đúng thao tác đó).
+ */
+export class SiteAdapter implements StorageAdapter {
+  readonly kind = 'site' as const;
+  readonly label = 'Chưa kết nối GitHub';
+  private dl: DownloadAdapter;
+  constructor(f: typeof fetch = (...a) => fetch(...a)) { this.dl = new DownloadAdapter(f, () => {}); }
+
+  async loadSnapshot(): Promise<Snapshot> {
+    return { ...(await this.dl.loadSnapshot()), commit: SITE_COMMIT };
+  }
+  readAsset(path: string): Promise<Blob> { return this.dl.readAsset(path); }
+  async publish(): Promise<never> { throw needConnection(); }
+  async restoreLastBackup(): Promise<never> { throw needConnection(); }
+}
+
+export const needConnection = () =>
+  new StorageError('need-connection', 'Cần kết nối GitHub trước khi xuất bản hoặc khôi phục.');

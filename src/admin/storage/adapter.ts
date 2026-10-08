@@ -1,10 +1,12 @@
 /**
- * StorageAdapter (solution 4.2): GitHub (production), DevServer (vite dev), Download (không kết nối).
+ * StorageAdapter (solution 4.2): GitHub (production), DevServer (vite dev), Download (không kết nối),
+ * Site (v2.3: đã đăng nhập nhưng chưa kết nối GitHub - đọc bản đang xuất bản từ chính site, Xuất bản/Khôi phục
+ * cần kết nối trước).
  */
 import type { WeddingConfig } from '@shared/config/types';
 import type { BackupManifest } from '@shared/storage/manifest';
 
-export type AdapterKind = 'github' | 'dev' | 'download';
+export type AdapterKind = 'github' | 'dev' | 'download' | 'site';
 
 export interface ConnectInput { owner: string; repo: string; branch: string; token: string }
 
@@ -52,7 +54,7 @@ export interface StorageAdapter {
 /** Lỗi lưu trữ đã dịch sang thông điệp dễ hiểu (solution 2.5). */
 export type StorageErrorCode =
   | 'unauthorized' | 'expired' | 'readonly' | 'not-found' | 'branch-not-found' | 'empty'
-  | 'conflict' | 'rate-limit' | 'offline' | 'server' | 'no-backup' | 'unsupported' | 'unknown';
+  | 'conflict' | 'rate-limit' | 'offline' | 'server' | 'no-backup' | 'unsupported' | 'need-connection' | 'unknown';
 
 export class StorageError extends Error {
   constructor(

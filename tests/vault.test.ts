@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   LOCK_MS, MAX_FAILS, PBKDF2_ITER, UnlockGuard, VaultError, createVault, loadVault, openVault, parseRepoInput,
-  passphraseStrength, saveVault, tokenKind, unlock, VAULT_KEY,
+  saveVault, tokenKind, unlock, VAULT_KEY,
 } from '../src/admin/auth/vault';
 import { base64ToBytes } from '../src/shared/storage/bytes';
 
@@ -45,8 +45,9 @@ describe('vault (solution 2.4)', () => {
     expect(v2.iv).not.toBe(v.iv);
   });
 
-  it('passphrase < 8 ký tự bị từ chối', async () => {
-    await expect(createVault(TOKEN, 'ngan', CONN, null, FAST)).rejects.toMatchObject({ code: 'weak' });
+  it('v2.3: không còn yêu cầu passphrase ≥ 8 ký tự (khoá = mật khẩu đăng nhập, đã kiểm bằng hash)', async () => {
+    const v = await createVault(TOKEN, 'ngan', CONN, null, FAST);
+    expect(await openVault(v, 'ngan')).toBe(TOKEN);
   });
 
   it(`${MAX_FAILS} lần sai -> khoá ${LOCK_MS / 1000}s có đếm ngược; hết khoá thì thử lại được; đúng thì reset`, async () => {
@@ -80,8 +81,5 @@ describe('vault (solution 2.4)', () => {
     expect(tokenKind('github_pat_x')).toBe('fine-grained');
     expect(tokenKind('ghp_x')).toBe('classic');
     expect(tokenKind('  ')).toBe('empty');
-    expect(passphraseStrength('abc')).toBe('Yếu');
-    expect(passphraseStrength('abcdefg1')).toBe('Được');
-    expect(passphraseStrength('một câu dài dễ nhớ')).toBe('Tốt');
   });
 });

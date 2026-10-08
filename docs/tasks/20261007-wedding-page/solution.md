@@ -1,6 +1,7 @@
 # Solution - 20261007-wedding-page
 
 > Phase: giải pháp đã qua Cổng 1 và Vòng 2, CHƯA code. **Revision 3 (2026-10-07)**: đồng bộ với [`decisions.md`](./decisions.md) (Cổng 1, Bổ sung, Vòng 2, Stack FE) và [`design.md`](./design.md) **v3** (12 theme 1.6, 17 kiểu mở 3.4/3.4b, hạt nền/burst 5.7, reveal 5.8, micro 5.9, ma trận 5.10, admin 8.2/8.2b/8.7-8.13, Phụ lục B).
+> **Revision 4 (2026-10-08)**: đồng bộ với decisions **"Đổi luồng đăng nhập admin (2026-10-08)"**: cổng mật khẩu khi vào `/admin`, token GitHub chỉ hỏi khi cần, vault mã hoá bằng mật khẩu đăng nhập, đọc bản xuất bản từ site cùng origin khi chưa có token, đánh giá bảo mật (2.0, 2.7-2.9), giai đoạn **v2.3** (login mới + E01–E11 của [`design-review-envelopes.md`](./design-review-envelopes.md)). Mọi chỗ sửa ghi **(Rev 4)**.
 > Thứ tự ưu tiên khi lệch nhau: `decisions.md` > `solution.md` (kiến trúc, schema, contract) > `design.md` (visual/UX). Điểm chưa chốt nằm ở mục **Còn mở** cuối file.
 > **Stack Angular/Spring/Oracle trong CLAUDE.md global KHÔNG áp dụng** (decisions, "Quyết định stack FE"). Đây là webapp tĩnh, không backend, không DB.
 > Tham khảo (chỉ đọc, không sửa): dự án cũ `E:\claudecode\wedding-site\` (`data/config.js`, `assets/js/main.js`, `assets/js/effects.js`, `assets/css/style.css`, `_redirects`, `404.html`, `docs/google-apps-script.gs`). Theme/animation cũ chỉ để tham khảo (decisions, "Bổ sung").
@@ -10,6 +11,8 @@
 ## 📋 Tóm tắt yêu cầu
 
 Xây dựng site tĩnh `wedding-page` gồm 2 ứng dụng: (1) **Guest app** - thiệp cưới mobile-first, mở đầu bằng màn cover hiển thị tên khách lấy từ `?to=` (hoặc `/invite/<slug>`), chạm để mở (17 kiểu mở) vào landing nhiều section (bật/tắt + sắp xếp được), nhạc nền, thư viện 12 theme trọn gói, hạt nền cả trang, burst, reveal, micro-interaction theo 4 cấp cường độ; (2) **Admin app** (Preact, dùng được trên mobile) - chỉnh toàn bộ cấu hình với live preview + "Phát lại" hiệu ứng, xuất bản bằng 1 commit vào GitHub repo private (Git Data API), Cloudflare Pages tự build/deploy, giữ 1 bản backup cả trang của lần publish gần nhất và khôi phục kiểu hoán đổi.
+
+**(Rev 4)** Vào `/admin` phải qua **cổng mật khẩu** (hash trong code). Sau đó sửa/xem trước/upload vào nháp không cần GitHub; **token GitHub chỉ được hỏi khi bấm Xuất bản/Khôi phục** (hoặc thao tác bắt buộc gọi GitHub). Mọi thay đổi (kể cả chữ) vẫn chỉ lên site qua publish, vì site tĩnh.
 
 Toàn bộ nội dung điều khiển bởi **một file `config.json`** có `schemaVersion`. Dữ liệu theme preset nằm trong code; config chỉ lưu `theme.preset` và những phần admin tự chỉnh (giá trị đặc biệt `"theme"` = theo theme). RSVP + lời chúc lưu ở Google Sheet qua Google Apps Script.
 
@@ -41,15 +44,23 @@ Toàn bộ nội dung điều khiển bởi **một file `config.json`** có `sc
 - `docs/google-apps-script.gs` - mở rộng thành `apps-script/Code.gs` (thêm RSVP, ping).
 - `_redirects`, `404.html` - rule rewrite `/invite/*`.
 
+### (Rev 4) Tái sử dụng trong codebase hiện tại cho v2.3
+- `src/admin/auth/vault.ts` - `createVault`/`openVault` (PBKDF2 600k + AES-GCM, AAD `owner/repo`), `UnlockGuard` (5 lần sai -> khoá 30 s, lưu `localStorage`), `loadSession`/`saveSession`, `parseRepoInput`, `tokenKind`. Đổi nguồn khoá từ passphrase sang mật khẩu đăng nhập; `UnlockGuard` dùng lại nguyên cho cổng đăng nhập.
+- `src/admin/screens/connect.tsx` - màn Kết nối 8.2b (3 bước kiểm tra). Đổi thành overlay mở theo yêu cầu, bỏ 2 ô passphrase, `remember` mặc định **tắt** (hiện code đang `true`).
+- `src/admin/screens/login.tsx` - đổi từ "1 ô passphrase mở vault" thành cổng mật khẩu.
+- `src/admin/app.tsx` - máy trạng thái `boot/connect/login/editor`, đổi theo sơ đồ 2.0.
+- `src/admin/state/store.ts` - `onAuthLost`, `reloadSnapshot`, publish/restore. Thêm `requireGitHub(intent)` và nguồn "site" khi chưa có token.
+- `src/admin/storage/adapter.ts`, `github.ts`, `github-errors.ts`, `local-adapters.ts` - giữ nguyên contract, thêm nguồn đọc cùng origin (4.2).
+
 ### Cần tạo mới
 - Dự án Vite + TS; `src/shared` (types, defaults, migrations, merge, **theme registry 12 preset + resolver + derive OKLCH sáng/tối**, font registry 28 family, guest-name, VietQR, ics, capabilities).
 - Guest: section registry 14 section; cover + **17 module kiểu mở** (dynamic import); `EffectRegistry`; `ParticleField` (21 loại hạt, 6 burst); reveal engine (12 kiểu nguyên tử, 6 gói); micro-interaction (5.9); floating UI.
-- Admin: Kết nối lần đầu + vault, StorageAdapter (GitHub/Dev/Download), nháp IndexedDB, form editor, gallery theme (8.12), trình chọn hiệu ứng + Phát lại (8.13), sections, preview, ImageSlot + pipeline, audio, link generator, backup/restore, export/import, checklist.
+- Admin: Kết nối lần đầu + vault, StorageAdapter (GitHub/Dev/Download), nháp IndexedDB, form editor, gallery theme (8.12), trình chọn hiệu ứng + Phát lại (8.13), sections, preview, ImageSlot + pipeline, audio, link generator, backup/restore, export/import, checklist. **(Rev 4)** Thêm cổng mật khẩu (`auth/gate.ts` + `auth/admin-password.ts` do script sinh), script `scripts/set-admin-password.mjs`, overlay Kết nối theo yêu cầu, nguồn đọc bản xuất bản cùng origin.
 - Vite plugins: `inject-config-og` (build), `dev-admin-save` (chỉ `vite dev`), script kiểm tra ngân sách bundle.
 - Asset: 11 ornament sprite SVG, sprite 21 loại hạt (SVG string), asset riêng của kiểu mở (flower-gate WebP, wax-seal SVG...).
 
 ### Rủi ro / edge case chính
-- Bảo mật admin trên site tĩnh (mục 2); token fine-grained hết hạn trước ngày cưới.
+- Bảo mật admin trên site tĩnh (mục 2); token fine-grained hết hạn trước ngày cưới. **(Rev 4)** Hash mật khẩu ngắn nằm trong bundle công khai nên dò được offline; vault mã hoá bằng chính mật khẩu đó nên yếu theo (2.9).
 - Khối lượng hiệu ứng lớn (12 theme × 17 kiểu mở × 21 hạt) dễ phình bundle -> code-split theo lựa chọn (mục 9.1).
 - Hạt nền **cả trang** (mặc định) có thể che chữ/form và tốn pin -> 4 lớp bảo vệ của design 5.7.
 - Theme tối `dem-nhung` có trong bản đầu -> derive phải hỗ trợ `mode: dark` ngay từ v1.
@@ -61,6 +72,7 @@ Toàn bộ nội dung điều khiển bởi **một file `config.json`** có `sc
 - Safari xoá IndexedDB của site không tương tác sau 7 ngày (ITP) -> nháp có thể mất (mục 3.3).
 - VietQR client-side phải đúng chuẩn EMVCo/NAPAS -> test bằng app ngân hàng thật ở v1.
 - Font script với dấu chồng -> chỉ font trong whitelist design 2.3 + 2.3b, test chuỗi mẫu cho từng theme.
+- **(Rev 4)** Bản xuất bản đọc từ site có thể chậm hơn GitHub 30-90 s (CF đang build) hoặc khác hẳn (publish từ máy khác) -> đối chiếu `publish.id` khi kết nối (2.8.3).
 
 ---
 
@@ -69,19 +81,66 @@ Toàn bộ nội dung điều khiển bởi **một file `config.json`** có `sc
 ### 1. Lưu trữ và xuất bản (đã chốt: Phương án A + B phụ)
 
 - Admin (trình duyệt) gọi GitHub REST API (**Git Data API**) để ghi `config.json` + ảnh + nhạc + backup vào repo private trong **một commit**; Cloudflare Pages tự build (plugin inject) và deploy, trễ 30-90 giây.
+- **(Rev 4)** Site tĩnh: mọi thay đổi (kể cả chữ) chỉ đến tay khách sau publish + build. Không thêm nơi lưu runtime (KV/D1/Sheet cho config). Yêu cầu "sửa cấu hình không cần deploy" đã được người duyệt bỏ (Quyết định đã chốt #17).
 - Admin UI nói chuyện qua interface `StorageAdapter` với 3 implementation:
   - `GitHubAdapter` (production, mặc định).
   - `DevServerAdapter` (chỉ khi `vite dev`: POST `/__admin/*` ghi vào `public/content/` và `backup/`) - phương án B, cùng logic manifest.
-  - `DownloadAdapter` ("Chế độ không kết nối" của design 8.2b: xuất zip `config.json` + asset để tự commit).
+  - `DownloadAdapter` ("Chế độ không kết nối" của design 8.2b: xuất zip `config.json` + asset để tự commit). **(Rev 4)** Chọn ở overlay Kết nối khi bấm Xuất bản (2.8).
 - Chỉ báo "đã lên trang": admin ghi `publish.id` (uuid) vào config; sau commit, admin poll `https://<site>/content/config.json?ts=...` mỗi 10 giây (tối đa 5 phút) tới khi `publish.id` khớp -> "Khách đã thấy bản mới". Sau restore thì đợi `publish.id` của bản vừa khôi phục.
 
-### 2. Bảo mật admin, Kết nối lần đầu, vault
+### 2. Bảo mật admin, đăng nhập, kết nối GitHub, vault
+
+> **(Rev 4)** Luồng cũ (vào admin là bắt Kết nối 8.2b ngay; có vault thì Login bằng passphrase riêng) được thay bằng luồng 2.0. Giữ nguyên số mục 2.2-2.6 để các tham chiếu cũ còn đúng; phần mới nằm ở 2.0, 2.7, 2.8, 2.9.
+
+#### 2.0 Luồng mới và sơ đồ trạng thái (Rev 4)
+
+| Lớp | Là gì | Chặn được | Không chặn được |
+|---|---|---|---|
+| Cổng mật khẩu (2.7) | Hash PBKDF2 của mật khẩu đã chốt, nằm trong bundle admin | Người lạ tình cờ mở `/admin` thấy giao diện quản lý | Người tải bundle về dò mật khẩu offline, hoặc bỏ qua cổng bằng devtools. **Chỉ là lớp che mắt** (2.9) |
+| Token GitHub fine-grained (2.2) | Quyền ghi 1 repo | Mọi thay đổi lên site (publish/restore) | Ai có token thì ghi được, nên phải bảo vệ token |
+| Cloudflare Access cho `/admin/*` (khuyến nghị, 2.9) | Email OTP ở tầng CDN | Tải được trang admin và hash | - |
+
+Sau cổng **không có dữ liệu bí mật**: config/ảnh đã công khai trên site, nháp nằm trong IndexedDB của chính máy chủ nhà, token chưa có cho tới khi cần. Lớp bảo mật thật vẫn là **token GitHub**.
+
+```
+                 mở /admin
+                     |
+        có phiên wp_admin_auth_v1 (đúng hash hiện tại)? --có--+
+                     | không                                  |
+                     v                                        |
+  +-----------> [LOGIN: 1 ô mật khẩu]                         |
+  |                  | sai, lần 1-4 -> "Mật khẩu chưa đúng"   |
+  |                  | sai lần 5 -> [KHOÁ 30 s, đếm ngược] -> LOGIN
+  |                  | đúng                                    |
+  |                  v                                        v
+  |     (nền) có vault v2 hợp lệ? --có--> giải mã -> token vào bộ nhớ + session
+  |                  |                    lỗi / đổi mật khẩu -> xoá vault + toast
+  |                  v
+  |     [EDITOR] nguồn bản xuất bản = GitHub nếu có token, ngược lại = site cùng origin
+  |       sửa / xem trước / upload / link khách / export: KHÔNG cần GitHub
+  |                  |
+  |                  | bấm Xuất bản / Khôi phục / Lấy lại ảnh / xem Sao lưu
+  |                  v
+  |          có token? --có--> [THỰC HIỆN THAO TÁC]
+  |                  | không
+  |                  v
+  |          có vault nhưng mất khoá (đã tải lại trang)? --có--> [NHẬP LẠI MẬT KHẨU] -> giải mã
+  |                  | không
+  |                  v
+  |          [OVERLAY KẾT NỐI GITHUB 8.2b] --Huỷ--> EDITOR (nháp nguyên vẹn, thao tác bị bỏ)
+  |                  | ✓ 3 bước (+ tuỳ chọn Ghi nhớ, mặc định tắt)
+  |                  v
+  |          tải snapshot GitHub -> đối chiếu publish.id (2.8.3) -> TIẾP TỤC thao tác ban đầu
+  |
+  |   401 giữa chừng -> xoá token (và vault nếu token lấy từ vault), giữ nháp, ở lại EDITOR
+  +-- Đăng xuất -> xoá phiên + token + khoá vault trong bộ nhớ (giữ vault, conn, nháp)
+```
 
 #### 2.1 Nguyên tắc
-- Mọi password hardcode trong code hoặc env build (`VITE_*`) đều **lộ công khai**. Lớp bảo mật thật là **quyền ghi vào repo** (token).
-- Không bao giờ đưa token/passphrase vào code, repo, env, tài liệu, log.
+- Mọi thứ trong bundle là **công khai**, kể cả hash mật khẩu đăng nhập **(Rev 4)**. Hash chỉ làm chậm việc dò, không giấu được mật khẩu yếu. Mọi password hardcode dạng rõ hoặc qua env build (`VITE_*`) đều lộ. Lớp bảo mật thật là **quyền ghi vào repo** (token).
+- Không bao giờ đưa token hoặc mật khẩu dạng rõ vào code, repo, env, tài liệu, log, commit message, test fixture. **(Rev 4)** Tài liệu chỉ nói "mật khẩu đã chốt", không chép lại giá trị.
 - Render mọi chuỗi từ config/URL/guestbook bằng `textContent`; CSP chặt (Lưu ý kỹ thuật); link trong config chỉ nhận `https:`/`tel:`.
-- Tuỳ chọn thêm: **Cloudflare Access** chặn `/admin/*` (email OTP). `X-Robots-Tag: noindex` cho `/admin/*`.
+- Tuỳ chọn thêm: **Cloudflare Access** chặn `/admin/*` (email OTP). `X-Robots-Tag: noindex` cho `/admin/*`. **(Rev 4)** Nay là khuyến nghị chính để bù cho mật khẩu ngắn (2.9).
 
 #### 2.2 Quyền tối thiểu của fine-grained PAT (README + bước ① màn 8.2b)
 | Thiết lập | Giá trị |
@@ -94,7 +153,9 @@ Toàn bộ nội dung điều khiển bởi **một file `config.json`** có `sc
 
 Token classic (`ghp_`) vẫn cho dùng nhưng hiện cảnh báo vàng (design 8.2b).
 
-#### 2.3 Màn "Kết nối lần đầu" (design 8.2b) - kiểm tra kết nối
+#### 2.3 Màn "Kết nối" (design 8.2b) - kiểm tra kết nối
+> **(Rev 4)** Nội dung kiểm tra giữ nguyên; **thời điểm hiện** đổi: không còn hiện khi vào admin, chỉ mở dạng overlay khi thao tác cần GitHub (2.8). Nút cuối đổi thành **"Kết nối và tiếp tục"**. Bỏ 2 ô passphrase; "Ghi nhớ trên máy này" mặc định **tắt** (2.4).
+
 Nút "Kiểm tra kết nối" chạy **tuần tự**, mỗi bước cập nhật 1 dòng kết quả (◌/✓/✕) trong vùng `aria-live`. Header chung: `Authorization: Bearer <token>`, `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`. Tiền xử lý: `trim()` token; ô owner nhận link `https://github.com/<owner>/<repo>` thì tự tách.
 
 | # | Dòng kết quả | API | Đạt khi | Lỗi -> thông điệp (design 8.2b) |
@@ -105,29 +166,36 @@ Nút "Kiểm tra kết nối" chạy **tuần tự**, mỗi bước cập nhật
 | 4 | Hạn token | header `github-authentication-token-expiration` của bước 1 | có header, hạn > ngày cưới | Không có header = token không hết hạn (chỉ báo "Không có hạn"). Cảnh báo vàng, **không chặn** (2.6) |
 
 - **Vì sao bước 3 là ghi thử blob**: với fine-grained token, `permissions.push` trong response repo phản ánh quyền của **user** trên repo, không phải quyền của **token**, nên không tin được. Blob không được ref nào trỏ tới là vô hại (GitHub tự dọn).
-- Sau bước 4: nếu repo đã có `public/content/config.json` thì đọc để lấy ngày sự kiện chính (`events.mainEventId` -> `startAt`) phục vụ so sánh hạn token; chưa có config thì chỉ cảnh báo theo quy tắc < 14 ngày.
-- Sửa bất kỳ ô nào ở bước ② -> xoá kết quả cũ. Nút "Lưu và vào trang quản lý" chỉ sáng khi 1-3 đều ✓.
+- Sau bước 4: nếu repo đã có `public/content/config.json` thì đọc để lấy ngày sự kiện chính (`events.mainEventId` -> `startAt`) phục vụ so sánh hạn token; chưa có config thì chỉ cảnh báo theo quy tắc < 14 ngày. **(Rev 4)** Khi đã có nháp, dùng ngày sự kiện trong nháp.
+- Sửa bất kỳ ô nào ở bước ② -> xoá kết quả cũ. Nút "Kết nối và tiếp tục" chỉ sáng khi 1-3 đều ✓.
 - Owner/repo/branch (không bí mật) lưu `localStorage` `wp_admin_conn_v1` để điền sẵn.
 
-#### 2.4 Vault: mã hoá token bằng passphrase (WebCrypto)
+#### 2.4 Vault: mã hoá token ghi nhớ bằng **mật khẩu đăng nhập** (WebCrypto) (Rev 4)
+> **(Rev 4)** Bỏ passphrase riêng. Khoá vault dẫn xuất từ mật khẩu đăng nhập (2.7). Hệ quả bảo mật ở 2.9.
+
 | Tham số | Giá trị |
 |---|---|
-| KDF | **PBKDF2-HMAC-SHA-256, 600.000 vòng** (khuyến nghị OWASP hiện hành), salt ngẫu nhiên 16 byte (`crypto.getRandomValues`) |
+| KDF | **PBKDF2-HMAC-SHA-256, 600.000 vòng** (khuyến nghị OWASP hiện hành), salt ngẫu nhiên 16 byte **riêng của vault** (khác salt của hash đăng nhập) |
 | Khoá | AES-GCM 256-bit, `extractable: false`, `usages: ['encrypt','decrypt']` |
 | Mã hoá | AES-GCM, IV ngẫu nhiên 12 byte mỗi lần mã hoá, tag 128-bit, `additionalData` = UTF-8 của `"{owner}/{repo}"` (gắn ciphertext với repo) |
-| Lưu ở | `localStorage` key `wp_admin_vault_v1`: `{ "v":1, "kdf":"PBKDF2-SHA256", "iter":600000, "salt":"<b64>", "iv":"<b64>", "ct":"<b64>", "owner":"...", "repo":"...", "branch":"main", "expiresAt":"2027-01-12T00:00:00+07:00" \| null, "createdAt":"ISO" }` |
-| Passphrase | ≥ 8 ký tự, nhập 2 lần; chỉ báo độ mạnh dạng chữ (design 8.2b). Không lưu passphrase ở đâu |
-| Thời gian | Trên điện thoại cũ 0.5-1 giây -> UI "Đang mã hoá…"/"Đang mở khoá…". Chạy trong Web Worker nếu main thread bị chặn > 300 ms (đo ở v2) |
+| Lưu ở | `localStorage` key **`wp_admin_vault_v2`**: `{ "v":2, "kdf":"PBKDF2-SHA256", "iter":600000, "salt":"<b64>", "iv":"<b64>", "ct":"<b64>", "pwTag":"<8 ký tự đầu của hash đăng nhập lúc tạo>", "owner":"...", "repo":"...", "branch":"main", "expiresAt":"2027-01-12T00:00:00+07:00" \| null, "createdAt":"ISO" }` |
+| Mật khẩu | = mật khẩu đăng nhập. Không có ô nhập riêng, không lưu mật khẩu ở đâu |
+| "Ghi nhớ trên máy này" | **Mặc định tắt**. Khi tick: hiện cảnh báo (2.9, giảm thiểu 1) |
+| Thời gian | Trên điện thoại cũ 0.5-1 giây/lần dẫn xuất. WebCrypto chạy bất đồng bộ, không khoá main thread; dẫn xuất khoá vault chạy **nền sau khi đăng nhập**, không làm chậm màn login |
 
-- Giải mã thất bại (`OperationError`) = **sai passphrase**. 5 lần sai -> khoá tạm 30 giây có đếm ngược (chỉ là UX phía client, không phải bảo mật thật).
-- Không tick "Ghi nhớ": token chỉ ở **bộ nhớ + `sessionStorage`** (mất khi đóng tab). Có tick: sau khi mở khoá, token giữ trong bộ nhớ + `sessionStorage` của tab đó.
-- Đăng xuất: xoá token khỏi bộ nhớ/`sessionStorage` (giữ vault). "Quên passphrase? Kết nối lại": xoá vault (giữ conn + nháp) -> màn 8.2b.
-- Luồng màn hình: có vault -> **Login** (8.2: 1 ô passphrase) -> giải mã -> chạy lại bước 1 + 4 của 2.3 (bỏ bước ghi thử để nhanh). 401/403 -> sang 8.2b với thông báo tương ứng, giữ sẵn owner/repo/branch. Không có vault -> thẳng 8.2b.
+- **Sau khi đăng nhập đúng** (nền, không chặn UI): dẫn xuất khoá vault với `salt` của vault hiện có, hoặc salt mới nếu chưa có vault. Giữ `{ salt, key }` (CryptoKey không extractable) **chỉ trong bộ nhớ**; bỏ tham chiếu tới chuỗi mật khẩu. Nếu có vault hợp lệ (`pwTag` khớp hash hiện tại, owner/repo khớp `wp_admin_conn_v1`) thì giải mã -> token vào bộ nhớ + `sessionStorage` `wp_admin_session_v1`.
+- **Ghi nhớ**: kết nối ✓ + tick -> mã hoá bằng khoá trong bộ nhớ -> ghi `wp_admin_vault_v2`. Nếu khoá đã mất (tab vừa tải lại) -> hiện thêm ô "Mật khẩu quản trị (để khoá token)", kiểm bằng hash (2.7) rồi dẫn xuất.
+- **Không tick**: token chỉ ở **bộ nhớ + `sessionStorage`** của tab (mất khi đóng tab). Lần sau (phiên mới) bấm Xuất bản sẽ hỏi lại token.
+- **Có vault nhưng chưa mở** (tab tải lại khi giải mã nền chưa xong, hoặc token trong session đã bị xoá): thao tác GitHub -> dialog nhỏ "Nhập mật khẩu quản trị để dùng token đã ghi nhớ" (1 ô + link "Dùng token khác"). Dùng chung `UnlockGuard` với login (5 lần sai -> khoá 30 s).
+- **Giải mã thất bại**: `pwTag` khác hash hiện tại (đã đổi mật khẩu bằng script) -> xoá vault, toast "Mật khẩu quản trị đã đổi, token ghi nhớ cũ đã bị xoá. Lần xuất bản tới sẽ hỏi lại token." `pwTag` khớp mà `OperationError` -> vault hỏng/sai repo -> xoá vault, toast tương tự.
+- **Chuyển từ v2 (passphrase)**: có `wp_admin_vault_v1` -> không mở được bằng mật khẩu đăng nhập -> xoá 1 lần + toast "Token ghi nhớ kiểu cũ đã bị xoá, hãy kết nối lại khi xuất bản". (Thực tế chỉ có trên máy thử nghiệm.)
+- Đăng xuất: xoá token khỏi bộ nhớ/`sessionStorage`, bỏ khoá vault trong bộ nhớ (giữ vault). Nút "Quên token đã ghi nhớ trên máy này" (Tổng quan + overlay Kết nối): xoá vault (giữ conn + nháp).
+- 401 với token lấy từ vault: xoá cả vault (token đã hỏng, giữ lại vô ích) + toast (2.5).
 
-#### 2.5 Bảng xử lý lỗi GitHub (dùng chung cho kết nối, login, publish, restore)
+#### 2.5 Bảng xử lý lỗi GitHub (dùng chung cho kết nối, publish, restore)
 | Tình huống | Nhận biết | Xử lý |
 |---|---|---|
-| Token sai / hết hạn | `401` | Kết nối: thông điệp 8.2b. Đang làm việc: về Login (hoặc 8.2b nếu không có vault), **giữ nháp**, toast "Phiên đã hết..." |
+| Token sai / hết hạn | `401` | Kết nối: thông điệp 8.2b. Đang làm việc: **(Rev 4)** ở lại Editor (không về Login), xoá token khỏi bộ nhớ/session (và vault nếu token từ vault), **giữ nháp**, toast "Token GitHub không còn dùng được. Lần xuất bản tới sẽ hỏi lại token."; thao tác đang chạy dừng, bấm lại sẽ mở overlay Kết nối |
 | Thiếu quyền ghi | `403` không kèm rate-limit header, hoặc `404` trên endpoint ghi | "Token chỉ có quyền đọc..." |
 | Không thấy repo/nhánh | `404` | Thông điệp 8.2b; nhánh thì liệt kê nhánh hiện có |
 | Repo rỗng | `409` từ `/git/*` ("Git Repository is empty") | "Repo đang trống..." (2.3) |
@@ -140,9 +208,100 @@ Nút "Kiểm tra kết nối" chạy **tuần tự**, mỗi bước cập nhật
 Mọi thông điệp dịch sang câu dễ hiểu, mã thô chỉ nằm trong "Chi tiết kỹ thuật" thu gọn (design 8.2b, 8.8).
 
 #### 2.6 Cảnh báo token hết hạn trước ngày cưới
-- Nguồn hạn: header `github-authentication-token-expiration` (định dạng `YYYY-MM-DD HH:mm:ss ±hhmm`) ở mọi response; lưu vào vault `expiresAt` và cập nhật mỗi lần mở khoá.
+- Nguồn hạn: header `github-authentication-token-expiration` (định dạng `YYYY-MM-DD HH:mm:ss ±hhmm`) ở mọi response; lưu vào vault `expiresAt` và cập nhật mỗi lần mở khoá. **(Rev 4)** `expiresAt` là metadata không mã hoá trong vault nên đọc được ngay sau login; khi không có vault thì chỉ biết hạn sau khi kết nối trong phiên (lưu cùng token ở `wp_admin_session_v1`).
 - Ngày cưới = `startAt` của `events.mainEventId` (fallback: `countdown.targetAt`).
-- Cảnh báo vàng (không chặn) khi: hạn < ngày cưới, **hoặc** còn < 14 ngày. Hiện ở 8.2b (dòng kết quả 4), banner trên Tổng quan, và trong checklist trước xuất bản (cảnh báo nhẹ). Nút "Tạo token mới ↗" mở trang tạo token; dán token mới ở 8.2b (vault cũ bị thay).
+- Cảnh báo vàng (không chặn) khi: hạn < ngày cưới, **hoặc** còn < 14 ngày. Hiện ở 8.2b (dòng kết quả 4), banner trên Tổng quan (**(Rev 4)** chỉ khi đã biết hạn), và trong checklist trước xuất bản (cảnh báo nhẹ; luôn có vì xuất bản đã kết nối). Nút "Tạo token mới ↗" mở trang tạo token; dán token mới ở 8.2b (vault cũ bị thay).
+
+#### 2.7 Cổng đăng nhập bằng mật khẩu (Rev 4)
+
+| Hạng mục | Quy định |
+|---|---|
+| Nơi lưu hash | `src/admin/auth/admin-password.ts` (commit, **chỉ admin import**), sinh bởi script, không sửa tay: `export const ADMIN_PASSWORD = { v: 1, kdf: 'PBKDF2-SHA256', iter: 600000, salt: '<b64 16 byte>', hash: '<b64 32 byte>' } as const;` |
+| Thuật toán | `PBKDF2-HMAC-SHA-256(NFC(mật khẩu), salt, iter)` -> 256 bit (`crypto.subtle.deriveBits`), so khớp toàn bộ 32 byte với `hash` (so hết mảng, không thoát sớm). Không `trim`. Không dùng SHA-256 1 vòng (dò được hàng tỷ lần/giây) |
+| Màn Login | 1 ô mật khẩu (`autocomplete="current-password"`, nút hiện/ẩn), nút "Vào trang quản lý"; đang kiểm -> disabled + "Đang kiểm tra…" (0.5-1 s trên máy cũ); sai -> "Mật khẩu chưa đúng" (`aria-live`), giữ focus ô nhập, xoá nội dung ô |
+| Khoá sai | Dùng lại `UnlockGuard` (`localStorage` `wp_admin_lock_v1`): **5 lần sai -> khoá 30 s** có đếm ngược; tải lại trang không xoá bộ đếm. Ghi rõ trong code: chỉ là UX, không chống dò offline |
+| Phiên | `sessionStorage` `wp_admin_auth_v1` = `{ "v":1, "at":"ISO", "h":"<8 ký tự đầu của ADMIN_PASSWORD.hash>" }`. Mở admin: có phiên và `h` khớp hash hiện tại -> vào Editor; `h` khác (đã đổi mật khẩu + deploy) -> về Login. Tải lại tab giữ phiên; tab mới / đóng mở lại -> đăng nhập lại. Không có hết hạn theo thời gian rảnh (Còn mở #9) |
+| Không lưu mật khẩu | Không ghi vào `localStorage`/`sessionStorage`/IndexedDB/log. Sau khi dẫn xuất khoá vault (2.4) bỏ tham chiếu |
+| Phạm vi | Áp dụng cho **mọi chế độ** (GitHub, máy chủ dev, tải về). Editor vẫn tải lười (`editor/editor.tsx` LAZY); có thể prefetch chunk Editor ngay khi màn Login hiện, nhưng chỉ mount sau khi đúng mật khẩu |
+| "Quên mật khẩu?" | Chỉ là chữ hướng dẫn: chạy script đổi mật khẩu rồi xuất bản/deploy lại mã nguồn. Trên trình duyệt không có cách khôi phục |
+| Đăng xuất | Xoá `wp_admin_auth_v1`, `wp_admin_session_v1`, `wp_admin_mode_v1`, khoá vault trong bộ nhớ. Giữ vault, conn, nháp, bộ đếm khoá |
+
+**Script đổi mật khẩu** - `npm run admin:password` -> `node scripts/set-admin-password.mjs`:
+1. Hỏi mật khẩu **2 lần qua TTY, ẩn ký tự**. Không nhận mật khẩu qua tham số dòng lệnh hay biến môi trường (tránh lọt vào lịch sử shell/log CI). Cờ `--stdin` (đọc 1 dòng từ stdin) chỉ để test tự động.
+2. `normalize('NFC')`; < 7 ký tự -> từ chối; < 12 ký tự -> **cảnh báo** "Mật khẩu ngắn: hash nằm công khai trong bundle nên có thể bị dò trong vài giờ; token ghi nhớ sẽ yếu theo" (vẫn cho, vì mật khẩu đã chốt có 7 ký tự).
+3. Salt 16 byte `crypto.randomBytes`, `crypto.pbkdf2` SHA-256 600.000 vòng, ghi đè `src/admin/auth/admin-password.ts` (định dạng cố định, comment "Sinh bởi scripts/set-admin-password.mjs").
+4. In nhắc: cần commit + deploy; token đã ghi nhớ trên mọi máy sẽ bị xoá ở lần đăng nhập tới (phải dán lại token). Không in mật khẩu, không ghi file tạm.
+- Lần đầu ở v2.3: frontend-developer chạy script với mật khẩu đã chốt (nhập tương tác hoặc pipe `--stdin` từ terminal, không lưu vào file/test/commit message).
+
+**Test không cần mật khẩu thật trong repo**:
+- Unit: test tự sinh mật khẩu ngẫu nhiên + record với `iter` thấp (vd 1.000) lúc chạy; `verifyPassword` đọc `iter` từ record. Test script bằng `--stdin` vào thư mục tạm.
+- E2E trên `vite dev` (:5175): plugin chỉ ở lệnh `serve` cho phép đổi record qua env `WP_ADMIN_PASSWORD_FILE` (global setup sinh mật khẩu ngẫu nhiên vào thư mục tạm). Bản `vite build` **luôn** dùng file đã commit, bỏ qua env này.
+- E2E trên `vite preview` (bản build thật): test đăng nhập sai / khoá 30 s nhập mật khẩu sai bất kỳ; các test còn lại gieo phiên `wp_admin_auth_v1` bằng `addInitScript` (đọc `h` từ record đã build, vốn công khai). Đây cũng là minh chứng cổng chỉ là lớp che mắt.
+
+#### 2.8 Kết nối GitHub khi cần và nguồn "bản đang xuất bản" (Rev 4)
+
+##### 2.8.1 Thao tác nào cần GitHub
+| Thao tác | Cần GitHub? | Khi chưa có token |
+|---|---|---|
+| Sửa form, gallery theme/hiệu ứng, sections, upload ảnh/nhạc vào nháp, xem trước, Phát lại | Không | - |
+| Link khách, export/import, "Hoàn tác thay đổi nháp", "Hoàn tác tất cả" | Không | - |
+| Poll "Đã lên trang" | Không (đọc site cùng origin) | - |
+| Kiểm tra Apps Script | Không | - |
+| **Xuất bản** | Có (trừ khi chọn "Tải về máy" hoặc "Máy chủ dev") | Mở overlay Kết nối |
+| **Khôi phục bản xuất bản trước** | Có | Mở overlay Kết nối |
+| **"Lấy lại ảnh trước đó"** (ImageSlot) | Có (đọc backup) | Khối "Ảnh trước lần xuất bản" hiện dòng "Kết nối GitHub để xem ảnh trước đó" + nút; bấm mới mở overlay |
+| Màn **Sao lưu/Khôi phục** (manifest, thumbnail) | Có | Hiện trạng thái rỗng "Kết nối GitHub để xem bản sao lưu" + nút. Chỉ chuyển tab thì **không** tự bật overlay |
+
+##### 2.8.2 `requireGitHub(intent)` và overlay Kết nối
+- `intent`: `'publish' | 'restore' | 'recover-image' | 'backup-view'`. Có token trong bộ nhớ -> trả adapter ngay. Có vault nhưng chưa mở -> dialog nhập lại mật khẩu (2.4). Còn lại -> overlay Kết nối.
+- Overlay **phủ trên Editor** (không unmount Editor, iframe preview giữ trạng thái). Mobile: toàn màn hình; desktop: dialog rộng. Tiêu đề theo intent: "Kết nối GitHub để xuất bản" / "... để khôi phục" / "... để lấy lại ảnh" / "... để xem bản sao lưu"; dòng phụ "Chỉ cần làm 1 lần mỗi phiên. Bản nháp của bạn vẫn được giữ."
+- Nội dung: form 8.2b + bảng kiểm tra 2.3 + "Ghi nhớ trên máy này" (tắt). Với intent `publish`, thêm 2 lối phụ: "Không kết nối: tải file về máy" (DownloadAdapter) và "Lưu vào máy chủ dev" (chỉ khi `vite dev`). Lựa chọn dev/tải về nhớ trong phiên (`wp_admin_mode_v1`).
+- **Huỷ** -> reject `GitHubCancelled`; UI không báo lỗi, chỉ đóng overlay; nháp không đổi.
+- **Kết nối ✓** -> `loadSnapshot()` từ GitHub -> đối chiếu 2.8.3 -> resolve -> **tự tiếp tục** thao tác ban đầu: `publish` mở dialog xuất bản (checklist + diff) với `baseCommit` mới; `restore` mở dialog khôi phục bước 1; `recover-image` chạy "Lấy lại ảnh"; `backup-view` hiện màn Sao lưu. Người dùng không phải bấm lại.
+
+##### 2.8.3 Nguồn "bản đang xuất bản" khi chưa có token, và đối chiếu khi kết nối
+- `SitePublishedSource.load()`: `fetch(BASE_URL + 'content/config.json?ts=' + Date.now(), { cache: 'no-store', credentials: 'same-origin' })`.
+  - 200 + JSON hợp lệ -> `published = config`, `draft.basePublishId = config.publish.id`, `draft.baseCommit = null`.
+  - 404 (site chưa từng xuất bản) -> nháp từ `DEFAULT_CONFIG`, banner "Site chưa có bản xuất bản".
+  - Mạng lỗi / JSON hỏng -> banner lỗi + [Thử lại]; nếu IndexedDB có nháp thì vẫn cho sửa.
+  - Ảnh/nhạc đang xuất bản hiển thị thẳng từ `/content/...` cùng origin (tên có hash, immutable). Cloudflare Access cho `/admin/*` (nếu bật) không ảnh hưởng vì `/content/*` nằm ngoài `/admin`.
+  - `vite dev`: cùng cách (đọc `public/content/config.json` qua dev server).
+- Tab đã có token (trong session hoặc giải mã từ vault) -> nguồn là GitHub như cũ (đủ commit, manifest, tree).
+- **Đối chiếu khi vừa kết nối**: so `publish.id` trong config trên GitHub với `draft.basePublishId`:
+  - Khớp -> `baseCommit = headSha`, `published` = bản GitHub, tiếp tục thao tác.
+  - Khác (site chưa build xong, có người xuất bản từ máy khác, hoặc site chưa đọc được) và nháp **có** thay đổi -> dialog 8.8 "Tiếp tục nháp / Dùng bản đang xuất bản". "Tiếp tục nháp": cập nhật `baseCommit`, tiếp tục thao tác (diff tính lại theo bản GitHub). "Dùng bản đang xuất bản": đặt nháp theo bản GitHub, **bỏ** thao tác + toast "Đã tải bản mới nhất, kiểm tra rồi bấm Xuất bản lại".
+  - Khác và nháp **không** có thay đổi -> thay `published`/`draft` bằng bản GitHub, toast "Đã cập nhật theo bản mới nhất trên GitHub", tiếp tục thao tác.
+
+#### 2.9 Đánh giá bảo mật trung thực (Rev 4)
+
+**Kết luận ngắn:** mật khẩu đã chốt (7 ký tự, chữ thường + số, dạng "tên + số") **chỉ chống người tò mò**. Hash nằm trong bundle công khai nên ai cũng tải về dò offline được; giới hạn 5 lần sai không có tác dụng với cách dò này. Lớp bảo mật thật vẫn là **token GitHub fine-grained**. Vì vault mã hoá token bằng **chính mật khẩu này**, token "ghi nhớ" chỉ an toàn ngang mật khẩu.
+
+| Kẻ tấn công có | Làm được gì | Mức |
+|---|---|---|
+| Chỉ URL site (bất kỳ ai) | Tải bundle admin, lấy `salt` + `hash`, dò offline. Hoặc bỏ qua cổng bằng devtools (gieo `sessionStorage`), không cần dò. Sau cổng không có gì bí mật và không có token | Thấp (không lộ dữ liệu riêng, không ghi được site) |
+| Mật khẩu đã dò ra, không có máy chủ nhà | Không ghi được site (không có token) | Thấp |
+| `localStorage` máy chủ nhà (mất máy không khoá, máy dùng chung, extension độc, bản sao hồ sơ trình duyệt) **+ đã bật Ghi nhớ** | Mật khẩu đã dò sẵn từ bundle nên giải vault **ngay**, lấy token -> sửa thiệp, xoá backup, đẩy nội dung xấu lên site | **Cao**: hệ quả mới của Rev 4 |
+| XSS trên origin | Đọc token trong bộ nhớ/`sessionStorage` dù có vault hay không | Cao (không đổi so với trước); giảm bằng CSP + `textContent` |
+
+**Ước lượng thời gian dò** (PBKDF2-SHA256 600.000 vòng; 1 GPU cao cấp khoảng 1-1,5 × 10⁴ phép thử/giây, ước theo benchmark hashcat công khai chia theo số vòng; con số là bậc độ lớn, không phải cam kết):
+
+| Không gian dò | Số ứng viên | 1 GPU |
+|---|---|---|
+| Từ điển "tên không dấu + 1-4 chữ số" | ~10⁷-10⁸ | vài phút đến vài giờ |
+| Mặt nạ 4 chữ thường + 3 chữ số | 26⁴ × 10³ ≈ 4,6 × 10⁸ | ~9-13 giờ |
+| Mọi chuỗi 7 ký tự `[a-z0-9]` | 36⁷ ≈ 7,8 × 10¹⁰ | ~2 tháng (vài ngày với 10-20 GPU thuê) |
+| So sánh: 4 từ ngẫu nhiên từ danh sách 2.000 từ, hoặc 12 ký tự ngẫu nhiên | ≥ 1,6 × 10¹³ | hàng chục năm trở lên |
+
+Tăng số vòng PBKDF2 lên 3 lần chỉ làm chậm kẻ dò 3 lần (dò theo mẫu vẫn tính bằng giờ), nhưng làm đăng nhập trên điện thoại cũ lên 2-3 s. Vì vậy **không** coi tăng vòng là biện pháp chính.
+
+**Giảm thiểu và giả định mặc định đề xuất** (người duyệt chỉ cần xác nhận hoặc sửa, xem Còn mở #5-#8):
+1. **Mặc định không ghi nhớ token** (checkbox tắt; code v2.2 đang bật). Token chỉ sống trong `sessionStorage` của tab. Khi tick hiện cảnh báo: "Token sẽ được khoá bằng mật khẩu quản trị. Mật khẩu ngắn có thể bị dò ra. Chỉ ghi nhớ trên máy riêng có khoá màn hình." Nếu mật khẩu vừa nhập < 12 ký tự (chỉ biết trong bộ nhớ lúc đăng nhập, không lưu) thì cảnh báo đỏ hơn. Cái giá: mỗi phiên xuất bản phải dán token lại (khuyên lưu token trong trình quản lý mật khẩu).
+2. **Giữ PBKDF2-SHA256 600.000 vòng** cho cả hash đăng nhập và vault, salt riêng. Argon2id (WASM, ~25-30 KB gzip, tốn bộ nhớ nên GPU dò kém hiệu quả) là phương án nâng cấp nếu người duyệt muốn, **không** mặc định.
+3. **Khuyến nghị mật khẩu mạnh hơn**: ≥ 12 ký tự hoặc 4 từ. Script cảnh báo khi < 12. Giữ mật khẩu đã chốt theo decisions; README khuyên đổi trước khi bật "Ghi nhớ".
+4. **Cloudflare Access cho `/admin/*`** (email OTP, gói miễn phí): ẩn hẳn trang admin + hash khỏi internet. Đây là lớp kiểm soát truy cập thật duy nhất ở tầng web. Giả định mặc định: **khuyến nghị trong README, không bắt buộc**; người duyệt tự bật trên dashboard (không có gì trong repo). Điều kiện kỹ thuật làm ở v2.3: build Vite phải đặt entry admin và **mọi chunk chỉ admin dùng** (trong đó có `admin-password.ts`) dưới `dist/admin/` (`rollupOptions.output.entryFileNames/chunkFileNames` theo module gốc). Như vậy 1 rule `/admin/*` che được hết. Kiểm bằng test: ngoài `dist/admin/` không file nào chứa `salt`/`hash` của record.
+5. **Token**: fine-grained, 1 repo, Contents RW, hạn sau cưới ≥ 1 tháng (2.2). README ghi cách **thu hồi token** ngay khi nghi lộ (GitHub > Settings > Developer settings > Fine-grained tokens > Revoke); thu hồi có hiệu lực ngay và vô hiệu mọi vault.
+6. Khoá 30 s sau 5 lần sai **chỉ là UX** (chặn đoán tay trên giao diện), ghi rõ trong code/README.
+7. Lưu ý: `decisions.md` đang ghi mật khẩu dạng rõ. Nếu commit nguyên văn thì yêu cầu "không có chuỗi rõ trong repo" chưa đạt (repo private nên rủi ro thấp hơn, nhưng vẫn là lộ). Xem Còn mở #5.
 
 ### 3. Dữ liệu (không có DB)
 
@@ -156,23 +315,28 @@ Mọi thông điệp dịch sang câu dễ hiểu, mã thô chỉ nằm trong "C
 | RSVP / Guestbook | Google Sheet (Apps Script) | - | Khách |
 | **Nháp config** | **IndexedDB** `wp-admin` store `draft` | - | Admin |
 | **Ảnh/nhạc nháp chưa publish, ảnh lấy từ backup** | **IndexedDB** `wp-admin` store `blobs` | - | Admin |
-| Vault token | `localStorage` `wp_admin_vault_v1` (ciphertext) | - | Admin |
+| Vault token **(Rev 4: v2, khoá bằng mật khẩu đăng nhập)** | `localStorage` `wp_admin_vault_v2` (ciphertext); `wp_admin_vault_v1` cũ bị xoá | - | Admin |
 | Owner/repo/branch | `localStorage` `wp_admin_conn_v1` | - | Admin |
 | Danh sách khách + lựa chọn "Mã hoá link" | `localStorage` `wp_admin_guests_v1` + export CSV | **Không lên repo** | Admin |
+| **(Rev 4)** Hash mật khẩu đăng nhập | `src/admin/auth/admin-password.ts` (công khai trong bundle admin) | Có (trong bundle) | Script `admin:password` |
+| **(Rev 4)** Phiên đăng nhập | `sessionStorage` `wp_admin_auth_v1` | - | Admin |
+| Token phiên + hạn | `sessionStorage` `wp_admin_session_v1` | - | Admin |
+| Bộ đếm sai / khoá 30 s | `localStorage` `wp_admin_lock_v1` | - | Admin |
+| Chế độ xuất bản trong phiên (dev/tải về) | `sessionStorage` `wp_admin_mode_v1` | - | Admin |
 
 **Tên file có hash** (`hero.3f9a1c2e.webp`): "ghi đè ảnh" hiểu theo **slot** - slot nhận file mới, file cũ chuyển vào backup và xoá khỏi `public/`. Cho phép `Cache-Control: immutable`.
 
 #### 3.2 IndexedDB `wp-admin` (version 1)
 | Store | Key | Value |
 |---|---|---|
-| `draft` | `"current"` | `{ config: WeddingConfig, baseCommit: "<sha nhánh lúc tải>", basePublishId: "...", updatedAt: "ISO", changeCount: 3 }` |
+| `draft` | `"current"` | `{ config: WeddingConfig, baseCommit: "<sha nhánh lúc tải>" \| null, basePublishId: "...", updatedAt: "ISO", changeCount: 3 }` - **(Rev 4)** `baseCommit = null` khi nháp dựng từ site cùng origin (chưa có token) |
 | `blobs` | SHA-256 hex của file | `{ blob: Blob, mime, slot, origin: "upload" \| "backup", createdAt }` |
 | `published` | `"current"` | Bản config đang xuất bản (snapshot lúc tải/sau publish) - nguồn cho "Hoàn tác thay đổi nháp", "Hoàn tác tất cả", diff |
 
 - Autosave nháp debounce 800 ms (design 8.8). Undo/redo stack (nút "Hoàn tác" top bar) chỉ trong **bộ nhớ phiên**, tối đa 50 bước.
 - Ảnh trong nháp trỏ `src` tới đường dẫn có hash cuối cùng (`content/images/hero/hero.<hash8>.webp`); preview map đường dẫn đó sang `blob:` URL từ store `blobs`.
 - Gọi `navigator.storage.persist()` khi vào admin (giảm nguy cơ bị trình duyệt xoá). GC store `blobs`: xoá blob không còn được nháp tham chiếu sau mỗi publish thành công / Hoàn tác tất cả.
-- Khi mở admin: nếu `draft.baseCommit` khác SHA nhánh hiện tại và nháp có thay đổi -> hỏi "Tiếp tục nháp / Dùng bản đang xuất bản" (design 8.8).
+- Khi mở admin: nếu `draft.baseCommit` khác SHA nhánh hiện tại và nháp có thay đổi -> hỏi "Tiếp tục nháp / Dùng bản đang xuất bản" (design 8.8). **(Rev 4)** Khi chưa có token: so `draft.basePublishId` với `publish.id` của site; khác và có thay đổi -> cùng dialog. Khi kết nối sau đó: đối chiếu theo 2.8.3.
 
 #### 3.3 Backup manifest
 ```json
@@ -198,9 +362,9 @@ Mọi thông điệp dịch sang câu dễ hiểu, mã thô chỉ nằm trong "C
 | Thao tác | Ở đâu | Phạm vi | Ghi lên site ngay? | Cơ chế | Đảo ngược |
 |---|---|---|---|---|---|
 | **Hoàn tác thay đổi nháp** | ImageSlot | 1 slot | Không | `draft.config[slot] = published.config[slot]`; blob nháp giữ tới GC | Toast [Làm lại] 5 s (khôi phục giá trị nháp trước đó từ bộ nhớ) |
-| **Lấy lại ảnh trước đó** | ImageSlot; chỉ hiện khi manifest có mục `existed: true` cho slot | 1 slot | Không, có hiệu lực khi Xuất bản | Đọc `ImageRef` của slot trong `backup/files/public/content/config.json` (metadata w/h/alt/lqip) + tải blob qua `GET /git/blobs/{sha}` (sha lấy từ tree, 3.5) -> lưu `blobs` (`origin: "backup"`) -> gán vào nháp | "Hoàn tác thay đổi nháp" |
+| **Lấy lại ảnh trước đó** | ImageSlot; chỉ hiện khi manifest có mục `existed: true` cho slot | 1 slot | Không, có hiệu lực khi Xuất bản | Đọc `ImageRef` của slot trong `backup/files/public/content/config.json` (metadata w/h/alt/lqip) + tải blob qua `GET /git/blobs/{sha}` (sha lấy từ tree, 3.5) -> lưu `blobs` (`origin: "backup"`) -> gán vào nháp. **(Rev 4)** Cần GitHub (2.8.1) | "Hoàn tác thay đổi nháp" |
 | **Hoàn tác tất cả** | Top bar (8.8) | Toàn bộ nháp | Không | `draft = published`, GC blob; dialog xác nhận (không đảo ngược) | Không |
-| **Khôi phục bản xuất bản trước** | Sao lưu/Khôi phục (8.10) | Cả trang: config + mọi ảnh/nhạc | **Có**, 1 commit | **Swap** backup <-> hiện tại (3.5) | **Bấm lại = làm lại** (swap lần nữa) |
+| **Khôi phục bản xuất bản trước** | Sao lưu/Khôi phục (8.10) | Cả trang: config + mọi ảnh/nhạc | **Có**, 1 commit | **Swap** backup <-> hiện tại (3.5). **(Rev 4)** Cần GitHub (2.8.1) | **Bấm lại = làm lại** (swap lần nữa) |
 
 **Nháp sau khi Khôi phục** (design 8.10, đã chốt theo giả định design): nếu còn nháp chưa xuất bản, dialog bước 2 cảnh báo và có nút **[Tải nháp về máy (.json)]** (export `draft.config`; blob ảnh nháp vẫn giữ trong IndexedDB tới lần publish thành công kế tiếp, nên import lại file .json trên cùng máy sẽ có đủ ảnh). Sau khi restore commit thành công: `published = config vừa khôi phục`, `draft = published`, `baseCommit = commit mới`, xoá undo stack.
 
@@ -212,7 +376,7 @@ Mọi lần đọc đều **cố định tại 1 commit** để nhất quán:
 4. Đọc `public/content/config.json` và `backup/manifest.json` bằng `GET /git/blobs/{sha}` (base64).
 
 **Publish** (1 commit):
-1. Validate + checklist + diff + dialog xác nhận (design 8.8 v3).
+1. Validate + checklist + diff + dialog xác nhận (design 8.8 v3). **(Rev 4)** Trước bước này: `requireGitHub('publish')` + đối chiếu 2.8.3 nếu vừa kết nối.
 2. Tính tập file thay đổi: config mới; ảnh/nhạc mới (blob trong IndexedDB); ảnh/nhạc bị bỏ khỏi config.
 3. `POST /git/blobs` chỉ cho **file mới thật sự** (ảnh/nhạc base64, `config.json`, `manifest.json`); ảnh lấy từ backup đã có sha trong tree -> **tái dùng sha, không upload lại**. Tiến trình "Đang tải 3/7 tệp…".
 4. `POST /git/trees` với `base_tree = treeSha`, các entry:
@@ -251,7 +415,7 @@ Mọi lần đọc đều **cố định tại 1 commit** để nhất quán:
 | POST | `/repos/{owner}/{repo}/git/commits` | Commit publish/restore |
 | PATCH | `/repos/{owner}/{repo}/git/refs/heads/{branch}` | Cập nhật nhánh, `force: false` |
 
-Lỗi: bảng 2.5.
+Lỗi: bảng 2.5. **(Rev 4)** Không request nào tới `api.github.com` trước khi người dùng bấm một thao tác ở 2.8.1 (trừ khi tab đã có token trong session).
 
 #### 4.2 `StorageAdapter`
 ```ts
@@ -266,6 +430,28 @@ interface StorageAdapter {
 }
 type ConnectReport = { steps: { id: 'token-repo' | 'branch' | 'write' | 'expiry'; status: 'ok' | 'warn' | 'error'; message: string; detail?: string }[]; expiresAt: string | null; branches?: string[] };
 ```
+
+**(Rev 4)** Bổ sung (không đổi interface trên):
+```ts
+// src/admin/auth/gate.ts
+interface PasswordRecord { v: 1; kdf: 'PBKDF2-SHA256'; iter: number; salt: string; hash: string }  // = ADMIN_PASSWORD
+function verifyPassword(pw: string, rec: PasswordRecord): Promise<boolean>;
+function login(pw: string, rec: PasswordRecord, guard: UnlockGuard):
+  Promise<{ ok: true; vaultKey: Promise<{ salt: Uint8Array; key: CryptoKey }> } | { ok: false; lockedMs: number }>;
+interface AuthSession { v: 1; at: string; h: string }  // sessionStorage wp_admin_auth_v1
+
+// src/admin/storage/site-source.ts - đọc bản xuất bản cùng origin khi chưa có token
+interface SitePublishedSource {
+  load(): Promise<{ status: 'ok'; config: unknown; publishId: string } | { status: 'missing' } | { status: 'error'; message: string }>;
+}
+
+// EditorStore
+type GitHubIntent = 'publish' | 'restore' | 'recover-image' | 'backup-view';
+requireGitHub(intent: GitHubIntent): Promise<StorageAdapter>;   // reject GitHubCancelled khi người dùng Huỷ overlay
+source: 'github' | 'site' | 'dev' | 'download';                 // nguồn "bản đang xuất bản" hiện tại
+commit: string | null;                                          // null khi source = 'site'
+```
+Vault v2 (2.4): `createVault(token, vaultKey, conn, expiresAt, pwTag)`, `openVault(rec, vaultKey)` nhận `CryptoKey` đã dẫn xuất (không nhận chuỗi mật khẩu), cộng hàm `deriveVaultKey(pw, salt)` dùng ở login và dialog nhập lại mật khẩu.
 
 #### 4.3 Preview `postMessage` (admin <-> iframe guest, cùng origin)
 Admin -> guest:
@@ -523,6 +709,8 @@ type ThemeOr<T> = 'theme' | T;
 }
 ```
 
+> **(Rev 4) Ghi chú đồng bộ**: từ v2.1 (decisions 2026-10-08), mặc định `effects.autoScroll` là `{ "enabled": true, "speed": 45, "startDelayMs": 2500, "mode": "flow", "dwellMs": 1200 }` và `cover` có thêm `envelope: { style, color, guestOnFront, liner }`. Nguồn chuẩn cho các field này là `src/shared/config/defaults.ts` + `frontend-report-v2.1.md`; khối JSON trên chưa cập nhật phần đó.
+
 #### 5.6 Enum đầy đủ (gộp Phụ lục B design)
 | Field | Enum | Mặc định |
 |---|---|---|
@@ -647,19 +835,20 @@ wedding-page/
 │   └── admin/
 │       ├── main.tsx, app.tsx, routes/ (login, connect, overview, general, theme-gallery, fonts, effects, music, sections, content/*, media, guest-links, backup)
 │       ├── form/, preview/ (iframe, fx-toolbar)
-│       ├── storage/ (adapter.ts, github.ts, github-errors.ts, dev-server.ts, download.ts, backup-plan.ts, draft-db.ts)
+│       ├── storage/ (adapter.ts, github.ts, github-errors.ts, dev-server.ts, download.ts, backup-plan.ts, draft-db.ts, site-source.ts [Rev 4])
 │       ├── media/ (image-pipeline.ts, crop.tsx, image-slot.tsx, audio.ts)
-│       └── auth/ (token-vault.ts, connect-check.ts)
+│       └── auth/ (vault.ts, connect-check.ts, gate.ts [Rev 4], admin-password.ts [Rev 4, sinh bởi script])
 ├── public/
 │   ├── content/ (config.json, images/<slot>/, audio/)
 │   ├── ornaments/<set>.svg            # 11 sprite, chỉ tải bộ đang dùng
 │   ├── theme-assets/ (watercolor-*.webp, flower-gate-*.webp, ...)   # tải lười
 │   ├── _redirects, _headers
 ├── backup/ (manifest.json, files/...) # KHÔNG deploy
-├── scripts/ (vite-plugins/inject-config-og.ts, vite-plugins/dev-admin-save.ts, check-budget.ts)
+├── scripts/ (vite-plugins/inject-config-og.ts, vite-plugins/dev-admin-save.ts, check-budget.ts, set-admin-password.mjs [Rev 4])
 ├── apps-script/ (Code.gs, README.md)
 └── docs/
 ```
+Đường dẫn thực tế trong code có thể khác bảng trên (vd `src/admin/screens/`, `src/admin/editor/routes/`); code là nguồn chuẩn cho vị trí file.
 
 ### 7. Data Flow
 
@@ -669,11 +858,13 @@ wedding-page/
 3. Khách chạm -> **cùng handler đồng bộ**: `audio.play()` -> chạy openStyle (chạm lần 2 = tua nhanh 300 ms) -> gỡ cover, bỏ `inert`, focus hero -> burst `onOpen` -> khởi động `ParticleField` (scope/density/exclusion), reveal, micro; đo FPS 2 giây.
 4. Section render theo `sections.items`; ảnh lazy; bản đồ bấm mới tải; QR, lightbox, map, fireworks, wish-fly... là chunk lazy; RSVP/guestbook gọi Apps Script.
 
-**Admin - kết nối & mở khoá:** 8.2/8.2b -> 2.3/2.4 -> `loadSnapshot()` -> so nháp IndexedDB với commit hiện tại.
+**Admin - đăng nhập (Rev 4):** `/admin` -> phiên `wp_admin_auth_v1` hợp lệ? -> không: Login (2.7) -> đúng -> ghi phiên -> (nền) dẫn xuất khoá vault, giải vault nếu có (2.4) -> Editor.
+
+**Admin - nạp bản đang xuất bản (Rev 4):** có token -> `GitHubAdapter.loadSnapshot()`; chưa có -> `SitePublishedSource.load()` (2.8.3) -> so nháp IndexedDB (`basePublishId`/`baseCommit`) -> dialog 8.8 nếu lệch và có thay đổi.
 
 **Admin - sửa & xem trước:** form/gallery -> state -> autosave IndexedDB (800 ms) -> `wp:preview-config` (150 ms, ảnh mới qua `blob:`) -> chọn hiệu ứng thì gửi `fx:replay`.
 
-**Admin - publish/restore:** mục 3.5 -> CF Pages build -> poll `publish.id` -> "Đã lên trang".
+**Admin - publish/restore:** **(Rev 4)** `requireGitHub(intent)` (2.8.2: dùng token có sẵn / nhập lại mật khẩu cho vault / overlay Kết nối) -> đối chiếu 2.8.3 -> mục 3.5 -> CF Pages build -> poll `publish.id` -> "Đã lên trang".
 
 ### 8. Business Logic
 
@@ -687,6 +878,7 @@ wedding-page/
 - Font tên trên cover chờ `document.fonts.load()` tối đa 1.5 s; font khác `swap`.
 - Nhạc: `<audio preload="none">`; cover hiện và không `saveData` -> `preload="auto"`. `play()` đồng bộ trong handler; reject -> nút nhạc "Chạm để bật nhạc". Fade-in 1.5 s bằng `GainNode`. `loop`, `currentTime = startAt`. `visibilitychange`/`pagehide` -> pause, nhớ `wasPlaying`. Media Session API. File lỗi -> ẩn nút.
 - Preview: không autoplay; hỗ trợ `skipCover`, `replayCover`, `fx:replay`.
+- **(Rev 4) Phong bì - sửa ở v2.3 theo `design-review-envelopes.md`** (E01–E11; E12 để v4): tên khách trên mặt phong bì bỏ `line-clamp`/`overflow:hidden`, tự giảm cỡ 22 -> 19 -> 17 -> 15 px (≤ 2 dòng ở 3 bậc đầu, tối đa 3 dòng ở 15 px), `line-height 1.3` + `padding-block .08em`, `.env-addr` bắt đầu từ `tip + seal × .42` (E01); kraft: thẻ tên nằm trên dây, dây dừng ở mép thẻ, thẻ 72% × 40% (E02); "vùng nhãn" tĩnh sau chữ địa chỉ (E03); mờ `.cv-head` sớm trong `[flapAt + 200, pullAt + 250]` (E04); classic/minimal/lace trên theme tối pha 14% accent vào giấy + viền sáng, lace mép ren ≥ 2:1 (E06); velvet "Theo theme" trên theme sáng dùng quầng `--c-primary` .10 (E07); minimal bỏ "·" treo khi nhiều dòng (E08); seal theo bề rộng phong bì `clamp(52px, env-w × .165, 92px)` (E09). Chấp nhận hình nắp mới (mũi nắp 55.5%, túi từ góc).
 
 #### 8.2 Tên khách từ URL (`src/shared/guest-name.ts`)
 Ưu tiên: path `/{pathPrefix}/<slug>` -> query `?{queryParam}=` -> `guest.fallbackName`.
@@ -698,7 +890,7 @@ wedding-page/
 6. Viết hoa **chỉ ký tự đầu** (`toLocaleUpperCase('vi-VN')`).
 7. Rỗng -> `fallbackName`; dòng "Kính gửi:" giữ.
 8. Áp `template`, `{guest}` trong `announcement.inviteLine` - thay chuỗi thuần.
-9. Chỉ `textContent`. Auto-fit (> ~22 ký tự: 24 -> 19 px, tối đa 2 dòng); không dùng font script.
+9. Chỉ `textContent`. Auto-fit (> ~22 ký tự: 24 -> 19 px, tối đa 2 dòng); không dùng font script. **(Rev 4)** Riêng tên trên mặt phong bì (`.env-guest`) theo E01 ở 8.1: 22 -> 19 -> 17 -> 15 px, tối đa 3 dòng ở 15 px, không bao giờ cắt dấu/cắt chữ.
 10. Điền sẵn ô tên RSVP và Lời chúc.
 
 Ví dụ: `?to=gia-đình-anh-Mạnh` -> "Gia đình anh Mạnh"; `?to=Lê--Nguyễn-Hà` -> "Lê-Nguyễn Hà"; `?to=<script>` -> "Script"; `?to=` -> "Quý khách".
@@ -719,7 +911,8 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 - **Pháo hoa đếm ngược `every-view`**: bắn khi section ≥ 50% viewport liên tục 400 ms; lên đạn lại chỉ khi section < 10% rồi vào lại; cooldown ≥ 15 s tính từ lúc chùm cuối tắt (không xếp hàng); số chùm 1×24 / 3×40 / 5×40 (máy yếu luôn 1×24, DPR 1); không bắn khi `off`/reduced-motion (chỉ chip chữ tĩnh)/tab ẩn/lightbox-sheet mở/focus trong ô nhập; gốc nổ không đè 4 ô số; < 3 lần nháy/giây. `wedding-day`: chỉ ngày cưới hoặc khi đồng hồ về 0 trong lúc xem, 1 lần/phiên (`sessionStorage`).
 - **Reveal**: IntersectionObserver một lần, class `is-in`; gói -> 4 vai trò theo bảng design 5.8; `low` -> mọi gói rơi về `gentle`; `medium` bỏ `blur-in` và `parallax-layers`. `split-chars` theo 7 quy tắc an toàn tiếng Việt của design (NFC, `Intl.Segmenter` grapheme, bọc theo từ, `padding-block:.2em`, không áp font script -> `wipe`, `sr-only` + `aria-hidden`). `wipe` tối đa 3 phần tử cùng lúc. `blur-in` chỉ ≥ 1024 px + `high`, tối đa 3 phần tử.
 - **Micro** (design 5.9): CSS là chính; `wish-fly`, `photo-tilt` (chỉ `pointer: fine`), `rsvp-success`, `countdown-odometer`, `fireworks` là chunk lazy. `cta-breathe`, `btn-shine`, `heartbeat` dừng sau ≤ 5 s / 3 lần (WCAG 2.2.2).
-- Chỉ animate `transform`/`opacity` (ngoại lệ có ghi chi phí: `clip-path`, `blur-in`, canvas). `will-change` ≤ 6 phần tử. Texture không bao giờ animate. `autoScroll` mặc định tắt.
+- Chỉ animate `transform`/`opacity` (ngoại lệ có ghi chi phí: `clip-path`, `blur-in`, canvas). `will-change` ≤ 6 phần tử. Texture không bao giờ animate. ~~`autoScroll` mặc định tắt~~ **(Rev 4, theo decisions 2026-10-08)**: tự cuộn **bật** mặc định, 45px/s, bắt đầu sau 2.5 s, `flow` dừng 1.2 s đầu mỗi section; khách tác động -> dừng hẳn, có nút Tiếp tục.
+- **(Rev 4) Tự cuộn + nút nổi - sửa ở v2.3**: khi đã dừng, nút "Tiếp tục tự cuộn" **ẩn trong lúc khách tự cuộn** (opacity 0 + `pointer-events:none`, 160 ms), hiện lại sau khi đứng yên 1.2 s, ẩn hẳn khi focus trong form; khi đang chạy giữ như cũ (E05). Tooltip nhạc đặt bên trái nút nhạc (`right: 60px; bottom: 6px`) để không trùng nút tự cuộn (E10). Pill giữ `is-mini` suốt lúc tự cuộn chạy, kể cả lúc dừng 1.2 s ở đầu section (E11).
 
 #### 8.5 Events, bản đồ, lịch
 - "Chỉ đường": `mapUrl` tab mới; trống thì `https://www.google.com/maps/search/?api=1&query=<address>`.
@@ -740,6 +933,7 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 - Timeout 15 s; lỗi giữ nội dung + "Thử lại".
 
 #### 8.8 Admin
+- **(Rev 4) Đăng nhập & GitHub**: cổng mật khẩu 2.7; token chỉ hỏi khi cần 2.8; vault 2.4; top bar có chỉ báo nguồn "Đang xem bản trên site" / "Đã kết nối GitHub: owner/repo" và nút Đăng xuất.
 - **Thẩm mỹ & IA**: design 8.1, 8.3 (nền `#F7F6F3`, primary admin `#2F4A43`). "Chỉnh JSON nâng cao" cuối trang.
 - **Responsive**: ≥ 1200 px 3 cột; 1024-1199 px preview ẩn/hiện; < 768 px bottom tab `Chỉnh sửa · Xem trước · Thêm`, input 48 px.
 - **Gallery theme (8.12)**: 12 thẻ HTML/CSS thật (biến CSS scoped theo token preset), tên cặp đôi thật; chip lọc theo `tags`; `role="radiogroup"`; chạm = áp vào nháp + toast Hoàn tác; dialog "Giữ phần tôi đã chỉnh / Dùng trọn gói" (5.2); khối "Thành phần của theme" hiển thị nhóm đang "Theo theme" hay "Đã chỉnh riêng". Mobile: 2 cột + mini preview dính 38vh. Font thẻ tải kiểu `&text=` (9.3).
@@ -747,7 +941,7 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 - **Preview**: khung 375/414/desktop, làm mới, "Bỏ qua cover", "Phát lại hiệu ứng mở thiệp", "Xem như khách"; sửa field -> cuộn tới + highlight.
 - **Nháp & trạng thái**: top bar theo design 8.8; "Hoàn tác" (undo phiên) + "Hoàn tác tất cả"; `beforeunload` khi còn thay đổi; banner token sắp hết hạn (2.6).
 - **Checklist trước xuất bản**: lỗi nặng chặn (schema không hợp lệ, thiếu ngày sự kiện chính, text/bg < 4.5:1, URL không `https:`, `bankBin`/STK sai định dạng khi `showBankInfo`); cảnh báo nhẹ (ảnh thiếu alt, section bật nhưng rỗng, primary không đạt AA trước auto-fix, `meta.siteUrl` trống, token hết hạn trước ngày cưới, ảnh hero quá sáng với theme tối - độ sáng trung bình > 70%, tổ hợp hiệu ứng nặng). Bước xác nhận ghi câu "Trạng thái trang hiện tại sẽ được lưu làm bản sao lưu (thay bản sao lưu cũ ngày …)".
-- **ImageSlot + pipeline** (design 8.7 v3): 3 khối (Trong bản nháp / Đang xuất bản / Ảnh trước lần xuất bản ... từ bản sao lưu) + nút theo bảng 3.4; link "Khôi phục cả trang? Xem Sao lưu/Khôi phục".
+- **ImageSlot + pipeline** (design 8.7 v3): 3 khối (Trong bản nháp / Đang xuất bản / Ảnh trước lần xuất bản ... từ bản sao lưu) + nút theo bảng 3.4; link "Khôi phục cả trang? Xem Sao lưu/Khôi phục". **(Rev 4)** Khối thứ 3 cần GitHub (2.8.1).
   - Nhận JPG/PNG/WEBP ≤ 20 MB; HEIC thử `createImageBitmap`, thất bại -> "Hãy chọn ảnh JPG/PNG".
   - Crop theo tỉ lệ slot (hero 9:16 + focal point, chân dung 4:5, gia đình 3:2, OG 1.91:1, album tự do); xoay 90°, slider zoom.
   - `createImageBitmap(file, { imageOrientation: 'from-image' })` -> canvas -> bỏ EXIF/GPS.
@@ -757,7 +951,7 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
   - "4.2MB thành 236KB, WebP 1600px"; vào nháp (IndexedDB) + preview ngay.
   - Album: hàng đợi tuần tự, kéo thả + ←→, xoá có Hoàn tác 5 s; ảnh album đã xoá ở lần publish gần nhất chỉ lấy lại bằng Khôi phục cả trang.
 - **Upload nhạc**: mp3/m4a ≤ 8 MB, khuyến nghị ≤ 96-128 kbps, cảnh báo > 5 MB; nghe thử, chọn `startAt`.
-- **Sao lưu/Khôi phục (8.10)**: hiển thị manifest (thời điểm, thumb cũ -> mới qua `readAsset`, số thay đổi nội dung) + dialog 2 bước + trạng thái đang khôi phục / "Làm lại (quay về bản vừa thay)" / rỗng / lỗi xung đột; "Nhập từ file" nạp vào **nháp** (diff trước).
+- **Sao lưu/Khôi phục (8.10)**: hiển thị manifest (thời điểm, thumb cũ -> mới qua `readAsset`, số thay đổi nội dung) + dialog 2 bước + trạng thái đang khôi phục / "Làm lại (quay về bản vừa thay)" / rỗng / lỗi xung đột; "Nhập từ file" nạp vào **nháp** (diff trước). **(Rev 4)** Chưa có token -> trạng thái "Kết nối GitHub để xem bản sao lưu" (2.8.1).
 - **Export/Import**: export `config.json` hoặc zip kèm asset; import `.json` / `config.js` cũ -> migrate -> validate -> diff -> nháp.
 - **Kiểm tra kết nối Apps Script**: `?action=ping` ở trang Chung.
 
@@ -777,7 +971,7 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 | Asset riêng openStyle/ornament raster | ≤ 80 KB/ảnh | flower-gate, watercolor; chỉ tải khi được chọn |
 | Font ban đầu | ≤ 180 KB woff2 | 3 family đang chọn, subset vietnamese + latin; preload ≤ 2 file (font cover) |
 | **Trang ban đầu tổng** | **≤ 900 KB** | Không tính nhạc, album ngoài màn |
-| Admin JS ban đầu | ≤ 150 KB | Không ảnh hưởng khách; route gallery/hiệu ứng/crop lazy |
+| Admin JS ban đầu | ≤ 150 KB | Không ảnh hưởng khách; route gallery/hiệu ứng/crop lazy. **(Rev 4)** Màn Login + gate ≤ 15 KB gzip trước khi tải chunk Editor |
 
 **Chiến lược code-split / lazy-load:**
 1. **Theo theme**: guest không import registry 12 preset; plugin build resolve sẵn (`#wp-resolved` + CSS vars inline). CSS của từng `photoFrame`, `divider`, `texture` là file riêng import động theo giá trị đã resolve; plugin thêm `<link rel="stylesheet">`/`preload` cho đúng giá trị đang dùng (tránh FOUC).
@@ -786,6 +980,7 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 4. **Theo tính năng**: QR, lightbox, map, `.ics`, Apps Script client, wish-fly, odometer, split-chars, photo-tilt (chỉ `pointer: fine`) đều dynamic import.
 5. **Preview mode**: mọi module vẫn được build ra (admin đổi gì cũng import được), nhưng khách chỉ tải phần đang dùng.
 6. Rollup `manualChunks` gom phần dùng chung giữa các module openStyle (helpers WAAPI, 3D) thành 1 chunk ≤ 3 KB để tránh lặp.
+7. **(Rev 4)** Chunk chỉ admin dùng (gồm `admin-password.ts`) xuất dưới `dist/admin/` để 1 rule Cloudflare Access `/admin/*` che được (2.9).
 
 **Chỉ số Web Vitals**: LCP < 2.5 s (4G), **CLS < 0.05**, INP < 200 ms trên Android tầm thấp. Ảnh: `loading="lazy"` + `decoding="async"` ngoài màn đầu; hero `fetchpriority="high"` + preload; album dùng `thumb`; placeholder `dominantColor`.
 
@@ -799,7 +994,7 @@ Theo 8.4: chỉ `transform`/`opacity`; canvas ≤ 2 ms/frame; dừng khi tab ẩ
 - QA: chuỗi `Nguyễn Thuỳ Linh · Đặng Hữu Phước · Hường · Quỳnh · Ngọc Ẩn · ẦẪỂỖỮ` cho từng theme trước khi bật theme đó (capabilities); script line-height ≥ 1.35; không `overflow:hidden`/`clip-path` sát chữ có dấu.
 
 #### 9.4 Cache, OG
-- `_headers`: `/content/images/*`, `/content/audio/*`, `/assets/*`, `/fonts/*`, `/ornaments/*`, `/theme-assets/*` -> `public, max-age=31536000, immutable` (ornament/theme-assets tên có hash do Vite emit hoặc đổi tên khi sửa); `/index.html`, `/content/config.json` -> `no-cache`; `/admin/*` -> `X-Robots-Tag: noindex` + `no-cache`.
+- `_headers`: `/content/images/*`, `/content/audio/*`, `/assets/*`, `/fonts/*`, `/ornaments/*`, `/theme-assets/*` -> `public, max-age=31536000, immutable` (ornament/theme-assets tên có hash do Vite emit hoặc đổi tên khi sửa); `/index.html`, `/content/config.json` -> `no-cache`; `/admin/*` -> `X-Robots-Tag: noindex` + `no-cache`. **(Rev 4)** Chunk admin có hash dưới `/admin/assets/*` -> `immutable` + `noindex`.
 - OG: plugin ghi `<title>`, `description`, `og:*` (URL tuyệt đối từ `meta.siteUrl`), `twitter:card`. Không cá nhân hoá theo tên khách. Chốt OG trước khi gửi link.
 - Kiểm thử bắt buộc: webview **Zalo, Facebook, Messenger**, Safari iOS, Chrome Android tầm thấp.
 
@@ -808,9 +1003,9 @@ Theo 8.4: chỉ `transform`/`opacity`; canvas ≤ 2 ms/frame; dừng khi tab ẩ
 ## 👥 Phân công
 
 - **Backend (backend-developer)**: **Không cần** - không có backend server. Phần "server" duy nhất là Google Apps Script (`apps-script/Code.gs`, ~200 dòng JS). **Đề xuất frontend-developer viết** (cùng ngôn ngữ, cùng nắm contract 4.4).
-- **Frontend (frontend-developer)**: guest app (vanilla TS), admin app (Preact), shared, Vite plugins, ngân sách bundle, `_headers`/`_redirects`, Apps Script, README (tạo PAT theo 2.2, Cloudflare Pages, Sheet + Apps Script). Theo Kế hoạch.
-- **Cần ui-ux-designer: Có** - cung cấp asset theo giai đoạn: 11 ornament sprite (mỗi bộ 6 phần, ≤ 12 KB gz), sprite 21 loại hạt (SVG), asset kiểu mở (phong bì, dấu sáp, cổng hoa WebP, cửa trăng, hộp quà...), poster tĩnh 17 kiểu mở cho gallery admin, ảnh minh hoạ các bước tạo token (8.2b); review visual cuối mỗi giai đoạn; duyệt chuỗi dấu tiếng Việt cho từng theme.
-- **Có thể làm song song BE và FE: Có** - schema, enum, contract (StorageAdapter, postMessage + `fx:*`, Apps Script, manifest) đã đủ rõ; Apps Script (v3) làm song song v2; asset của designer làm song song code engine.
+- **Frontend (frontend-developer)**: guest app (vanilla TS), admin app (Preact), shared, Vite plugins, ngân sách bundle, `_headers`/`_redirects`, Apps Script, README (tạo PAT theo 2.2, Cloudflare Pages, Sheet + Apps Script). Theo Kế hoạch. **(Rev 4) v2.3**: cổng mật khẩu + script đổi mật khẩu (2.7), `requireGitHub` + overlay Kết nối + nguồn site (2.8), vault v2 (2.4), tách chunk admin dưới `/admin/` (2.9), README mục bảo mật (Cloudflare Access, thu hồi token, đổi mật khẩu); sửa E01–E11 phong bì/tự cuộn.
+- **Cần ui-ux-designer: Có** - cung cấp asset theo giai đoạn: 11 ornament sprite (mỗi bộ 6 phần, ≤ 12 KB gz), sprite 21 loại hạt (SVG), asset kiểu mở (phong bì, dấu sáp, cổng hoa WebP, cửa trăng, hộp quà...), poster tĩnh 17 kiểu mở cho gallery admin, ảnh minh hoạ các bước tạo token (8.2b); review visual cuối mỗi giai đoạn; duyệt chuỗi dấu tiếng Việt cho từng theme. **(Rev 4) v2.3**: review lại E01–E11 trên bản sửa; xem copy màn Login, overlay Kết nối, dialog nhập lại mật khẩu và cảnh báo "Ghi nhớ" (không cần thiết kế mới, dùng lại thành phần 8.2/8.2b); cập nhật SVG nắp trong design.md 3.2 khi được giao.
+- **Có thể làm song song BE và FE: Có** - schema, enum, contract (StorageAdapter, postMessage + `fx:*`, Apps Script, manifest) đã đủ rõ; Apps Script (v3) làm song song v2; asset của designer làm song song code engine. **(Rev 4)** Trong v2.3, phần login/GitHub và phần E01–E11 độc lập, làm song song được.
 
 ---
 
@@ -818,25 +1013,29 @@ Theo 8.4: chỉ `transform`/`opacity`; canvas ≤ 2 ms/frame; dừng khi tab ẩ
 
 Nguyên tắc: **schema v1 đầy đủ từ v1** (mọi enum hợp lệ, migrate/validate đủ). Giá trị chưa có module ở giai đoạn hiện tại được khai báo trong `src/shared/capabilities.ts` kèm fallback (vd openStyle chưa có -> `envelope`; theme chưa có -> `tram-vang`; loại hạt chưa có -> `petal-rose`; gói reveal chưa có -> `soft`); admin chỉ hiển thị lựa chọn đã có. Nhờ vậy thêm theme/hiệu ứng ở giai đoạn sau **không đổi schema, không cần migration**.
 
+**(Rev 4)** Các giai đoạn trung gian đã làm: **v2.1** (phong bì mới, 6 mẫu phong thư, tự cuộn, sửa visual v1; commit `f0a6465`, `frontend-report-v2.1.md`), **v2.2** (sửa điểm admin sau review; commit `55b8b69`, `frontend-report-v2.2.md`). **v2.3** bên dưới làm trên `feat/20261007-wedding-page-v2.3`.
+
 | Giai đoạn | Phạm vi | Tiêu chí hoàn thành (đo được) | Phụ trách |
 |---|---|---|---|
 | **v1 - Khung + schema + guest app lõi** | Scaffold Vite multi-page + TS strict; `src/shared` đầy đủ (types, enums 5.6, defaults, migrations v0->v1, merge, **registry đủ 12 preset dạng dữ liệu**, resolver, derive OKLCH **sáng + tối**, contrast, font registry 28 family, guest-name, section meta, ics, vietqr, capabilities); guest: 14 section, floating UI, lightbox, countdown `flip` + `simple` + milestones, map lazy, gift sheet + VietQR, music player; plugin `inject-config-og` (config + resolved + CSS vars + OG + modulepreload/preload); `_redirects`, `_headers`, `size-limit`. **Theme bật: 3** - `tram-vang` ★, `son-do` (ornament truyền thống), `dem-nhung` (kiểm chứng nhánh tối). **Kiểu mở: 3** - `envelope` ★, `card-flip`, `fade-zoom` (+ `none` = nhánh reduced-motion). **Hạt: engine `ParticleField` đủ 4 lớp bảo vệ, `scope: all`** + 5 loại (`petal-rose`, `heart`, `petal-peach`, `gold-dust`, `firefly`); burst `petals` + `fireworks-soft` (`every-view`); reveal gói `soft` + `gentle`; micro `btn-press`, `cta-breathe`, `copy-morph`, `segmented-slide`; ma trận cường độ 4 cấp + tự hạ cấp + reduced-motion + nút khách | `npm run build` ra static chạy trên CF Pages; sửa `config.json` tay -> site đổi đúng (3 theme, 5 font preset, bật/tắt/sắp xếp section, số thứ tự + nền xen kẽ đúng; giá trị chưa có -> fallback, không lỗi console ngoài `warn`); unit test xanh: `guest-name`, `migrations` (import `wedding-site/data/config.js` không mất dữ liệu), `merge`, `resolve` (quy tắc "theme" cho mọi nhóm 5.2), `derive` (12 preset khớp tương phản bảng 1.6.3 ±0.05; primary ngẫu nhiên 500 mẫu luôn ≥ 4.5:1 cả sáng/tối), `intensity` (mọi ô ma trận 5.3/5.10 đã triển khai), `vietqr/payload` (CRC đúng mẫu chuẩn), pháo hoa (ngưỡng 400 ms, cooldown 15 s, re-arm < 10% bằng fake timers); QR quét được bằng ≥ 2 app ngân hàng với 1 tài khoản thật; `size-limit`: JS ban đầu ≤ 60 KB, CSS ≤ 25 KB; Lighthouse mobile (throttle 4G, Moto G Power): LCP < 2.5 s, CLS < 0.05; hạt nền cả trang: 0 hạt vẽ trong vùng form RSVP/lời chúc (test Playwright đọc vị trí hạt qua hook debug), canvas dừng khi focus input; CSP `style-src` chốt; ui-ux-designer duyệt visual 3 theme | frontend-developer; ui-ux-designer (asset 3 theme + review) |
-| **v2 - Admin + GitHub + kết nối + backup/restore** | Admin Preact responsive; **Kết nối lần đầu 3 bước** + Login passphrase + vault (2.3-2.6); `GitHubAdapter` (Git Data API 3.5), `DevServerAdapter` (+ `dev-admin-save`), `DownloadAdapter`; nháp IndexedDB (3.2) + undo; form từ schema-meta; **gallery theme 8.12** (cho theme đã bật) + dialog giữ/trọn gói; font, nhạc upload; **trình chọn hiệu ứng 8.13** + `fx:replay`/`fx:done` + Phát lại/0.5x/Mô phỏng (cho hiệu ứng đã bật); sections; preview; ImageSlot 3 khối + pipeline; link generator + toggle "Mã hoá link" + CSV `link_ma_hoa`; checklist + diff; publish 1 commit + poll; restore swap + 4 thao tác quay lại (3.4); export/import | Trên repo test private + CF Pages: kết nối lần đầu từ **điện thoại** ≤ 5 phút theo hướng dẫn; mỗi lỗi bảng 2.5 tái hiện được (token sai, token chỉ đọc, repo sai, nhánh sai, repo rỗng, offline, rate limit mock) và hiện đúng thông điệp; token hết hạn trước ngày cưới -> cảnh báo vàng ở 3 nơi; vault: sai passphrase bị từ chối, 5 lần -> khoá 30 s, ciphertext không chứa token dạng rõ (kiểm `localStorage`/IndexedDB/bundle/repo); publish từ điện thoại, site cập nhật ≤ 2 phút; thay ảnh hero -> file cũ vào `backup/`, tên mới có hash, publish không upload lại blob đã có (đếm request); **Restore 2 lần liên tiếp = tree ban đầu** (unit test mock + test thật); "Lấy lại ảnh trước đó" chỉ đổi nháp; "Hoàn tác tất cả" về đúng bản xuất bản; restore khi còn nháp -> nháp reset, file .json tải được và import lại đủ ảnh; xung đột ref (2 tab) báo đúng, không ghi đè; 401 giữa phiên về login vẫn giữ nháp; đổi theme khi đã chỉnh font -> dialog, "Giữ" giữ font; ui-ux-designer duyệt UX admin | frontend-developer; ui-ux-designer review |
+| **v2 - Admin + GitHub + kết nối + backup/restore** | Admin Preact responsive; **Kết nối lần đầu 3 bước** + Login passphrase + vault (2.3-2.6) **(Rev 4: Login passphrase được thay ở v2.3 bằng cổng mật khẩu + vault khoá bằng mật khẩu đăng nhập, Kết nối chuyển sang mở khi cần; 2.7-2.9)**; `GitHubAdapter` (Git Data API 3.5), `DevServerAdapter` (+ `dev-admin-save`), `DownloadAdapter`; nháp IndexedDB (3.2) + undo; form từ schema-meta; **gallery theme 8.12** (cho theme đã bật) + dialog giữ/trọn gói; font, nhạc upload; **trình chọn hiệu ứng 8.13** + `fx:replay`/`fx:done` + Phát lại/0.5x/Mô phỏng (cho hiệu ứng đã bật); sections; preview; ImageSlot 3 khối + pipeline; link generator + toggle "Mã hoá link" + CSV `link_ma_hoa`; checklist + diff; publish 1 commit + poll; restore swap + 4 thao tác quay lại (3.4); export/import | Trên repo test private + CF Pages: kết nối lần đầu từ **điện thoại** ≤ 5 phút theo hướng dẫn; mỗi lỗi bảng 2.5 tái hiện được (token sai, token chỉ đọc, repo sai, nhánh sai, repo rỗng, offline, rate limit mock) và hiện đúng thông điệp; token hết hạn trước ngày cưới -> cảnh báo vàng ở 3 nơi; vault: ~~sai passphrase bị từ chối, 5 lần -> khoá 30 s~~ **(Rev 4: chuyển thành tiêu chí mật khẩu đăng nhập ở v2.3)**, ciphertext không chứa token dạng rõ (kiểm `localStorage`/IndexedDB/bundle/repo); publish từ điện thoại, site cập nhật ≤ 2 phút; thay ảnh hero -> file cũ vào `backup/`, tên mới có hash, publish không upload lại blob đã có (đếm request); **Restore 2 lần liên tiếp = tree ban đầu** (unit test mock + test thật); "Lấy lại ảnh trước đó" chỉ đổi nháp; "Hoàn tác tất cả" về đúng bản xuất bản; restore khi còn nháp -> nháp reset, file .json tải được và import lại đủ ảnh; xung đột ref (2 tab) báo đúng, không ghi đè; ~~401 giữa phiên về login vẫn giữ nháp~~ **(Rev 4: 401 giữa phiên ở lại Editor, xoá token, giữ nháp, hỏi lại token ở thao tác GitHub kế tiếp - kiểm ở v2.3)**; đổi theme khi đã chỉnh font -> dialog, "Giữ" giữ font; ui-ux-designer duyệt UX admin | frontend-developer; ui-ux-designer review |
+| **v2.3 - Đăng nhập mới + sửa phong bì/tự cuộn (Rev 4)** | **A. Đăng nhập (2.0, 2.4, 2.7-2.9)**: `admin-password.ts` + `scripts/set-admin-password.mjs` (`npm run admin:password`) + `auth/gate.ts`; màn Login 1 ô + `UnlockGuard`; phiên `wp_admin_auth_v1`; `SitePublishedSource`; `requireGitHub(intent)` + overlay Kết nối (Huỷ / tiếp tục thao tác) + 2 lối phụ (tải về, máy chủ dev); dialog nhập lại mật khẩu cho vault; vault v2 (khoá bằng mật khẩu đăng nhập, `pwTag`, "Ghi nhớ" mặc định tắt + cảnh báo), xoá vault v1; 401 không về Login; trạng thái "cần GitHub" ở Sao lưu và ImageSlot; tách chunk admin dưới `dist/admin/`; README bảo mật. **B. Phong bì/tự cuộn**: E01–E11 của `design-review-envelopes.md` theo giả định đã chốt (8.1, 8.2 #9, 8.4); chấp nhận hình nắp mới. E12 để v4 | **A.** (1) Mở `/admin` khi chưa có phiên -> màn Login; Playwright đếm **0** request tới `api.github.com` từ lúc mở tới khi bấm Xuất bản, và chỉ 1 request `content/config.json` cùng origin để nạp bản xuất bản. (2) Sai mật khẩu -> thông báo; 5 lần sai -> khoá 30 s có đếm ngược; tải lại trang vẫn khoá (fake clock). (3) Đúng mật khẩu -> Editor hiện bản đang xuất bản lấy từ site; sửa chữ, upload ảnh, xem trước chạy được khi chưa có token. (4) Tải lại tab giữ phiên; tab mới phải đăng nhập lại; đổi record hash (mô phỏng đổi mật khẩu) -> phiên cũ về Login. (5) Bấm Xuất bản/Khôi phục/"Lấy lại ảnh" khi chưa có token -> overlay Kết nối đúng tiêu đề theo intent; Huỷ -> nháp IndexedDB giống hệt trước khi bấm; kết nối ✓ -> dialog xuất bản/khôi phục **tự mở**, không phải bấm lại. (6) `publish.id` site khác GitHub + nháp có thay đổi -> dialog "Tiếp tục nháp / Dùng bản đang xuất bản" đúng 2.8.3 (fake GitHub). (7) "Ghi nhớ" mặc định tắt; tick -> vault v2 tạo được; phiên sau (đăng nhập lại) bấm Xuất bản **không** hỏi token; tải lại tab trước khi giải mã xong -> dialog nhập lại mật khẩu; vault v1 có sẵn -> bị xoá + toast 1 lần. (8) Đổi mật khẩu bằng script -> vault cũ bị xoá ở lần đăng nhập kế, có toast. (9) 401 giữa phiên -> ở lại Editor, token bị xoá (cả vault nếu từ vault), nháp giữ nguyên. (10) Kiểm chuỗi: `dist/` và mã nguồn không chứa mật khẩu dạng rõ (kiểm tay bằng tìm kiếm chuỗi, mật khẩu nhập từ terminal, không lưu) và không chứa token; ngoài `dist/admin/` không file nào chứa `salt`/`hash` của record. (11) Unit test xanh: `verifyPassword` (đúng/sai/NFC/không trim), vault v2 (đúng, sai khoá, sai AAD, `pwTag` lệch), `UnlockGuard`, script `--stdin` sinh record verify được. (12) Đăng nhập ≤ 1.5 s trên Android tầm trung (đo); admin JS ban đầu vẫn ≤ 150 KB, Login + gate ≤ 15 KB gzip trước khi tải Editor. **B.** (13) E01: ở 360×740, 3 tên mẫu có dấu nặng ở dòng cuối × 6 mẫu × 3 theme, ảnh chụp `.env-guest` với `overflow:visible` và mặc định **giống hệt**; cỡ chữ ≥ 15 px, ≤ 3 dòng; tên 60 ký tự không mất chữ; không còn `line-clamp` trên `.env-guest`. (14) E02: kraft không pixel dây nào nằm trong khung `.env-addr` (thẻ 72% × 40%). (15) E04: lấy mẫu 50 ms, thẻ/nắp không giao `.cv-head` khi `.cv-head` opacity > 0.1; tổng thời lượng mỗi mẫu không đổi quá ±50 ms và vẫn ≤ 2.4 s. (16) E05: đã dừng + khách cuộn -> nút Tiếp tục opacity 0 và không nhận chạm; đứng yên 1.2 s -> hiện lại; focus trong form -> ẩn; không giao vùng chạm "Gửi lời chúc" khi đang ẩn. (17) E06: theme tối với classic/minimal/lace: viền phong bì ≥ 1.5:1 với nền, mép nắp/ren ≥ 2:1; lace theme sáng mép ren ≥ 2:1. (18) E07-E09: velvet "Theo theme" trên theme sáng không còn quầng `#7A1E2C`; minimal nhiều dòng không có "·" treo; seal ở 1440×900 ≥ 15% bề rộng phong bì, ở 360 trong 52-58 px. (19) E10: khung tooltip nhạc không giao khung nút tự cuộn. (20) E11: đo 30 s tự cuộn, pill đổi class `is-mini` **0 lần** khi đang chạy. (21) Không khung nào ra khỏi viewport (test cũ vẫn xanh); `size-limit` xanh; ui-ux-designer review lại: 0 điểm Cao/Vừa còn mở | frontend-developer; ui-ux-designer (review E01–E11 + copy Login/Kết nối) |
 | **v3 - Apps Script RSVP/guestbook + micro liên quan** | `apps-script/Code.gs` (ping, guestbook GET/POST, rsvp upsert theo `submissionId`, honeypot, validate, rate-limit, `LockService`); client `integrations/apps-script.ts`; trạng thái form design 4.10/4.11; fallback khi URL rỗng; nút ping trong admin; micro `wish-fly` (3 biến thể), `rsvp-success`, `choice-card`, `stepper-bump`, burst `onRsvp`; README | Gửi lời chúc/RSVP từ webview Zalo + Safari iOS ghi đúng Sheet; `hidden = TRUE` -> biến mất sau lần poll kế; "Sửa phản hồi" cập nhật dòng cũ; honeypot + gửi dồn bị chặn; tắt mạng -> giữ nội dung + "Thử lại"; "Không thể đến" không có confetti; chunk lazy mỗi cái ≤ 15 KB | frontend-developer; bắt đầu song song v2 sau v1 |
-| **v4 - Thư viện mở rộng + polish/perf/QA** | **v4a**: 9 theme còn lại (`hong-phan`, `luc-bao`, `muc-giay`, `hoai-co`, `sen-cham`, `mau-nuoc`, `dat-nung`, `pastel-han`, `bien-dao`) + ornament/texture/photoFrame/divider tương ứng; 13 kiểu mở còn lại (`curtain`, `wax-seal`, `origami`, `double-door`, `flower-gate`, `scroll`, `card-3d`, `light-gather`, `gift-box`, `moon-gate`, `book`, `ink-spread`, `polaroid`); 16 loại hạt còn lại; burst `confetti`, `gold`, `red-paper`, `heart-burst`; reveal 4 gói còn lại (`editorial`, `letter`, `playful`, `cinematic`) gồm `mask-up`, `split-*`, `blur-in`, `parallax-layers`; micro còn lại (`btn-shine`, `photo-tilt`, `countdown-odometer`, `slide`, `scroll-progress`, `name-sparkle`, `music-ripple`, `gift-shake`, `calendar-flip`, `couple-heart-tap`); mỗi mục bật trong `capabilities.ts` khi đạt tiêu chí. **v4b**: tối ưu bundle, a11y WCAG 2.2 AA (design 9), ma trận thiết bị/webview, CSP cuối, Playwright smoke, README deploy + PAT + Cloudflare Access | Cả 12 theme: test tương phản tự động khớp 1.6.3, chuỗi dấu chồng duyệt bằng ảnh chụp từng theme; cả 17 kiểu mở: ≤ 2.4 s, chạm lần 2 tua nhanh ≤ 300 ms, bản Nhẹ/Nhiều đúng bảng 3.4b, module ≤ 4 KB, không clip chữ có dấu (ảnh chụp tên "Nguyễn Thuỳ Linh" giữa animation); `light-gather` ≥ 45 fps ở `medium` trên máy tầm trung và tự về `fade-zoom` khi mô phỏng máy yếu; với **tổ hợp nặng nhất** (`dem-nhung` + `light-gather` + `high` + `cinematic`) JS ban đầu vẫn ≤ 60 KB, trang đầu ≤ 900 KB; LCP < 2.5 s / CLS < 0.05 / INP < 200 ms trên Android tầm thấp 4G; axe 0 lỗi serious/critical; pháo hoa < 3 lần nháy/giây; checklist Zalo/Facebook/Messenger/Safari iOS/Chrome Android pass (nhạc, cover, link có dấu và link mã hoá, .ics, QR, bản đồ); người duyệt nghiệm thu | frontend-developer; ui-ux-designer (asset 9 theme + 13 kiểu mở, visual cuối) |
+| **v4 - Thư viện mở rộng + polish/perf/QA** | **v4a**: 9 theme còn lại (`hong-phan`, `luc-bao`, `muc-giay`, `hoai-co`, `sen-cham`, `mau-nuoc`, `dat-nung`, `pastel-han`, `bien-dao`) + ornament/texture/photoFrame/divider tương ứng; 13 kiểu mở còn lại (`curtain`, `wax-seal`, `origami`, `double-door`, `flower-gate`, `scroll`, `card-3d`, `light-gather`, `gift-box`, `moon-gate`, `book`, `ink-spread`, `polaroid`); 16 loại hạt còn lại; burst `confetti`, `gold`, `red-paper`, `heart-burst`; reveal 4 gói còn lại (`editorial`, `letter`, `playful`, `cinematic`) gồm `mask-up`, `split-*`, `blur-in`, `parallax-layers`; micro còn lại (`btn-shine`, `photo-tilt`, `countdown-odometer`, `slide`, `scroll-progress`, `name-sparkle`, `music-ripple`, `gift-shake`, `calendar-flip`, `couple-heart-tap`); **(Rev 4)** E12 - cấp "Nhiều" riêng cho từng mẫu phong thư; mỗi mục bật trong `capabilities.ts` khi đạt tiêu chí. **v4b**: tối ưu bundle, a11y WCAG 2.2 AA (design 9), ma trận thiết bị/webview, CSP cuối, Playwright smoke, README deploy + PAT + Cloudflare Access | Cả 12 theme: test tương phản tự động khớp 1.6.3, chuỗi dấu chồng duyệt bằng ảnh chụp từng theme; cả 17 kiểu mở: ≤ 2.4 s, chạm lần 2 tua nhanh ≤ 300 ms, bản Nhẹ/Nhiều đúng bảng 3.4b, module ≤ 4 KB, không clip chữ có dấu (ảnh chụp tên "Nguyễn Thuỳ Linh" giữa animation); `light-gather` ≥ 45 fps ở `medium` trên máy tầm trung và tự về `fade-zoom` khi mô phỏng máy yếu; với **tổ hợp nặng nhất** (`dem-nhung` + `light-gather` + `high` + `cinematic`) JS ban đầu vẫn ≤ 60 KB, trang đầu ≤ 900 KB; LCP < 2.5 s / CLS < 0.05 / INP < 200 ms trên Android tầm thấp 4G; axe 0 lỗi serious/critical; pháo hoa < 3 lần nháy/giây; checklist Zalo/Facebook/Messenger/Safari iOS/Chrome Android pass (nhạc, cover, link có dấu và link mã hoá, .ics, QR, bản đồ); người duyệt nghiệm thu | frontend-developer; ui-ux-designer (asset 9 theme + 13 kiểu mở, visual cuối) |
 
 ---
 
 ## ⚠️ Lưu ý kỹ thuật
 
-- **Security**: không đưa PAT/passphrase vào repo, env build, tài liệu, log. `textContent` cho mọi chuỗi động. Kiểm tra quyền ghi bằng blob thử (2.3) thay vì tin `permissions.push`. CSP trong `_headers`:
+- **Security**: không đưa PAT hay mật khẩu dạng rõ vào repo, env build, tài liệu, log. `textContent` cho mọi chuỗi động. Kiểm tra quyền ghi bằng blob thử (2.3) thay vì tin `permissions.push`. **(Rev 4)** Cổng mật khẩu là lớp che mắt, **không** phải kiểm soát truy cập (2.9); không đặt dữ liệu bí mật nào sau cổng. Hash dùng PBKDF2 600k (không SHA-256 1 vòng). Vault yếu ngang mật khẩu đăng nhập -> "Ghi nhớ" mặc định tắt. CSP trong `_headers`:
   - Guest: `default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src https://www.google.com; frame-ancestors 'self'; script-src 'self'; style-src 'self' <chốt ở v1>`.
-  - Admin: thêm `connect-src https://api.github.com`, `frame-src 'self'`, `style-src https://fonts.googleapis.com`, `font-src https://fonts.gstatic.com`.
+  - Admin: thêm `connect-src https://api.github.com`, `frame-src 'self'`, `style-src https://fonts.googleapis.com`, `font-src https://fonts.gstatic.com`. **(Rev 4)** `connect-src 'self'` đã có, đủ cho đọc `/content/config.json`.
   - `mapUrl` chỉ `https:`, `mapEmbedUrl` chỉ host `www.google.com`, `phone` chỉ `tel:`.
 - **Repo private**; dung lượng repo tăng theo số lần thay ảnh - chấp nhận. Backup không deploy.
-- **Build quota**: mỗi Xuất bản/Khôi phục = 1 build; CF Pages 500 build/tháng là dư.
-- **Xung đột**: optimistic lock bằng SHA nhánh (`force: false`).
+- **Build quota**: mỗi Xuất bản/Khôi phục = 1 build; CF Pages 500 build/tháng là dư. **(Rev 4)** Đổi mật khẩu = sửa mã nguồn = cũng cần 1 lần build/deploy.
+- **Xung đột**: optimistic lock bằng SHA nhánh (`force: false`). **(Rev 4)** Khi nháp dựng từ site, đối chiếu `publish.id` trước khi lấy `baseCommit` (2.8.3).
 - **Breaking change so với dự án cũ**: `config.js` -> `config.json`; `sections` thành object; theme `xanh-ngoc`/`xanh-navy` -> `luc-bao`; `vendor` gộp vào `footer`; `petals` -> `particles`. **So với revision 2**: `effects.intensity` đổi `light/strong` -> `low/high`; `theme.accentColor` -> `overrides.accent`; `effects.petals` -> `effects.particles`; `reveal.style` thành gói; `ornamentSet` `classic` -> `classic-line`. Chưa có code nên không cần migration cho rev 2.
+- **(Rev 4) Breaking change admin v2.2 -> v2.3**: vault `wp_admin_vault_v1` (passphrase) không dùng được nữa -> xoá + toast, người dùng dán lại token khi xuất bản. Không ảnh hưởng config/khách.
 - `file://` không hỗ trợ (dùng `npm run dev` / `npm run preview`).
 - **Data/ETL**: không liên quan.
 
@@ -844,7 +1043,11 @@ Nguyên tắc: **schema v1 đầy đủ từ v1** (mọi enum hợp lệ, migrat
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Lộ PAT qua XSS / máy dùng chung | Cao | Fine-grained 1 repo + hạn; sessionStorage mặc định; vault AES-GCM + PBKDF2 600k; CSP; textContent |
+| Lộ PAT qua XSS / máy dùng chung | Cao | Fine-grained 1 repo + hạn; sessionStorage mặc định; vault AES-GCM + PBKDF2 600k; CSP; textContent. **(Rev 4)** "Ghi nhớ" mặc định tắt; README hướng dẫn thu hồi token |
+| **(Rev 4)** Hash mật khẩu ngắn trong bundle bị dò offline -> token ghi nhớ bị giải nếu lấy được `localStorage` | Cao (khi bật Ghi nhớ) / Thấp (khi không) | 2.9: mặc định không ghi nhớ; khuyến nghị mật khẩu ≥ 12 ký tự hoặc 4 từ; Cloudflare Access `/admin/*`; token hạn ngắn + thu hồi được |
+| **(Rev 4)** Người ngoài bỏ qua cổng đăng nhập | Thấp | Chấp nhận: sau cổng không có bí mật, không có token; ghi rõ trong README |
+| **(Rev 4)** Bản xuất bản đọc từ site lệch GitHub (CF đang build, publish từ máy khác) | Trung bình | Đối chiếu `publish.id` khi kết nối (2.8.3); optimistic lock `force: false` |
+| **(Rev 4)** Quên mật khẩu / đổi mật khẩu làm mất token ghi nhớ | Thấp | Script đổi mật khẩu + deploy; dán lại token (nháp không mất) |
 | PAT hết hạn sát/trước ngày cưới | Trung bình | Hướng dẫn hạn ≥ 1 tháng sau cưới; cảnh báo 3 nơi (2.6) |
 | Publish config hỏng | Trung bình | Validate + checklist; merge defaults + fallback capabilities; Khôi phục 1 click |
 | Bundle phình do thư viện hiệu ứng | Trung bình | Code-split theo lựa chọn; `size-limit` fail build (9.1) |
@@ -870,15 +1073,18 @@ Nguồn: [`decisions.md`](./decisions.md). Áp dụng trong file này:
 5. Đổi theme **chỉ thay phần "Theo theme"** (Q17).
 6. Hạt nền mặc định **cả trang** (Q18); `light-gather` giữ, máy yếu hạ về fade (Q19).
 7. Pháo hoa đếm ngược **mỗi lần cuộn tới** + cooldown (Q20).
-8. Login: fine-grained PAT + tuỳ chọn vault passphrase; màn Kết nối lần đầu (design 8.2b).
+8. ~~Login: fine-grained PAT + tuỳ chọn vault passphrase; màn Kết nối lần đầu (design 8.2b).~~ **(Rev 4)** Thay bằng #18.
 9. Link khách: `?to=` chính, `/invite/<slug>` phụ, **giữ dấu mặc định + toggle "Mã hoá link"**; danh sách khách chỉ local + CSV.
 10. Cover mỗi lần mở link; hero ghim đầu, footer ghim cuối.
 11. QR VietQR **sinh client-side**, chỉ hiện khi bấm, test 1 tài khoản thật ở v1; có thêm vào lịch, chỉ đường; bản đồ bấm mới tải.
-12. Love story có, mặc định tắt; tự cuộn / lời chúc bay / vendor: tắt.
+12. Love story có, mặc định tắt; lời chúc bay / vendor: tắt. **(Rev 4)** Tự cuộn: **bật** mặc định 45px/s (decisions 2026-10-08, thay giả định "tắt").
 13. Nhạc 1 bài lặp, ≤ 8 MB; **âm lịch nhập tay** (không nút "Tự tính").
 14. Ảnh: hero/cover 2000 px, **album full 1600 px** + thumb 600 px, khác 1200 px.
 15. Restore: **chỉ cả trang** (config + ảnh) của lần publish gần nhất, swap, bấm lại = redo; nút ở ImageSlot là thao tác nháp; khôi phục khi còn nháp -> nháp đặt lại theo trang vừa khôi phục (có nút tải nháp).
 16. **Stack FE: Vite + TypeScript; guest vanilla TS + CSS variables; admin Preact + TS**; không Angular.
+17. **(Rev 4)** Yêu cầu "sửa cấu hình không cần deploy" **đã được người duyệt bỏ**: site tĩnh nên mọi thay đổi (kể cả chữ) đều phải publish; giữ nguyên luồng publish qua GitHub, không thêm nơi lưu runtime.
+18. **(Rev 4)** Đăng nhập admin: **cổng mật khẩu** (mật khẩu đã chốt trong decisions, lưu dạng hash PBKDF2 trong code, có script đổi mật khẩu), phiên `sessionStorage`, khoá 30 s sau 5 lần sai; **token GitHub chỉ hỏi khi Xuất bản/Khôi phục/thao tác cần GitHub**, kết nối xong tự tiếp tục thao tác; token ghi nhớ mã hoá bằng mật khẩu đăng nhập (bỏ passphrase riêng); chưa có token thì đọc bản xuất bản từ site cùng origin.
+19. **(Rev 4)** Phạm vi **v2.3** = #18 + sửa E01–E11 theo giả định designer (tên khách tự giảm cỡ, tối đa 3 dòng ≥ 15 px, không mất dấu; nút "Tiếp tục tự cuộn" ẩn khi khách cuộn, hiện lại sau 1.2 s đứng yên; kraft dây dừng ở mép thẻ; theme tối pha 14% accent cho classic/minimal/lace; chấp nhận hình nắp mới). E12 để v4.
 
 ---
 
@@ -892,6 +1098,9 @@ Nguồn: [`decisions.md`](./decisions.md). Áp dụng trong file này:
 - [ ] Chốt các điểm Còn mở
 - [ ] Chuẩn bị: repo GitHub private, project Cloudflare Pages, Google Sheet + Apps Script, 1 tài khoản ngân hàng thật để quét thử QR (người duyệt tự làm, không đưa secret/STK vào tài liệu)
 - [ ] Bổ sung lệnh build/test vào CLAUDE.md của dự án (`npm run build` gồm `size-limit`, `npx vitest run`, `npx playwright test`)
+- [ ] **(Rev 4)** Người duyệt xác nhận các giả định bảo mật 2.9 (Còn mở #5-#8) trước khi bắt đầu v2.3
+- [ ] **(Rev 4)** Xử lý mật khẩu dạng rõ trong `decisions.md` trước khi commit v2.3 (Còn mở #5)
+- [ ] **(Rev 4)** Thêm `npm run admin:password` vào CLAUDE.md của dự án (mục Lệnh)
 
 ---
 
@@ -901,3 +1110,9 @@ Nguồn: [`decisions.md`](./decisions.md). Áp dụng trong file này:
 2. **Admin dùng Google Fonts `&text=` cho gallery/dropdown font** (design 2.3b) trong khi guest tự host. Giả định mặc định: chấp nhận cho admin (chỉ chủ nhà dùng, không ảnh hưởng khách; CSP admin mở 2 domain Google). Phương án thay: tự host toàn bộ whitelist cho admin (nặng hơn ~1 MB khi mở gallery trên mobile).
 3. **Theme thứ 3 của v1 là `dem-nhung`** (để kiểm chứng sớm nhánh tối) thay vì một theme sáng phổ biến như `hong-phan`. Giả định mặc định: giữ `dem-nhung`; người duyệt có thể đổi, chi phí như nhau.
 4. **Ngưỡng hiệu năng `light-gather`** (≥ 45 fps ở `medium` trên máy tầm trung): nếu không đạt ở v4, giả định mặc định là giảm còn 250 hạt ở `medium` (giữ 700 ở `high`) thay vì bỏ kiểu này; cần ui-ux-designer đồng ý về độ "đầy" của tên.
+5. **(Rev 4) Mật khẩu dạng rõ trong `decisions.md`**: decisions yêu cầu "không có chuỗi rõ trong repo/bundle", nhưng chính `decisions.md` (thư mục `docs/`, sẽ được commit) đang ghi mật khẩu. Giả định mặc định: người duyệt/orchestrator thay giá trị đó bằng "(đã chốt, không ghi trong repo)" trước khi commit v2.3. Nếu giữ nguyên thì chấp nhận lộ trong repo private (vẫn nên đổi mật khẩu bằng script sau đó).
+6. **(Rev 4) "Ghi nhớ token trên máy này" mặc định tắt** (code v2.2 đang bật). Giả định mặc định: tắt, kèm cảnh báo khi tick. Cái giá: mỗi phiên xuất bản phải dán lại token.
+7. **(Rev 4) Cloudflare Access cho `/admin/*`**. Giả định mặc định: khuyến nghị trong README, không bắt buộc; v2.3 vẫn tách chunk admin dưới `dist/admin/` để bật được bất cứ lúc nào. Nếu người duyệt muốn bắt buộc thì đây là lớp kiểm soát truy cập thật duy nhất ở tầng web.
+8. **(Rev 4) Độ mạnh mật khẩu**. Giả định mặc định: giữ mật khẩu đã chốt (7 ký tự) theo decisions; script chỉ cảnh báo khi < 12 ký tự; không chuyển sang Argon2id, không tăng số vòng PBKDF2. Khuyến nghị: đổi sang ≥ 12 ký tự hoặc 4 từ trước khi bật "Ghi nhớ" trên bất kỳ máy nào.
+9. **(Rev 4) Phiên đăng nhập không tự hết theo thời gian rảnh** (chỉ hết khi đóng tab/Đăng xuất). Giả định mặc định: chấp nhận, vì sau cổng không có bí mật; token vẫn chỉ trong `sessionStorage`.
+10. **(Rev 4) Cổng đăng nhập áp dụng cả chế độ máy chủ dev và "Tải về máy"**. Giả định mặc định: có (một luồng duy nhất). E2E trên `vite dev` dùng record mật khẩu thử qua `WP_ADMIN_PASSWORD_FILE`, chỉ có hiệu lực ở lệnh `serve`.

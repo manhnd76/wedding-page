@@ -18,7 +18,8 @@
     "lint": "npm run typecheck",
     "size": "size-limit",
     "test:e2e": "playwright test",
-    "placeholders": "node scripts/gen-placeholders.mjs"
+    "placeholders": "node scripts/gen-placeholders.mjs",
+    "admin:hash": "node scripts/admin-hash.mjs"
   },
   "devDependencies": {
     "@fontsource/alex-brush": "^5.3.0",

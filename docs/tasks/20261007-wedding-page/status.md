@@ -1,15 +1,13 @@
 # Status - 20261007-wedding-page
 
-- Giai đoạn hiện tại: **v2.2** trên `feat/20261007-wedding-page-v2.2` (tách từ v2.1 f0a6465). Song song:
-  - frontend-developer: sửa các điểm còn lại trong design-review-admin-v2.md (A01 đã sửa ở v2.1) + kiểm tra autoScroll defaults theo decisions -> frontend-report-v2.2.md
-  - ui-ux-designer: duyệt visual phong bì mới + 6 mẫu phong thư + tự cuộn (chỉ đọc) -> design-review-envelopes.md
-- Commit: v1 3780836, v2 ce58f31, v2.1 f0a6465. Chưa push.
+- Giai đoạn hiện tại: **v2.3** trên `feat/20261007-wedding-page-v2.3` (tách từ v2.2 commit 55b8b69). Song song:
+  - frontend-developer: cổng login mật khẩu (hash) + token GitHub chỉ hỏi khi Publish/Khôi phục + sửa E01–E11 -> frontend-report-v2.3.md
+  - solution-designer: cập nhật solution.md mục đăng nhập/token theo decisions "Đổi luồng đăng nhập admin".
+- Nợ tài liệu: design.md mục 8.2/8.2b (login mới) + SVG nắp 3.2 cần ui-ux-designer cập nhật ở lượt sau; icon admin thật.
+- Commit: v1 3780836, v2 ce58f31, v2.1 f0a6465, v2.2 55b8b69. Chưa push.
 - Cần kiểm tra tay: GitHub thật + CF Pages, Safari nén ảnh, QR thật, webview, tự cuộn trên máy thật.
 - Vòng lặp sửa đã dùng: 0/3
-
-## Sự cố
-- 2026-10-08: cả 2 agent v2.2 dừng giữa chừng do giới hạn phiên API (429). Frontend đã sửa dở nhiều file trong src/admin, src/shared, tests (chưa có report). Designer chưa ghi gì; còn để lại vite server cổng 5180 (PID 4012). Đã giao lại cả hai, tiếp tục từ trạng thái hiện tại (không làm lại từ đầu).
-- frontend v2.2 XONG (chưa commit). Orchestrator kiểm tra: build exit 0 (guest JS 30.52/60, admin JS 73.45/80), unit 392/392, e2e 26/26. A01–A24 đã sửa (A23 giữ font hệ thống theo quyết định).
-- ui-ux-designer (duyệt phong bì + tự cuộn): đang chạy.
-- ui-ux-designer XONG: design-review-envelopes.md. 22/23 R-points đạt. 12 điểm mới (2 Cao/4 Vừa/6 Thấp). BLOCKER E01: tên khách trên phong bì mất dấu nặng ("Mạnh" -> "Manh") do -webkit-line-clamp:2 + overflow:hidden, ở 5/6 mẫu. Server 5180 đã dừng.
-- 🚦 Chờ người duyệt: commit v2.2, 6 câu hỏi phong bì, bước tiếp (v2.3 sửa E01–E11).
+- solution-designer XONG: solution.md Rev 4 (luồng login, vault v2, dòng v2.3). Đề xuất: "Ghi nhớ token" mặc định TẮT; khuyến nghị Cloudflare Access /admin/*. Chờ người duyệt.
+- Mật khẩu rõ đã xoá khỏi decisions.md/status.md trong working tree, NHƯNG còn trong commit 55b8b69 (chưa push) -> người duyệt chọn KHÔNG sửa lịch sử. "Ghi nhớ token" mặc định BẬT.
+- frontend v2.3 XONG (chưa commit). Orchestrator kiểm tra: build exit 0 (guest JS 31.22/60, admin JS 73.15/80), unit 407/407, e2e 34/34, không còn chuỗi mật khẩu rõ trong working tree/dist. "Ghi nhớ" mặc định bật (đúng quyết định). E01–E11 sửa xong, E12 -> v4.
+- v2.3 commit + merge fast-forward vào main + push origin/main theo yêu cầu người duyệt (2026-10-08).

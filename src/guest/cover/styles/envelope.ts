@@ -3,7 +3,8 @@
  * mẫu ("skin") chỉ vẽ SVG + pha "mở khoá" riêng (lazy, 1 module/mẫu, chỉ tải mẫu đang dùng).
  *
  * Timeline mức Vừa (~2.0s, ≤ 2.4s), mốc theo mẫu classic:
- *   0–260 seal tách đôi · 180–720 nắp lật rotateX(0→180) (z-index 4→1 ở 50%) · 650–1250 thẻ rút lên
+ *   0–260 seal tách đôi · 180–720 nắp lật rotateX(0→180) (z-index 4→1 ở 50%) · 380–900 tên cặp đôi mờ (E04)
+ *   650–1250 thẻ rút lên
  *   1150–1550 bao rơi xuống + mờ, thẻ về giữa màn scale 1.06, nội dung đổi sang lời chào
  *   1650–1950 thẻ scale 1.12 + cover mờ đi.
  * Nhẹ: seal mờ 120ms, nắp 320ms, thẻ rút 320ms, bỏ phần bao rơi (mờ chung) - ~1.1s.
@@ -80,6 +81,9 @@ export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   const pullDur = light ? 320 : 600;
   const ty = (y: number, s = 1) => `translateY(${Math.round(y)}px) scale(${s})`;
   steps.push({ el: p.card, frames: [{ transform: ty(0) }, { transform: ty(-pull) }], start: pullAt, dur: pullDur, easing: EASE_OUT });
+  // E04: tên cặp đôi mờ + nhấc nhẹ TRƯỚC khi nắp/thẻ rút lên chạm tới -> thẻ đi vào vùng đã trống, không "cắt" ngang tên
+  const headAt = flapAt + 200;
+  steps.push({ el: head, frames: [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-8px)' }], start: headAt, dur: Math.max(150, pullAt + 250 - headAt), easing: EASE_OUT });
 
   if (light) {
     const endAt = pullAt + pullDur;
@@ -94,7 +98,6 @@ export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   const dropDur = 400;
   const drop = [{ translate: '0 0', opacity: 1 }, { opacity: 0.35, offset: 0.4 }, { translate: '0 30%', opacity: 0 }];
   for (const el of [p.back, p.front, p.flap, p.deco]) steps.push({ el, frames: drop, start: dropAt, dur: dropDur, easing: 'cubic-bezier(.4,0,1,1)' });
-  steps.push({ el: head, frames: [{ opacity: 1 }, { opacity: 0 }], start: dropAt, dur: 300 });
   // thẻ lên trước túi khi túi đã mờ ~60% (tránh thẻ bị túi che lúc về giữa màn)
   steps.push({ el: p.card, frames: [{ zIndex: 2 }, { zIndex: 7 }], start: dropAt + 80, dur: 2, easing: 'linear' });
   steps.push({ el: p.card, frames: [{ transform: ty(-pull) }, { transform: ty(center, 1.06) }], start: dropAt + 60, dur: dropDur, easing: EASE_OUT });

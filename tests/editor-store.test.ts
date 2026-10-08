@@ -88,7 +88,7 @@ describe('EditorStore + GitHubAdapter (luồng v2 trên repo giả)', () => {
     expect(store.s.draft.meta.title).toBe('Của tôi');
   });
 
-  it('401 giữa phiên -> onAuthLost (về Login), nháp vẫn trong IndexedDB', async () => {
+  it('401 giữa phiên -> onAuthLost (kèm thao tác đang chạy), nháp vẫn trong IndexedDB', async () => {
     store.setPath('meta.title', 'Giữ nháp này');
     await store.flush();
     const lost = vi.fn();
@@ -96,6 +96,7 @@ describe('EditorStore + GitHubAdapter (luồng v2 trên repo giả)', () => {
     gh.overrides.push({ re: /./, res: respond(401, { message: 'Bad credentials' }) });
     expect(await store.publish()).toBeNull();
     expect(lost).toHaveBeenCalledOnce();
+    expect(lost.mock.calls[0]![1]).toBe('publish'); // v2.3: thao tác đang chạy -> mở Kết nối rồi làm tiếp
     expect((await store.db!.getDraft())?.config.meta.title).toBe('Giữ nháp này');
     // đăng nhập lại -> store mới đọc lại nháp
     gh.overrides = [];

@@ -18,9 +18,10 @@ export const skin: EnvelopeSkin = {
     // thớ giấy: phủ đúng hình túi / nắp (filter khai ở lớp back, cùng tài liệu)
     p.front.querySelector('svg')?.append(grain(g.pocket));
     p.flapF.querySelector('svg')?.append(grain(g.flap));
-    // dây gai: 2 nửa (trượt sang 2 bên khi mở)
+    // dây gai: 2 nửa (trượt sang 2 bên khi mở). E02: đoạn dọc phía dưới nút chỉ tới mép trên thẻ tên
+    // (thẻ "treo" từ nút nơ; thẻ: bottom 6% + cao 40% -> mép trên y ≈ 129) - không vẽ đè lên chữ
     p.deco.append(
-      box('tw tw-l', path('M0 112H170M170 0V238', 'tw-s')),
+      box('tw tw-l', path('M0 112H170M170 0V129', 'tw-s')),
       box('tw tw-r', path('M170 112H340', 'tw-s')));
     // nơ + oải hương ở nút dây (lớp seal)
     p.seal.append(svg('svg', { viewBox: '-32 -32 64 64', class: 'seal-art kr-bow', 'aria-hidden': 'true', focusable: 'false' },

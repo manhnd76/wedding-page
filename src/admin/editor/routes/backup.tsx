@@ -32,7 +32,7 @@ export function parseImport(name: string, text: string): unknown {
   return JSON.parse(text);
 }
 
-export default function BackupRoute({ store }: RouteProps) {
+export default function BackupRoute({ store, requireGitHub }: RouteProps) {
   const s = useStore(store, (x) => x);
   const [backupCfg, setBackupCfg] = useState<WeddingConfig | null>(null);
   const [step, setStep] = useState<0 | 1 | 2>(0);
@@ -44,6 +44,9 @@ export default function BackupRoute({ store }: RouteProps) {
   const isRedo = m?.reason === 'restore';
 
   useEffect(() => { void store.readBackupConfig().then(setBackupCfg); }, [m?.createdAt]);
+  // vừa kết nối GitHub từ nút Khôi phục -> mở tiếp dialog (decisions 2026-10-08)
+  useEffect(() => { if (store.takeResume('restore') && hasBackup) setStep(1); }, [hasBackup]);
+  const offline = s.adapter.kind === 'site' || s.adapter.kind === 'download';
   const contentDiff = useMemo(() => (backupCfg ? diffConfigs(backupCfg, s.published) : []), [backupCfg, s.published]);
   const assetFiles = (m?.files ?? []).filter((f) => !f.path.endsWith('/config.json'));
   const replaced = assetFiles.filter((f) => f.existed);
@@ -92,7 +95,7 @@ export default function BackupRoute({ store }: RouteProps) {
       <h1>Sao lưu / Khôi phục</h1>
       <div class="ov-card" data-testid="backup-card">
         <h2>Bản sao lưu hiện có</h2>
-        {s.adapter.kind === 'download' ? <p class="muted">Chế độ không kết nối không có bản sao lưu trên repo.</p>
+        {offline ? <p class="muted">Bản sao lưu nằm trên GitHub. Kết nối GitHub để xem và khôi phục.</p>
           : !hasBackup ? <p class="muted">Chưa có bản sao lưu. Bản sao lưu được tạo tự động mỗi lần Xuất bản.</p> : (
           <>
             <p>Trạng thái trang <strong>{isRedo ? 'TRƯỚC khi khôi phục' : 'TRƯỚC lần xuất bản'}</strong> lúc {fmtTime(m!.createdAt)}</p>
@@ -112,9 +115,13 @@ export default function BackupRoute({ store }: RouteProps) {
             </Details>
           </>
         )}
-        <button type="button" class={`btn ${isRedo ? 'btn-secondary' : 'btn-warn'}`} disabled={!hasBackup || !!s.busy || s.adapter.kind === 'download'} onClick={() => setStep(1)} data-testid="restore-btn">
+        {offline ? (
+          <button type="button" class="btn btn-secondary" disabled={!!s.busy} onClick={() => requireGitHub('restore')} data-testid="restore-connect">Kết nối GitHub để khôi phục</button>
+        ) : (
+        <button type="button" class={`btn ${isRedo ? 'btn-secondary' : 'btn-warn'}`} disabled={!hasBackup || !!s.busy} onClick={() => setStep(1)} data-testid="restore-btn">
           {s.busy?.kind === 'restore' ? <><Spinner /> Đang khôi phục…</> : isRedo ? 'Làm lại (quay về bản vừa thay)' : 'Khôi phục bản xuất bản trước'}
         </button>
+        )}
         {s.error && (s.error.code === 'conflict' || s.error.code === 'no-backup') && (
           <p class="err" role="alert">⚠ {s.error.message} {s.error.code === 'conflict' && <button type="button" class="btn btn-link" onClick={() => { store.clearError(); void store.reloadSnapshot({ keepDraft: true }); }}>Tải lại</button>}</p>
         )}

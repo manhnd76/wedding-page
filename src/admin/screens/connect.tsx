@@ -1,15 +1,15 @@
 /**
- * Màn "Kết nối lần đầu" 3 bước (design 8.2b, solution 2.3): Tạo token · Kết nối · Bảo vệ trên máy này.
+ * Màn "Kết nối GitHub" 3 bước (design 8.2b, solution 2.3): Tạo token · Kết nối · Ghi nhớ trên máy này.
+ * v2.3: chỉ mở khi cần (Xuất bản / Khôi phục / bấm "Kết nối GitHub"); token "Ghi nhớ" mã hoá bằng chính mật khẩu
+ * đăng nhập (không còn passphrase riêng). Kết nối xong quay lại đúng thao tác đang làm.
  * Mobile: 3 màn có nút "Tiếp" và "← Bước trước"; bước đã qua trong stepper bấm được để quay về (giữ dữ liệu đã nhập).
  * Desktop: 1 trang cuộn; bước hiện tại = 1 nếu chưa có token, 2 nếu chưa kiểm tra đạt, 3 sau đó (A08, A09).
  */
 import { useEffect, useState } from 'preact/hooks';
 import type { ConnectReport, ConnectStep } from '../storage/adapter';
 import { GitHubAdapter } from '../storage/github';
-import {
-  MIN_PASSPHRASE, createVault, loadConn, parseRepoInput, passphraseStrength, saveConn, saveSession, saveVault, tokenKind,
-  type Session,
-} from '../auth/vault';
+import { clearVault, createVault, loadConn, parseRepoInput, saveConn, saveSession, saveVault, tokenKind, type Session } from '../auth/vault';
+import { loginPassword, rememberLoginPassword, verifyPassword } from '../auth/password';
 import { Details, Spinner, TextField, Toggle } from '../ui/ui';
 import { Icon } from '../ui/icons';
 
@@ -18,7 +18,11 @@ const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new';
 export interface ConnectProps {
   /** thông báo khi bị đẩy về đây (token hết hạn, thiếu quyền…) */
   notice?: string | null;
+  /** vì sao cần kết nối (vd "Để xuất bản, cần kết nối GitHub 1 lần.") */
+  purpose?: string | null;
   onDone: (s: Session) => void;
+  /** quay lại trang quản lý, không kết nối */
+  onCancel: () => void;
   onOffline: () => void;
   /** chỉ có khi `vite dev` */
   onDevServer?: (() => void) | null;
@@ -26,7 +30,7 @@ export interface ConnectProps {
 
 const stepIcon = (s: ConnectStep['status'] | 'pending') => (s === 'ok' ? '✓' : s === 'warn' ? '!' : s === 'error' ? '✕' : '◌');
 
-export function ConnectScreen(p: ConnectProps) {
+export default function ConnectScreen(p: ConnectProps) {
   const saved = loadConn(localStorage);
   const [owner, setOwner] = useState(saved?.owner ?? '');
   const [repo, setRepo] = useState(saved?.repo ?? '');
@@ -37,9 +41,10 @@ export function ConnectScreen(p: ConnectProps) {
   const [steps, setSteps] = useState<ConnectStep[]>([]);
   const [checking, setChecking] = useState(false);
   const [remember, setRemember] = useState(true);
+  /** mật khẩu đăng nhập không còn trong bộ nhớ (đã tải lại trang) -> hỏi lại để mã hoá token */
+  const [needPass] = useState(() => !loginPassword());
   const [pass, setPass] = useState('');
-  const [pass2, setPass2] = useState('');
-  const [passTouched, setPassTouched] = useState(false);
+  const [passErr, setPassErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [mobileStep, setMobileStep] = useState(saved ? 2 : 1);
   const [guideOpen, setGuideOpen] = useState(!saved);
@@ -51,13 +56,11 @@ export function ConnectScreen(p: ConnectProps) {
 
   const kind = tokenKind(token);
   const okAll = !!report && ['token-repo', 'branch', 'write'].every((id) => report.steps.find((s) => s.id === id)?.status === 'ok');
-  const passErr = passTouched && pass.length < MIN_PASSPHRASE ? `Cần ít nhất ${MIN_PASSPHRASE} ký tự.` : null;
-  const pass2Err = passTouched && pass2 && pass2 !== pass ? 'Hai lần nhập chưa khớp.' : null;
-  const canSave = okAll && !saving && (!remember || (pass.length >= MIN_PASSPHRASE && pass === pass2));
+  const canSave = okAll && !saving && (!remember || !needPass || !!pass);
   /** lý do nút Lưu đang tắt (A09) */
   const whyDisabled = saving ? null
     : !okAll ? 'Hoàn tất bước 2 (Kiểm tra kết nối đủ dấu ✓) trước.'
-    : remember && (pass.length < MIN_PASSPHRASE || pass !== pass2) ? `Passphrase cần ≥ ${MIN_PASSPHRASE} ký tự và 2 lần nhập khớp nhau (hoặc bỏ Ghi nhớ).`
+    : remember && needPass && !pass ? 'Nhập mật khẩu đăng nhập để mã hoá token (hoặc bỏ Ghi nhớ).'
     : null;
   const desktopStep = !token ? 1 : !okAll ? 2 : 3;
   const curStep = compact ? mobileStep : desktopStep;
@@ -89,13 +92,24 @@ export function ConnectScreen(p: ConnectProps) {
     const sess: Session = { ...conn, token: token.trim(), expiresAt: report?.expiresAt ?? null };
     setSaving(true);
     setSaveErr(null);
+    setPassErr(null);
+    let password = loginPassword();
+    if (remember && !password) {
+      if (!(await verifyPassword(pass).catch(() => false))) {
+        setSaving(false);
+        setPassErr('Mật khẩu đăng nhập chưa đúng.');
+        return;
+      }
+      password = pass;
+      rememberLoginPassword(pass);
+    }
     try {
       saveConn(localStorage, conn);
-      if (remember) {
+      if (remember && password) {
         // PBKDF2 600k vòng: 0.5-1s trên điện thoại cũ -> "Đang mã hoá…"
-        const v = await createVault(sess.token, pass, conn, sess.expiresAt);
+        const v = await createVault(sess.token, password, conn, sess.expiresAt);
         saveVault(localStorage, v);
-      }
+      } else clearVault(localStorage);
       saveSession(sessionStorage, sess);
     } catch {
       // thiếu WebCrypto, localStorage đầy/bị chặn… -> không kẹt ở "Đang mã hoá…" (A10)
@@ -112,10 +126,12 @@ export function ConnectScreen(p: ConnectProps) {
     : steps;
 
   return (
-    <main class="connect" data-step={mobileStep}>
-      <h1>Kết nối trang quản lý với GitHub</h1>
+    <main class="connect" data-step={mobileStep} data-testid="connect">
+      <button type="button" class="btn btn-ghost connect-back" onClick={p.onCancel} data-testid="conn-cancel"><Icon name="left" /> Quay lại chỉnh sửa</button>
+      <h1>Kết nối GitHub</h1>
+      <p class="muted connect-why">{p.purpose ?? 'Kết nối 1 lần để xuất bản thiệp lên trang và dùng bản sao lưu.'} Bản nháp của bạn vẫn giữ nguyên.</p>
       <ol class="stepper" aria-label="Các bước">
-        {['Tạo token', 'Kết nối', 'Bảo vệ trên máy này'].map((t, i) => (
+        {['Tạo token', 'Kết nối', 'Ghi nhớ trên máy này'].map((t, i) => (
           <li key={t} aria-current={curStep === i + 1 ? 'step' : undefined} class={curStep > i + 1 ? 'is-done' : ''}>
             {curStep > i + 1
               ? <button type="button" class="stepper-btn" onClick={() => goStep(i + 1)} aria-label={`Quay lại bước ${i + 1}: ${t}`}><span class="stepper-n">✓</span> {t}</button>
@@ -189,20 +205,22 @@ export function ConnectScreen(p: ConnectProps) {
       </section>
 
       <section class="cstep cstep-3" aria-labelledby="cs3">
-        <h2 id="cs3" tabIndex={-1}><span class="stepper-n">3</span> Bảo vệ trên máy này</h2>
-        <Toggle label="Ghi nhớ trên máy này (token được mã hoá bằng passphrase)" checked={remember} onChange={setRemember} />
+        <h2 id="cs3" tabIndex={-1}><span class="stepper-n">3</span> Ghi nhớ trên máy này</h2>
+        <Toggle label="Ghi nhớ token trên máy này (mã hoá bằng mật khẩu đăng nhập)" checked={remember} onChange={setRemember} />
         {remember ? (
           <>
-            <TextField label="Passphrase" type="password" value={pass} onInput={setPass} onBlur={() => setPassTouched(true)} autoComplete="new-password"
-              help={`≥ ${MIN_PASSPHRASE} ký tự${pass ? ` · Độ mạnh: ${passphraseStrength(pass)}` : ''}`} error={passErr} testId="conn-pass" />
-            <TextField label="Nhập lại passphrase" type="password" value={pass2} onInput={setPass2} onBlur={() => setPassTouched(true)} autoComplete="new-password" error={pass2Err} testId="conn-pass2" />
-            <p class="note">ⓘ Lần sau chỉ cần nhập passphrase. Quên passphrase thì dán lại token là xong, không mất dữ liệu.</p>
+            {needPass && (
+              <TextField label="Mật khẩu đăng nhập" type="password" value={pass} onInput={(v) => { setPass(v); setPassErr(null); }} autoComplete="current-password"
+                help="Trang vừa được tải lại nên cần nhập lại để mã hoá token." error={passErr} testId="conn-login-pass" />
+            )}
+            <p class="note">ⓘ Lần sau chỉ cần đăng nhập là dùng được ngay. Có thể "Ngắt kết nối GitHub" ở trang Tổng quan bất cứ lúc nào.</p>
+            <p class="banner banner--warn" data-testid="conn-remember-warn">Token sẽ được khoá bằng mật khẩu quản trị. Mật khẩu ngắn có thể bị dò ra. Chỉ ghi nhớ trên máy riêng có khoá màn hình.</p>
           </>
-        ) : <p class="note">Token chỉ giữ tới khi đóng tab, lần sau phải dán lại.</p>}
+        ) : <p class="note">Token chỉ giữ tới khi đóng tab; lần sau Xuất bản sẽ hỏi lại.</p>}
         {whyDisabled && <p class="help save-why" id="cs3-why" data-testid="conn-save-why">{whyDisabled}</p>}
         {saveErr && <p class="err" role="alert">⚠ {saveErr}</p>}
         <button type="button" class="btn btn-primary btn-block" disabled={!canSave} aria-describedby={whyDisabled ? 'cs3-why' : undefined} onClick={() => void save()} data-testid="conn-save">
-          {saving ? <><Spinner /> Đang mã hoá…</> : 'Lưu và vào trang quản lý'}
+          {saving ? <><Spinner /> {remember ? 'Đang mã hoá…' : 'Đang lưu…'}</> : 'Kết nối và tiếp tục'}
         </button>
         <div class="cstep-nav mobile-only">
           <button type="button" class="btn btn-secondary btn-block" onClick={() => goStep(2)} data-testid="cstep-back-3"><Icon name="left" /> Bước trước</button>
@@ -211,7 +229,7 @@ export function ConnectScreen(p: ConnectProps) {
 
       <footer class="connect-alt">
         <p>Không có token?</p>
-        <button type="button" class="btn btn-secondary" onClick={p.onOffline} data-testid="mode-download">Dùng chế độ xem thử và xuất file</button>
+        <button type="button" class="btn btn-secondary" onClick={p.onOffline} data-testid="mode-download">Tải gói .zip để tự commit (chế độ không kết nối)</button>
         {p.onDevServer && <button type="button" class="btn btn-secondary" onClick={p.onDevServer} data-testid="mode-dev">Dùng máy chủ dev (npm run dev)</button>}
       </footer>
     </main>

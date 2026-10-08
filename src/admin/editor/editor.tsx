@@ -8,6 +8,9 @@ import { FORM_GROUPS, groupById } from '@shared/config/schema-meta';
 import { saveMonogram } from '../auth/vault';
 import type { EditorStore } from '../state/store';
 import { useStore } from '../state/store';
+import { ConnectionFlow, type ConnectRequest, type GhAction } from '../state/connection';
+import type { Session } from '../auth/vault';
+import type { ConnectProps } from '../screens/connect';
 import { Modal, Spinner, toast } from '../ui/ui';
 import { Icon, type IconName } from '../ui/icons';
 import { Preview, type PreviewApi } from './preview';
@@ -44,6 +47,8 @@ export interface RouteProps {
    * Xem trước (preview đang ẩn giữ lại hiệu ứng và phát khi hiện - A05). Desktop: chỉ toast khi có `actions`.
    */
   peek: (text: string, actions?: PeekAction[]) => void;
+  /** thao tác cần GitHub (Khôi phục…): chưa kết nối -> mở màn Kết nối, xong thì làm tiếp */
+  requireGitHub: (action: GhAction) => void;
 }
 
 function Lazy(p: RouteProps & { id: string }) {
@@ -54,7 +59,7 @@ function Lazy(p: RouteProps & { id: string }) {
     void LAZY[p.id]!().then((m) => { if (alive) setC(() => m.default); });
     return () => { alive = false; };
   }, [p.id]);
-  return C ? <C store={p.store} go={p.go} preview={p.preview} peek={p.peek} /> : <p class="muted"><Spinner /> Đang tải…</p>;
+  return C ? <C store={p.store} go={p.go} preview={p.preview} peek={p.peek} requireGitHub={p.requireGitHub} /> : <p class="muted"><Spinner /> Đang tải…</p>;
 }
 
 const NAV: { id: string; icon: IconName; label: string; more?: boolean }[] = [
@@ -74,9 +79,24 @@ const NAV: { id: string; icon: IconName; label: string; more?: boolean }[] = [
 
 const readHash = () => decodeURIComponent(location.hash.replace(/^#\/?/, '')) || 'overview';
 
-export function Editor(p: { store: EditorStore; onLogout: () => void }) {
+const PURPOSE: Record<GhAction, string> = {
+  publish: 'Để xuất bản, cần kết nối GitHub (chỉ làm 1 lần).',
+  restore: 'Bản sao lưu nằm trên GitHub, cần kết nối để xem và khôi phục.',
+  connect: 'Kết nối 1 lần để xuất bản thiệp lên trang và dùng bản sao lưu.',
+};
+
+/** Màn Kết nối GitHub tải lười: chỉ cần khi Xuất bản / Khôi phục lần đầu. */
+function LazyConnect(p: ConnectProps) {
+  const [C, setC] = useState<ComponentType<ConnectProps> | null>(null);
+  useEffect(() => { void import('../screens/connect').then((m) => setC(() => m.default)); }, []);
+  return C ? <C {...p} /> : <main class="boot" aria-busy="true"><p><Spinner /> Đang tải…</p></main>;
+}
+
+export function Editor(p: { store: EditorStore; onLogout: () => void; devAvailable?: boolean }) {
   const { store } = p;
   const s = useStore(store, (x) => x);
+  const flow = useMemo(() => new ConnectionFlow(store, { session: sessionStorage, local: localStorage }), [store]);
+  const [connectReq, setConnectReq] = useState<ConnectRequest | null>(null);
   const [route, setRoute] = useState(readHash());
   const [mobileTab, setMobileTab] = useState<'edit' | 'preview' | 'more'>('edit');
   /** mobile: true = đang ở trang con (form), false = danh sách nhóm */
@@ -90,6 +110,12 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
   const errRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const offFlow = flow.subscribe(() => setConnectReq(flow.pending));
+    store.onAuthLost = (e, op) => {
+      setPublishOpen(false);
+      if (!op) toast('Token GitHub không còn dùng được. Bản nháp vẫn còn; lần Xuất bản tới sẽ hỏi lại token.', { tone: 'err', ms: 6000 });
+      void flow.authLost(e, op);
+    };
     void store.init().catch(() => { /* lỗi hiện qua s.error */ });
     const onHash = () => setRoute(readHash());
     window.addEventListener('hashchange', onHash);
@@ -101,7 +127,7 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
     window.addEventListener('keydown', onKey);
     const onUnload = (e: BeforeUnloadEvent) => { if (store.dirty) { e.preventDefault(); e.returnValue = ''; } };
     window.addEventListener('beforeunload', onUnload);
-    return () => { window.removeEventListener('hashchange', onHash); window.removeEventListener('keydown', onKey); window.removeEventListener('beforeunload', onUnload); };
+    return () => { offFlow(); window.removeEventListener('hashchange', onHash); window.removeEventListener('keydown', onKey); window.removeEventListener('beforeunload', onUnload); };
   }, [store]);
 
   // chiều cao thật của top bar (mobile không cố định 56px) -> khung preview mobile nằm ngay dưới, không bị che (A04)
@@ -129,6 +155,19 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
     document.getElementById('form-col')?.scrollTo?.(0, 0);
   };
 
+  /** Xuất bản: chưa kết nối GitHub -> màn Kết nối trước, xong mở tiếp dialog Xuất bản */
+  const openPublish = () => { if (flow.request('publish') === 'run') setPublishOpen(true); };
+  const requireGitHub = (a: GhAction) => { flow.request(a); };
+  const resume = (a: GhAction | null) => {
+    if (a === 'publish' && !store.s.staleDraft && !store.s.error) setPublishOpen(true);
+    if (a === 'restore') go('backup');
+  };
+  const onConnected = async (sess: Session) => {
+    const a = await flow.connected(sess);
+    toast(`Đã kết nối GitHub (${sess.owner}/${sess.repo}).`, { tone: 'ok' });
+    resume(a);
+  };
+
   const changes = useMemo(() => (s.ready ? store.changes() : []), [s.draft, s.published, s.ready]);
   const n = changes.length;
   const st = statusOf(s, n);
@@ -139,10 +178,13 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
 
   let content;
   if (!s.ready) content = s.error ? <ErrorPanel store={store} /> : <p class="muted"><Spinner /> Đang tải dữ liệu…</p>;
-  else if (route === 'overview') content = <Overview store={store} go={go} openPublish={() => setPublishOpen(true)} />;
+  else if (route === 'overview') {
+    content = <Overview store={store} go={go} openPublish={openPublish} connect={() => requireGitHub('connect')}
+      disconnect={() => void flow.disconnect().then(() => toast('Đã ngắt kết nối GitHub. Token đã xoá khỏi máy này; bản nháp vẫn còn.'))} />;
+  }
   else if (route === 'sections') content = <SectionsRoute store={store} go={go} />;
   else if (route === 'content') content = <ContentList go={go} />;
-  else if (LAZY[route]) content = api ? <Lazy id={route} store={store} go={go} preview={api} peek={peek} /> : null;
+  else if (LAZY[route]) content = api ? <Lazy id={route} store={store} go={go} preview={api} peek={peek} requireGitHub={requireGitHub} /> : null;
   else if (groupById(route)) content = <GroupForm store={store} group={groupById(route)!} go={go} />;
   else content = <p>Không có mục này. <button type="button" class="btn btn-link" onClick={() => go('overview')}>Về Tổng quan</button></p>;
 
@@ -164,13 +206,19 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
   );
 
   const zip = s.adapter.kind === 'download';
+  const modeLabel = zip ? 'Chế độ không kết nối' : s.adapter.kind === 'dev' ? 'Máy chủ dev' : s.adapter.label;
   return (
-    <div class={`ed${showPreview ? ' has-preview' : ''}`} data-tab={mobileTab} data-sub={sub ? '1' : undefined} ref={edRef}>
+    <>
+    {connectReq && (
+      <LazyConnect notice={connectReq.notice} purpose={PURPOSE[connectReq.action]} onDone={(x) => void onConnected(x)} onCancel={() => flow.cancel()}
+        onOffline={() => void flow.useDownload().then(resume)} onDevServer={p.devAvailable ? () => void flow.useDev().then(resume) : null} />
+    )}
+    <div class={`ed${showPreview ? ' has-preview' : ''}${connectReq ? ' is-covered' : ''}`} data-tab={mobileTab} data-sub={sub ? '1' : undefined} ref={edRef}>
       <header class="topbar" ref={tbRef}>
         <div class="tb-brand">
           <span class="tb-mono" aria-hidden="true">{s.draft.cover.monogram || '♡'}</span>
           <span class="tb-title">Quản lý thiệp</span>
-          <span class="tb-mode" title={s.adapter.label}>{zip ? 'Chế độ không kết nối' : s.adapter.kind === 'dev' ? 'Máy chủ dev' : s.adapter.label}</span>
+          <span class={`tb-mode${s.adapter.kind === 'site' ? ' tb-mode--off' : ''}`} title={s.adapter.label} data-testid="tb-mode">{modeLabel}</span>
         </div>
         <p class={`tb-status tb-status--${st.tone}`} role="status" aria-live="polite" data-testid="save-status">
           <span class="dot" aria-hidden="true" />
@@ -185,7 +233,7 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
           <button type="button" class="btn btn-ghost hide-lg hide-sm" aria-pressed={showPreview} onClick={() => setShowPreview(!showPreview)}>Xem trước</button>
           <a class="btn btn-ghost hide-sm" href={import.meta.env.BASE_URL} target="_blank" rel="noopener">Xem trang ↗</a>
           <button type="button" class="btn btn-primary" data-testid="publish-btn" disabled={!s.ready || !!s.busy || (n === 0 && !zip)}
-            onClick={() => setPublishOpen(true)}>
+            onClick={openPublish}>
             {s.busy?.kind === 'publish' ? <><Spinner /> {zip ? 'Đang tạo gói…' : 'Đang xuất bản…'}</>
               : zip ? <><span class="lbl-long">{publishLabel('download')}</span><span class="lbl-short">Tải gói</span></>
               : publishLabel(s.adapter.kind)}
@@ -255,6 +303,7 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
         <p>Toàn bộ {n} thay đổi chưa xuất bản sẽ bị bỏ, quay về đúng bản đang xuất bản. Thao tác này không đảo ngược được.</p>
       </Modal>
     </div>
+    </>
   );
 }
 

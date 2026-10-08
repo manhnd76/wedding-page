@@ -7,7 +7,14 @@ import type { EditorState } from '../state/store';
 import { fmtTime } from './util';
 
 export type StatusTone = 'err' | 'busy' | 'dirty' | 'ok' | 'clean';
-export interface StatusView { text: string; tone: StatusTone }
+export interface StatusView {
+  text: string;
+  tone: StatusTone;
+  /** chỉ khi chưa kết nối GitHub (v2.3): câu phụ cho thẻ Tổng quan */
+  hint?: string;
+}
+
+const SITE_HINT = 'Chưa kết nối GitHub: bản đang xuất bản đọc từ trang của bạn. Lần đầu bấm Xuất bản sẽ hỏi token (1 lần).';
 
 type S = Pick<EditorState, 'busy' | 'error' | 'save' | 'adapter' | 'published' | 'draft' | 'live' | 'lastPublishAt' | 'exported'>;
 
@@ -25,6 +32,14 @@ export function statusOf(s: S, n: number): StatusView {
     if (s.exported && s.exported.draft === s.draft) return { text: `Đã tải gói xuất bản · ${fmtTime(s.exported.at)}`, tone: 'ok' };
     if (n > 0) return { text: `Có ${n} thay đổi chưa tải gói`, tone: 'dirty' };
     return { text: 'Nháp trên máy này', tone: 'clean' };
+  }
+  if (s.adapter.kind === 'site') {
+    // chưa kết nối GitHub (v2.3): bản đang xuất bản = config của chính site; không theo dõi "khách đã thấy"
+    if (!s.published.publish.at) {
+      return { text: n > 0 ? `Chưa xuất bản lần nào · ${n} thay đổi trong nháp` : 'Chưa xuất bản lần nào', tone: n > 0 ? 'dirty' : 'clean', hint: SITE_HINT };
+    }
+    if (n > 0) return { text: `Có ${n} thay đổi chưa xuất bản`, tone: 'dirty', hint: SITE_HINT };
+    return { text: `Đã xuất bản · ${fmtTime(s.published.publish.at)}`, tone: 'clean', hint: SITE_HINT };
   }
   if (!s.published.publish.at) {
     if (n > 0) return { text: `Chưa xuất bản lần nào · ${n} thay đổi trong nháp`, tone: 'dirty' };

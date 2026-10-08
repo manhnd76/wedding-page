@@ -1,5 +1,9 @@
-/** Tổng quan: trạng thái xuất bản, banner token sắp hết hạn (solution 2.6), checklist thiếu thông tin. */
+/**
+ * Tổng quan: trạng thái xuất bản, banner token sắp hết hạn (solution 2.6), checklist thiếu thông tin,
+ * thẻ "Kết nối GitHub" (v2.3: kết nối khi cần / ngắt kết nối).
+ */
 import { useMemo } from 'preact/hooks';
+import { loadVault } from '../../auth/vault';
 import type { EditorStore } from '../../state/store';
 import { useStore } from '../../state/store';
 import { runChecklist } from '../../draft/checklist';
@@ -7,7 +11,7 @@ import { expiryWarning, weddingDateOf } from '../../storage/github';
 import { fmtTime } from '../util';
 import { publishLabel, statusOf } from '../status';
 
-export function Overview(p: { store: EditorStore; go: (r: string) => void; openPublish: () => void }) {
+export function Overview(p: { store: EditorStore; go: (r: string) => void; openPublish: () => void; connect: () => void; disconnect: () => void }) {
   const s = useStore(p.store, (x) => x);
   const checks = useMemo(() => runChecklist(s.draft, { tokenExpiresAt: s.tokenExpiresAt }), [s.draft]);
   const n = useMemo(() => p.store.changes().length, [s.draft, s.published]);
@@ -38,7 +42,26 @@ export function Overview(p: { store: EditorStore; go: (r: string) => void; openP
           {s.live?.state === 'waiting' && <p>◌ Đang chờ trang cập nhật (Cloudflare Pages build 30-90 giây)…</p>}
           {s.live?.state === 'live' && <p class="ok-text">✓ Khách đã thấy bản mới</p>}
           {s.live?.state === 'timeout' && <p class="err">Sau 5 phút trang vẫn chưa đổi. Kiểm tra trạng thái build trên Cloudflare Pages.</p>}
+          {st.hint && <p class="muted" data-testid="ov-hint">{st.hint}</p>}
           <button type="button" class="btn btn-primary" disabled={(n === 0 && !zip) || !!s.busy} onClick={p.openPublish} data-testid="ov-publish">{publishLabel(s.adapter.kind)}</button>
+        </div>
+        <div class="ov-card" data-testid="gh-card">
+          <h2>Kết nối GitHub</h2>
+          {s.adapter.kind === 'github' ? (
+            <>
+              <p class="ok-text">✓ Đã kết nối {s.adapter.label}</p>
+              <p class="muted">{loadVault(localStorage) ? 'Token được ghi nhớ trên máy này (mã hoá bằng mật khẩu đăng nhập).' : 'Token chỉ giữ tới khi đóng tab.'}</p>
+              <button type="button" class="btn btn-secondary" disabled={!!s.busy} onClick={p.disconnect} data-testid="gh-disconnect">Ngắt kết nối GitHub</button>
+            </>
+          ) : (
+            <>
+              <p class="muted">
+                {s.adapter.kind === 'site' ? 'Chưa kết nối. Bạn vẫn sửa, xem trước và tải ảnh/nhạc vào nháp bình thường; chỉ Xuất bản và Khôi phục cần token.'
+                  : `Đang dùng ${zip ? 'chế độ không kết nối (tải gói .zip)' : 'máy chủ dev'}. Kết nối GitHub để xuất bản thẳng lên trang.`}
+              </p>
+              <button type="button" class="btn btn-secondary" disabled={!!s.busy} onClick={p.connect} data-testid="gh-connect">Kết nối GitHub</button>
+            </>
+          )}
         </div>
       </div>
       <h2>Việc cần làm</h2>

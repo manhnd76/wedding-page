@@ -4,26 +4,13 @@
  * A15 (không nạp lại preview khi đang ẩn), A20. Chỉ dùng chế độ không kết nối (bản build :4173), không gọi GitHub.
  */
 import { expect, test, type Page } from '@playwright/test';
+import { fresh, login, offline, openConnect } from './helpers';
 import {
   ALBUM_LAYOUTS, AUTO_SCROLL_MODES, BODY_FONTS, BURSTS_ON_OPEN, COUNTDOWN_FIREWORKS, COUNTDOWN_STYLES, COUPLE_ORDERS, DIVIDERS,
   ENVELOPE_STYLES, FONT_PRESETS, HEADING_FONTS, INTENSITIES, OPEN_STYLES, ORNAMENT_SETS, PARTICLE_TYPES, PHOTO_FRAMES, REVEAL_ATOMS,
   REVEAL_STYLES, SCRIPT_FONTS, TEXTURES, THEME_IDS, WISH_FLY,
 } from '../../src/shared/config/enums';
 
-async function fresh(page: Page) {
-  await page.goto('/admin/');
-  await page.evaluate(async () => {
-    localStorage.clear();
-    sessionStorage.clear();
-    await new Promise<void>((r) => { const q = indexedDB.deleteDatabase('wp-admin'); q.onsuccess = q.onerror = q.onblocked = () => r(); });
-  });
-  await page.goto('/admin/');
-}
-async function offline(page: Page) {
-  await fresh(page);
-  await page.getByTestId('mode-download').click();
-  await expect(page.getByTestId('save-status')).toBeVisible();
-}
 const preview = (page: Page) => page.frameLocator('iframe.pv-frame.is-active');
 
 /** Mã enum không được hiện ra (giữ "kraft": từ thường dùng "giấy kraft"). */
@@ -130,8 +117,10 @@ test.describe('desktop 1360×900', () => {
       // focus vẫn ở thẻ vừa dời (nút "xuống" bị tắt ở cuối -> focus nút "lên" của chính thẻ đó)
       await expect(page.locator(':focus')).toHaveAttribute('aria-label', new RegExp(`^Đưa ${t0.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} (lên|xuống)$`));
     }
-    // A09: màn Kết nối nói lý do nút Lưu đang tắt
+    // A09: màn Kết nối nói lý do nút Lưu đang tắt (v2.3: mở từ thẻ Kết nối GitHub sau khi đăng nhập)
     await fresh(page);
+    await login(page);
+    await openConnect(page);
     await expect(page.getByTestId('conn-save')).toBeDisabled();
     await expect(page.getByTestId('conn-save-why')).toContainText('Hoàn tất bước 2');
   });
@@ -227,6 +216,8 @@ test.describe('mobile 390×844', () => {
 
   test('A08: Kết nối mobile có "Bước trước" và stepper quay về; A20: link khách dạng thẻ, không cuộn ngang', async ({ page }) => {
     await fresh(page);
+    await login(page);
+    await openConnect(page);
     await expect(page.locator('.connect')).toHaveAttribute('data-step', '1');
     await page.locator('.cstep-1').getByRole('button', { name: 'Tiếp' }).click();
     await expect(page.locator('.connect')).toHaveAttribute('data-step', '2');

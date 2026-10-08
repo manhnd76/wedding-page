@@ -67,8 +67,10 @@ export class EditorStore {
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
   db: DraftDb | null = null;
-  /** gọi khi lỗi 401 giữa phiên (app chuyển về Login, giữ nháp) */
-  onAuthLost: ((e: StorageError) => void) | null = null;
+  /** gọi khi lỗi 401 giữa phiên (giữ nháp; `op` = thao tác đang chạy lúc lỗi, để mở Kết nối rồi làm tiếp) */
+  onAuthLost: ((e: StorageError, op: 'publish' | 'restore' | null) => void) | null = null;
+  /** thao tác chờ làm tiếp sau khi kết nối GitHub (vd mở lại dialog Khôi phục) - đọc 1 lần bằng takeResume() */
+  private resume: string | null = null;
 
   constructor(adapter: StorageAdapter, tokenExpiresAt: string | null = null) {
     const empty = normalizeConfig({}).config;
@@ -102,6 +104,10 @@ export class EditorStore {
 
   /** Tải trạng thái repo. keepDraft: giữ nháp IndexedDB (hỏi nếu nháp dựa trên commit cũ). */
   async reloadSnapshot(o: { keepDraft: boolean }): Promise<void> {
+    // nháp đang chờ autosave -> ghi trước, để bản IndexedDB đọc dưới đây là mới nhất
+    if (o.keepDraft) await this.flush();
+    /** nháp trong bộ nhớ lúc bắt đầu: người dùng sửa tiếp trong lúc đang tải (vd vừa đổi nơi lưu) -> giữ bản mới nhất */
+    const startDraft = this.s.draft;
     let snap;
     try {
       snap = await this.s.adapter.loadSnapshot();
@@ -116,9 +122,13 @@ export class EditorStore {
     if (rec) {
       const recDraft = normalizeConfig(rec.config).config;
       const changed = diffConfigs(published, recDraft).length > 0;
-      if (changed && rec.baseCommit && rec.baseCommit !== snap.commit) staleDraft = { draft: recDraft, baseCommit: rec.baseCommit };
+      // "trang đã đổi từ nơi khác" = khác commit VÀ khác lần xuất bản. So publish.id để đổi nguồn đọc
+      // (site -> GitHub sau khi kết nối, commit giả 'site'/'local') hoặc commit không qua admin không hỏi nhầm.
+      const moved = !!rec.baseCommit && rec.baseCommit !== snap.commit && (rec.basePublishId ?? '') !== published.publish.id;
+      if (changed && moved) staleDraft = { draft: recDraft, baseCommit: rec.baseCommit };
       else if (changed) draft = recDraft;
     }
+    if (o.keepDraft && this.s.ready && this.s.draft !== startDraft) { draft = this.s.draft; staleDraft = null; }
     this.set({ ready: true, commit: snap.commit, manifest: snap.manifest, paths: snap.paths, published, draft, staleDraft, error: null });
     await this.db?.putPublished({ config: published, commit: snap.commit, at: new Date().toISOString() });
     await this.persist();
@@ -244,8 +254,28 @@ export class EditorStore {
 
   private fail(e: unknown) {
     const se = isStorageError(e) ? e : new StorageError('unknown', 'Có lỗi không mong muốn.', String(e));
+    const op = this.s.busy?.kind ?? null;
     this.set({ error: se, busy: null });
-    if (se.code === 'unauthorized' || se.code === 'expired') this.onAuthLost?.(se);
+    if (se.code === 'unauthorized' || se.code === 'expired') this.onAuthLost?.(se, op);
+  }
+
+  /**
+   * Đổi nơi lưu giữa phiên (v2.3: chưa kết nối -> GitHub sau khi nhập token, ngắt kết nối, chọn tải gói .zip…).
+   * Nháp (IndexedDB) giữ nguyên; tải lại bản đang xuất bản từ nơi lưu mới.
+   */
+  async setAdapter(adapter: StorageAdapter, tokenExpiresAt: string | null = null): Promise<void> {
+    await this.flush();
+    if (this.pollTimer) clearTimeout(this.pollTimer);
+    this.set({ adapter, tokenExpiresAt, error: null, busy: null, live: null, exported: null });
+    try { await this.reloadSnapshot({ keepDraft: true }); } catch { /* lỗi hiện qua s.error */ }
+  }
+
+  setResume(r: string | null): void { this.resume = r; }
+  /** đọc + xoá thao tác chờ (vd 'restore') */
+  takeResume(r: string): boolean {
+    if (this.resume !== r) return false;
+    this.resume = null;
+    return true;
   }
   clearError() { this.set({ error: null }); }
 

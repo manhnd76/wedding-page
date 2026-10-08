@@ -16,13 +16,27 @@ Tài liệu thiết kế/giải pháp: `docs/tasks/20261007-wedding-page/`.
 | `npm run typecheck` / `npm run lint` | `tsc --noEmit` |
 | `npm run size` | Chỉ chạy size-limit trên `dist/` |
 | `npm run placeholders` | Sinh lại ảnh/nhạc mẫu nhẹ trong `public/content/` |
+| `npm run admin:hash -- "<mật khẩu>"` | In hash mật khẩu đăng nhập trang quản lý (xem "Đổi mật khẩu") |
 
 ## Trang quản lý (v2)
 
-Mở `https://<site>/admin/`. Ba chế độ lưu:
-- **GitHub** (chính): màn "Kết nối lần đầu" hướng dẫn tạo fine-grained token (chỉ 1 repo; Repository permissions: **Contents: Read and write**, Metadata: Read-only; hạn sau ngày cưới ≥ 1 tháng). Token có thể lưu mã hoá trên máy bằng passphrase (PBKDF2-SHA256 600k + AES-GCM). Mỗi lần Xuất bản = 1 commit; giữ 1 bản sao lưu (`backup/`, không deploy), Khôi phục = hoán đổi.
+Mở `https://<site>/admin/` -> **đăng nhập bằng mật khẩu** (phiên chỉ trong tab: đóng tab là phải đăng nhập lại; sai 5 lần khoá 30 giây). Sau khi đăng nhập là vào thẳng trang quản lý: sửa, xem trước, tải ảnh/nhạc vào **nháp** không cần token; bản đang xuất bản đọc từ `/content/config.json` của chính site.
+
+**Token GitHub chỉ hỏi khi cần**: lần đầu bấm Xuất bản / Khôi phục (hoặc "Kết nối GitHub" ở Tổng quan) mới mở màn Kết nối GitHub; kết nối xong quay lại đúng thao tác đang làm. "Ghi nhớ token trên máy này" mã hoá token bằng chính mật khẩu đăng nhập (PBKDF2-SHA256 600k + AES-GCM, localStorage); không ghi nhớ thì token chỉ ở sessionStorage. "Ngắt kết nối GitHub" ở Tổng quan xoá token khỏi máy.
+
+### Đổi mật khẩu đăng nhập
+
+Mật khẩu **không** nằm trong mã nguồn, chỉ có hash PBKDF2-SHA256 (600.000 vòng, salt 16 byte).
+1. `npm run admin:hash -- "mật-khẩu-mới"` (không muốn lưu vào lịch sử lệnh: `npm run admin:hash -- --stdin` rồi gõ mật khẩu + Enter, hoặc biến môi trường `WP_ADMIN_PASSWORD`). Nên dùng ≥ 12 ký tự.
+2. Dán dòng `pbkdf2-sha256$...` vừa in vào hằng số `ADMIN_PASSWORD_HASH` trong `src/admin/auth/password.ts`.
+3. `npm test` (test quét để chắc không có mật khẩu dạng rõ trong `src/`, `tests/`, `dist/`…) rồi build/deploy. Phiên đăng nhập cũ hết hiệu lực; token đã "Ghi nhớ" bằng mật khẩu cũ sẽ bị bỏ, lần Xuất bản tới sẽ hỏi lại token.
+
+Lưu ý: site tĩnh nên ai cũng tải được bundle; cổng mật khẩu chỉ chặn người lạ mở `/admin`. Lớp bảo mật thật là token GitHub (không bao giờ nằm trong repo). Nên dùng mật khẩu dài, khó đoán.
+
+Ba chế độ lưu:
+- **GitHub** (chính): màn "Kết nối GitHub" hướng dẫn tạo fine-grained token (chỉ 1 repo; Repository permissions: **Contents: Read and write**, Metadata: Read-only; hạn sau ngày cưới ≥ 1 tháng). Mỗi lần Xuất bản = 1 commit; giữ 1 bản sao lưu (`backup/`, không deploy), Khôi phục = hoán đổi.
 - **Máy chủ dev** (`npm run dev`, mở `http://localhost:5173/admin/`): Xuất bản ghi thẳng vào `public/content/` + `backup/` (middleware `dev-admin-save`, chỉ có ở `vite dev`).
-- **Không kết nối**: sửa trên máy, "Tải gói xuất bản (.zip)" rồi tự commit.
+- **Không kết nối**: chọn ở màn Kết nối GitHub ("Tải gói .zip để tự commit"); "Tải gói xuất bản (.zip)" rồi tự commit.
 
 Nháp lưu IndexedDB trên máy (`wp-admin`); danh sách khách chỉ lưu trên máy + CSV.
 

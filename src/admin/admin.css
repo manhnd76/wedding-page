@@ -146,6 +146,10 @@ textarea.input { min-height: 88px; resize: vertical; }
 .res--warn { background: var(--a-warn-bg); }
 .res-ic { font-weight: 700; }
 .connect-alt { text-align: center; padding: 1rem 0; display: grid; gap: .5rem; justify-items: center; }
+/* v2.3: màn Kết nối mở khi cần, phủ trang quản lý (trang quản lý vẫn mounted để giữ trạng thái) */
+.ed.is-covered { display: none; }
+.connect-back { margin-left: -.5rem; }
+.connect-why { margin-top: -.2rem; }
 .mobile-only { display: none; }
 .login, .boot { min-height: 100vh; display: grid; place-items: center; padding: 1rem; }
 .login-card { width: min(400px, 100%); background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 16px; padding: 1.4rem; text-align: center; }
@@ -161,6 +165,7 @@ textarea.input { min-height: 88px; resize: vertical; }
 .tb-mono { font-weight: 700; color: var(--a-primary); }
 .tb-title { font-weight: 700; white-space: nowrap; }
 .tb-mode { font-size: .8rem; color: var(--a-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 14rem; }
+.tb-mode--off { color: var(--a-warn, #8a5a00); }
 .tb-status { flex: 1; margin: 0; display: flex; align-items: center; gap: .4rem; font-size: .9rem; min-width: 0; overflow: hidden; }
 .tb-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tb-status .dot, .ov-status .dot { width: 10px; height: 10px; border-radius: 50%; background: #9aa09d; flex: none; }
@@ -395,3 +400,4 @@ textarea.input { min-height: 88px; resize: vertical; }
   .toasts { bottom: 76px; }
   .modal { width: 100vw; max-width: 100vw; max-height: 100vh; border-radius: 0; margin: 0; height: 100%; }
 }
+.login .err:empty { margin: 0; }

@@ -3,6 +3,7 @@
  * - bắt đầu sau `startDelayMs`, tăng tốc 800ms, `flow` dừng ngắn đầu mỗi section
  * - khách wheel/touch/chuột/phím/kéo thanh cuộn/focus ô nhập/mở lightbox-sheet-menu/chọn chữ -> DỪNG HẲN, không tự tiếp tục
  * - nút tròn 44px (cột phải, trên nút nhạc): Dừng/Tiếp tục; lần dừng đầu có toast; tới cuối trang thì ẩn
+ * - E05: đã dừng -> nút ẩn trong lúc khách tự cuộn (không che nội dung / nút "Gửi lời chúc"), hiện lại sau 1.2s đứng yên
  * - tab ẩn / resize: tạm dừng rồi tự chạy lại (nguyên nhân hệ thống)
  * - reduced-motion: không tự chạy; khách bấm thì chạy steady 32px/s
  */
@@ -21,6 +22,8 @@ export interface AutoScrollMount {
 }
 
 const PREFETCH_SCREENS = 1.5;
+/** E05: khách đứng yên bao lâu thì nút "Tiếp tục tự cuộn" hiện lại */
+export const RESUME_BTN_IDLE_MS = 1200;
 
 export function mountAutoScroll(o: AutoScrollMount): AutoScroller | null {
   const cfg = ctx.config.effects.autoScroll;
@@ -67,10 +70,24 @@ export function mountAutoScroll(o: AutoScrollMount): AutoScroller | null {
     btn.setAttribute('aria-label', on_ ? 'Dừng tự cuộn' : 'Tiếp tục tự cuộn');
     btn.replaceChildren(icon(on_ ? 'pause' : 'playDown', 20));
     btn.dataset.state = s;
+    if (s !== 'stopped') showBtn();
     if (s === 'done') btn.hidden = true;
     if (s === 'stopped' && sc.stopReason !== 'manual' && sc.userStops === 1) toast('Đã dừng tự cuộn · bấm ▶ để tiếp tục', 3000);
     emit('autoscroll-change', on_);
   };
+  // E05: khi đã dừng, khách cuộn -> ẩn nút (opacity 0, không nhận chạm), đứng yên 1.2s -> hiện lại.
+  // Lúc đang chạy giữ nguyên (khách cần nút Dừng). Focus ô nhập: cả cụm nút nổi đã ẩn (.is-typing).
+  let idleT: ReturnType<typeof setTimeout> | null = null;
+  function showBtn() {
+    if (idleT) { clearTimeout(idleT); idleT = null; }
+    btn.classList.remove('is-hiding');
+  }
+  window.addEventListener('scroll', () => {
+    if (sc.state !== 'stopped' && sc.state !== 'idle') return;
+    btn.classList.add('is-hiding');
+    if (idleT) clearTimeout(idleT);
+    idleT = setTimeout(showBtn, RESUME_BTN_IDLE_MS);
+  }, { passive: true });
   sc.onChange = sync;
   sync(sc.state);
 

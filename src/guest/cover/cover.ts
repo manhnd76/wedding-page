@@ -116,6 +116,48 @@ function applyEnvelopeColors(el: HTMLElement): void {
   }
 }
 
+/** Bậc cỡ chữ tên khách trên mặt phong bì (design-review-envelopes E01). */
+export const GUEST_FIT_STEPS = [22, 19, 17, 15];
+const GUEST_MIN_PX = 15;
+
+/**
+ * E01: tên khách trên mặt phong bì tự giảm cỡ theo bậc bằng đo layout thật (22 -> 19 -> 17 -> 15px, không lớn hơn cỡ
+ * CSS ban đầu): ≤ 2 dòng ở các bậc trên, cho phép 3 dòng ở 15px. Không clamp/cắt nên không bao giờ mất dấu/mất chữ
+ * (tên đã giới hạn 60 ký tự ở guest-name). E08: đánh dấu `.is-multi` khi tên xuống dòng hoặc tách khỏi dòng "Kính gửi".
+ */
+export function fitEnvGuest(addr: HTMLElement): { px: number; lines: number } | null {
+  const g = addr.querySelector<HTMLElement>('.env-guest');
+  if (!g || !addr.clientHeight) return null;
+  const pre = addr.querySelector<HTMLElement>('.env-prefix');
+  g.classList.remove('is-long');
+  g.style.removeProperty('font-size');
+  addr.classList.remove('is-multi');
+  const base = parseFloat(getComputedStyle(g).fontSize) || 22;
+  const steps = [base, ...GUEST_FIT_STEPS.filter((x) => x < base - 0.75)].map((x) => Math.max(GUEST_MIN_PX, x));
+  const acs = getComputedStyle(addr);
+  const room = addr.clientHeight - parseFloat(acs.paddingTop) - parseFloat(acs.paddingBottom);
+  const row = acs.flexDirection === 'row';
+  const kids = Array.from(addr.children) as HTMLElement[];
+  let px = GUEST_MIN_PX;
+  let lines = 1;
+  for (let i = 0; i < steps.length; i++) {
+    px = steps[i]!;
+    css(g, { 'font-size': `${px}px` });
+    addr.classList.remove('is-multi');
+    const gcs = getComputedStyle(g);
+    const lh = parseFloat(gcs.lineHeight) || px * 1.3;
+    lines = Math.max(1, Math.round((g.offsetHeight - parseFloat(gcs.paddingTop) - parseFloat(gcs.paddingBottom)) / lh));
+    const wrapped = row && !!pre && g.offsetTop >= pre.offsetTop + pre.offsetHeight - 1;
+    if (lines > 1 || wrapped) addr.classList.add('is-multi');
+    const top = Math.min(...kids.map((k) => k.offsetTop));
+    const used = Math.max(...kids.map((k) => k.offsetTop + k.offsetHeight)) - top;
+    const maxLines = px <= GUEST_MIN_PX ? 3 : 2;
+    if (lines <= maxLines && used <= room + 1) break;
+  }
+  addr.dataset.fit = `${px}/${lines}`;
+  return { px, lines };
+}
+
 export interface CoverHandle { el: HTMLElement; opened: Promise<void> }
 
 export function mountCover(music: MusicPlayer): CoverHandle {
@@ -166,10 +208,21 @@ export function mountCover(music: MusicPlayer): CoverHandle {
     if (!play) play = m?.play ?? fadeZoom;
   }).finally(() => el.classList.add('is-skin'));
   let ready = false;
+  const addr = el.querySelector<HTMLElement>('.env-addr');
+  const fit = () => { if (addr) fitEnvGuest(addr); };
+  let fitRaf = 0;
+  const onResize = () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; if (!el.classList.contains('is-opening')) fit(); }); };
+  const fontSet = (document as Document & { fonts?: FontFaceSet }).fonts;
+  if (addr) {
+    window.addEventListener('resize', onResize, { passive: true });
+    // font tên khách về muộn (sau mốc 4s vẫn cho mở) -> đo lại
+    fontSet?.addEventListener?.('loadingdone', onResize);
+  }
   const setReady = () => {
     if (ready) return;
     ready = true;
     el.classList.add('is-skin');
+    fit();
     cta.disabled = false;
     cta.querySelector('.cv-cta-label')!.textContent = c.tapToOpenLabel || 'Chạm để mở thiệp';
     el.classList.add('is-ready');
@@ -203,6 +256,8 @@ export function mountCover(music: MusicPlayer): CoverHandle {
     const fn = play ?? fadeZoom;
     run = fn(el, { level: mode === 'full+' ? 'full+' : mode === 'light' ? 'light' : 'full', greeting: c.showOpenedGreeting, timeScale: EffectRegistry.timeScale });
     void run.finished.then(() => {
+      window.removeEventListener('resize', onResize);
+      fontSet?.removeEventListener?.('loadingdone', onResize);
       el.remove();
       document.documentElement.classList.remove('cover-on');
       resolveOpened();

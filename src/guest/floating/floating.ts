@@ -135,8 +135,15 @@ export function mountFloating(music: MusicPlayer, visibleIds: Set<string>): void
     }
     let lastY = window.scrollY;
     let t: ReturnType<typeof setTimeout> | null = null;
+    // E11: tự cuộn đang chạy (kể cả lúc dừng ngắn đầu section) -> giữ thu nhỏ, không chạy timer giãn ra (hết nháy)
+    const autoOn = () => document.documentElement.classList.contains('is-autoscroll');
+    on('autoscroll-change', (running) => {
+      if (running && autoOn()) { if (t) { clearTimeout(t); t = null; } pill.classList.add('is-mini'); }
+      else if (!running) { if (t) clearTimeout(t); t = setTimeout(() => pill.classList.remove('is-mini'), 800); }
+    });
     window.addEventListener('scroll', () => {
       const y = window.scrollY;
+      if (autoOn()) { lastY = y; if (t) { clearTimeout(t); t = null; } pill.classList.add('is-mini'); return; }
       pill.classList.toggle('is-mini', y > lastY && y > 200);
       lastY = y;
       if (t) clearTimeout(t);

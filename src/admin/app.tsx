@@ -1,70 +1,62 @@
 /**
- * Luồng màn hình (solution 2.4): có phiên -> trang quản lý; có vault -> Login; không -> Kết nối lần đầu.
- * Chế độ không kết nối (Download) và máy chủ dev (DevServer, chỉ `vite dev`).
+ * Luồng màn hình v2.3 (decisions 2026-10-08 "Đổi luồng đăng nhập admin"):
+ * chưa đăng nhập -> Login (mật khẩu, so hash) -> trang quản lý ngay (không cần token).
+ * Token GitHub chỉ hỏi khi cần (Xuất bản / Khôi phục) - xem `state/connection.ts`.
+ * Có token "Ghi nhớ" -> mở bằng chính mật khẩu đăng nhập, dùng GitHub luôn.
  */
 import { useEffect, useState } from 'preact/hooks';
-import { clearSession, loadSession, loadVault, type Session } from './auth/vault';
-import { ConnectScreen } from './screens/connect';
+import { MODE_KEY, clearSession, restoreRememberedToken } from './auth/vault';
+import { clearLogin, isLoggedIn, markLoggedIn, rememberLoginPassword } from './auth/password';
 import { LoginScreen } from './screens/login';
 import { Editor } from './editor/editor';
 import { EditorStore } from './state/store';
-import { GitHubAdapter } from './storage/github';
-import { DevServerAdapter, DownloadAdapter, devServerAvailable } from './storage/local-adapters';
+import { initialAdapter } from './state/connection';
+import { devServerAvailable } from './storage/local-adapters';
 import { Toasts, toast } from './ui/ui';
 
-const MODE_KEY = 'wp_admin_mode_v1';
-type Phase =
-  | { k: 'boot' }
-  | { k: 'connect'; notice: string | null }
-  | { k: 'login'; notice: string | null }
-  | { k: 'editor'; store: EditorStore };
+type Phase = { k: 'boot' } | { k: 'login' } | { k: 'editor'; store: EditorStore };
+
+const deps = () => ({ session: sessionStorage, local: localStorage });
 
 export function App() {
   const [phase, setPhase] = useState<Phase>({ k: 'boot' });
   const [dev, setDev] = useState(false);
 
-  const openEditor = (store: EditorStore) => {
-    store.onAuthLost = (e) => {
-      clearSession(sessionStorage);
-      toast('Phiên đã hết, mở khoá lại để tiếp tục. Bản nháp vẫn còn.', { tone: 'err', ms: 6000 });
-      setPhase(loadVault(localStorage) ? { k: 'login', notice: e.message } : { k: 'connect', notice: e.message });
-    };
-    setPhase({ k: 'editor', store });
+  const openEditor = (isDev: boolean) => {
+    const { adapter, expiresAt } = initialAdapter(deps(), isDev);
+    setPhase({ k: 'editor', store: new EditorStore(adapter, expiresAt) });
   };
-  const github = (s: Session) => openEditor(new EditorStore(new GitHubAdapter({ ...s, knownExpiresAt: s.expiresAt }), s.expiresAt));
-  const offline = () => { sessionStorage.setItem(MODE_KEY, 'download'); openEditor(new EditorStore(new DownloadAdapter())); };
-  const devMode = () => { sessionStorage.setItem(MODE_KEY, 'dev'); openEditor(new EditorStore(new DevServerAdapter())); };
 
   useEffect(() => {
     void (async () => {
       const isDev = import.meta.env.DEV && (await devServerAvailable());
       setDev(isDev);
-      const mode = sessionStorage.getItem(MODE_KEY);
-      if (mode === 'dev' && isDev) return devMode();
-      if (mode === 'download') return offline();
-      const sess = loadSession(sessionStorage);
-      if (sess) return github(sess);
-      setPhase(loadVault(localStorage) ? { k: 'login', notice: null } : { k: 'connect', notice: null });
+      if (isLoggedIn(sessionStorage)) openEditor(isDev);
+      else setPhase({ k: 'login' });
     })();
   }, []);
 
+  const onLogin = async (password: string) => {
+    rememberLoginPassword(password);
+    markLoggedIn(sessionStorage);
+    const r = await restoreRememberedToken(localStorage, sessionStorage, password);
+    if (r === 'dropped') toast('Token GitHub đã ghi nhớ trước đây không mở được bằng mật khẩu này. Khi Xuất bản sẽ hỏi lại token.', { ms: 7000 });
+    openEditor(dev);
+  };
+
   const logout = () => {
+    clearLogin(sessionStorage);
     clearSession(sessionStorage);
     sessionStorage.removeItem(MODE_KEY);
+    rememberLoginPassword(null);
     if (phase.k === 'editor') phase.store.dispose();
-    setPhase(loadVault(localStorage) ? { k: 'login', notice: null } : { k: 'connect', notice: null });
+    setPhase({ k: 'login' });
   };
 
   let body;
   if (phase.k === 'boot') body = <main class="boot" aria-busy="true"><p>Đang tải…</p></main>;
-  else if (phase.k === 'connect') {
-    body = <ConnectScreen notice={phase.notice} onDone={github} onOffline={offline} onDevServer={dev ? devMode : null} />;
-  } else if (phase.k === 'login') {
-    const v = loadVault(localStorage);
-    body = v
-      ? <LoginScreen vault={v} notice={phase.notice} onDone={github} onReconnect={(n) => setPhase({ k: 'connect', notice: n })} />
-      : <ConnectScreen notice={phase.notice} onDone={github} onOffline={offline} onDevServer={dev ? devMode : null} />;
-  } else body = <Editor store={phase.store} onLogout={logout} />;
+  else if (phase.k === 'login') body = <LoginScreen onDone={onLogin} />;
+  else body = <Editor store={phase.store} onLogout={logout} devAvailable={dev} />;
 
   return <>{body}<Toasts /></>;
 }

@@ -283,3 +283,125 @@ test('tự cuộn: chạy sau khi mở, dừng hẳn khi wheel / chạm, nút Ti
   expect(await y()).toBe(y2);
   expect(errors).toEqual([]);
 });
+
+// ---------------------------------------------------------------- v2.3: design-review-envelopes E01/E02/E05/E10/E11
+
+/** Bỏ config inline của bản build -> guest đọc `/content/config.json` (đã ghi đè mẫu phong bì) và resolve lúc chạy. */
+async function useEnvelope(page: Page, style: string): Promise<void> {
+  const { readFileSync } = await import('node:fs');
+  const cfg = JSON.parse(readFileSync('public/content/config.json', 'utf8')) as { cover: { openStyle: string; envelope: { style: string; guestOnFront: boolean } } };
+  cfg.cover.openStyle = 'envelope';
+  cfg.cover.envelope = { ...cfg.cover.envelope, style, guestOnFront: true };
+  await page.route(/\/content\/config\.json/, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cfg) }));
+  await page.route((u) => u.pathname === '/', async (r) => {
+    const res = await r.fetch();
+    const html = (await res.text()).replace(/<script type="application\/json" id="wp-(config|resolved)">[\s\S]*?<\/script>/g, '');
+    await r.fulfill({ response: res, body: html });
+  });
+}
+
+const LONG_NAMES = ['Gia đình anh chị Nguyễn Văn Mạnh và các cháu', 'Phượng', 'Quỳnh', 'Ngọc Ẩn'];
+const ENV_STYLES = ['classic', 'kraft', 'song-hy', 'lace', 'minimal', 'velvet'];
+
+test.describe('E01 tên khách trên phong bì không bị cắt (360×740)', () => {
+  test.use({ viewport: { width: 360, height: 740 } });
+  for (const style of ENV_STYLES) {
+    test(`mẫu ${style}: không clamp, chữ (kể cả dấu nặng) nằm trong vùng địa chỉ, ≤ 3 dòng, ≥ 15px`, async ({ page }) => {
+      const errors = watchConsole(page);
+      await useEnvelope(page, style);
+      for (const name of LONG_NAMES) {
+        await page.goto(`/?to=${encodeURIComponent(name.replace(/ /g, '-'))}`);
+        await expect(page.locator('.cv-cta')).toBeEnabled({ timeout: 6000 });
+        await expect(page.locator('.cover')).toHaveAttribute('data-env', style);
+        const g = page.locator('.env-guest');
+        await expect(g).toHaveText(name);
+        await expect(page.locator('.env-addr')).toHaveAttribute('data-fit', /^\d+(\.\d+)?\/[123]$/);
+        const m = await page.evaluate(() => {
+          const el = document.querySelector<HTMLElement>('.env-guest')!;
+          const addr = document.querySelector<HTMLElement>('.env-addr')!;
+          const cs = getComputedStyle(el);
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const lines = Array.from(range.getClientRects()).map((r) => ({ top: r.top, bottom: r.bottom, left: r.left, right: r.right }));
+          const a = addr.getBoundingClientRect();
+          const env = document.querySelector('.cv-env')!.getBoundingClientRect();
+          // phần nhìn thấy của dấu: sticker (minimal) hoặc hình SVG (các mẫu khác)
+          const seal = (document.querySelector('.env-seal .mn-sticker') ?? document.querySelector('.env-seal .seal-art') ?? document.querySelector('.env-seal')!).getBoundingClientRect();
+          const tw = document.querySelector('.tw-l path')?.getBoundingClientRect() ?? null;
+          return {
+            clamp: cs.getPropertyValue('-webkit-line-clamp'), overflow: cs.overflowY, fontPx: parseFloat(cs.fontSize),
+            scrollH: el.scrollHeight, clientH: el.clientHeight, lines,
+            addr: { top: a.top, bottom: a.bottom, left: a.left, right: a.right, cy: (a.top + a.bottom) / 2, h: addr.offsetHeight },
+            env: { top: env.top, bottom: env.bottom, left: env.left, right: env.right },
+            seal: { top: seal.top, bottom: seal.bottom, left: seal.left, right: seal.right },
+            twBottom: tw?.bottom ?? null,
+          };
+        });
+        const tag = `${style} · "${name}"`;
+        expect(m.clamp, tag).toBe('none');
+        expect(m.overflow, tag).toBe('visible');
+        expect(m.fontPx, tag).toBeGreaterThanOrEqual(15);
+        expect(m.scrollH, tag).toBeLessThanOrEqual(m.clientH + 1);
+        // số dòng thật (gộp các rect cùng hàng)
+        const rows = [...new Set(m.lines.map((l) => Math.round(l.top)))];
+        expect(rows.length, tag).toBeLessThanOrEqual(3);
+        for (const l of m.lines) {
+          expect(l.top, tag).toBeGreaterThanOrEqual(m.addr.top - 1);
+          expect(l.bottom, tag).toBeLessThanOrEqual(m.addr.bottom + 1);
+          expect(l.left, tag).toBeGreaterThanOrEqual(m.env.left);
+          expect(l.right, tag).toBeLessThanOrEqual(m.env.right);
+          expect(l.bottom, tag).toBeLessThanOrEqual(m.env.bottom);
+          // không chạm seal / nút dây
+          const overlapX = l.right > m.seal.left && l.left < m.seal.right;
+          expect(overlapX && l.top < m.seal.bottom - 1 && l.bottom > m.seal.top, tag).toBe(false);
+        }
+        // E02: dây gai dọc dừng ở mép trên thẻ tên (không vẽ qua chữ)
+        if (style === 'kraft') expect(m.twBottom!, tag).toBeLessThanOrEqual(m.addr.cy - m.addr.h / 2 + 3);
+      }
+      expect(errors).toEqual([]);
+    });
+  }
+});
+
+test.describe('E05/E10/E11 nút tự cuộn sau khi khách dừng (360×740)', () => {
+  test.use({ viewport: { width: 360, height: 740 } });
+  test('đang chạy: pill thu nhỏ suốt (không nháy); đã dừng: khách cuộn -> nút ẩn, đứng yên 1.2s -> hiện lại; tooltip nhạc không đè nút', async ({ page }) => {
+    const errors = watchConsole(page);
+    await openCard(page);
+    const btn = page.getByTestId('autoscroll-btn');
+    await expect(btn).toHaveAttribute('aria-label', 'Dừng tự cuộn', { timeout: 5000 });
+    await expect.poll(() => page.evaluate(() => Math.round(window.scrollY)), { timeout: 10_000 }).toBeGreaterThan(30);
+    // E11: lấy mẫu 3s trong lúc tự cuộn (có dừng ngắn đầu section): pill luôn thu nhỏ
+    const minis = await page.evaluate(async () => {
+      const out: boolean[] = [];
+      for (let i = 0; i < 30; i++) { out.push(!!document.querySelector('.pill')?.classList.contains('is-mini')); await new Promise((r) => setTimeout(r, 100)); }
+      return { out, auto: document.documentElement.classList.contains('is-autoscroll') };
+    });
+    if (minis.auto && (await page.locator('.pill').count())) expect(minis.out.every(Boolean)).toBe(true);
+    // E10: tooltip nhạc ở bên trái nút nhạc, không chồng lên nút tự cuộn
+    const tip = await page.locator('.fl-tip').boundingBox();
+    const bb = (await btn.boundingBox())!;
+    if (tip) {
+      const music = (await page.locator('.fl-music').boundingBox())!;
+      expect(tip.x + tip.width).toBeLessThanOrEqual(music.x + 1);
+      expect(tip.y >= bb.y + bb.height || tip.x + tip.width <= bb.x).toBe(true);
+    }
+    // dừng bằng wheel -> khách cuộn tiếp -> nút ẩn (không nhận chạm)
+    await page.mouse.move(180, 400);
+    await page.mouse.wheel(0, 60);
+    await expect(btn).toHaveAttribute('aria-label', 'Tiếp tục tự cuộn');
+    await page.mouse.wheel(0, 200);
+    await expect(btn).toHaveClass(/is-hiding/);
+    expect(await btn.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+    await page.waitForTimeout(400);
+    await page.mouse.wheel(0, 200);
+    await page.waitForTimeout(600);
+    await expect(btn).toHaveClass(/is-hiding/); // vẫn đang cuộn gần đây
+    await expect(btn).not.toHaveClass(/is-hiding/, { timeout: 2500 });
+    await expect.poll(() => btn.evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+    // hiện lại thì bấm được: Tiếp tục
+    await btn.click();
+    await expect(btn).toHaveAttribute('aria-label', 'Dừng tự cuộn');
+    expect(errors).toEqual([]);
+  });
+});
