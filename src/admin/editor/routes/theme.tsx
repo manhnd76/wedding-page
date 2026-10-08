@@ -1,12 +1,17 @@
 /**
  * Theme & Màu (design 8.12): gallery thẻ HTML/CSS thật (biến CSS scoped theo token preset, tên cặp đôi thật),
  * chip lọc, radiogroup, chạm = áp vào nháp + toast Hoàn tác; dialog "Giữ phần tôi đã chỉnh / Dùng trọn gói";
- * khối "Thành phần của theme"; màu chủ đạo + badge tương phản + "Tự sửa"; nâng cao: token, họa tiết, texture, khung, divider.
+ * khối "Thành phần của theme"; màu chủ đạo + badge tương phản + "Tự sửa"; nâng cao: token, hoạ tiết, texture, khung, đường phân cách.
+ * Mọi giá trị hiển thị bằng nhãn tiếng Việt (`@shared/labels`, A07). Mobile: toast [Hoàn tác] [Xem ↗] (A05).
  */
 import { useEffect, useState } from 'preact/hooks';
 import { PRESETS, type ThemePreset } from '@shared/theme/presets';
 import { THEME_TAGS, type ThemeId, type ThemeTag } from '@shared/config/enums';
-import { CAPABILITIES } from '@shared/capabilities';
+import { CAPABILITIES, isSupported, type CapabilityKey } from '@shared/capabilities';
+import {
+  BURST_LABEL, DIVIDER_LABEL, OPEN_STYLE_LABEL, ORNAMENT_LABEL, PARTICLE_LABEL, PHOTO_FRAME_LABEL, REVEAL_LABEL, TEXTURE_LABEL,
+  capLabel, followThemeLabel,
+} from '@shared/labels';
 import { resolveTheme } from '@shared/theme/resolve';
 import { contrast } from '@shared/theme/contrast';
 import { deriveFromPrimary } from '@shared/theme/derive';
@@ -15,14 +20,14 @@ import { ensureFonts } from '@guest/preview-bridge';
 import type { RouteProps } from '../editor';
 import { useStore } from '../../state/store';
 import { THEME_GROUP_LABEL, changeTheme, customizedGroups, resetGroup, type ThemeGroup } from '../../draft/ops';
-import { Details, Modal, Select, toast } from '../../ui/ui';
+import { Details, Modal, Select } from '../../ui/ui';
 
 const TAG_LABEL: Record<ThemeTag, string> = { 'co-dien': 'Cổ điển', 'truyen-thong': 'Truyền thống', 'hien-dai': 'Hiện đại', 'thien-nhien': 'Thiên nhiên', toi: 'Tối' };
 const MOOD: Partial<Record<ThemeId, string>> = { 'tram-vang': 'cổ điển ấm áp', 'son-do': 'truyền thống Á Đông', 'dem-nhung': 'sang trọng, nền tối' };
-const LABELS: Record<string, string> = {
-  'classic-line': 'Nét cổ điển', traditional: 'Truyền thống (song hỷ)', luxe: 'Sang trọng', paper: 'Giấy', velvet: 'Nhung', none: 'Không',
-  arch: 'Vòm', 'circle-moon': 'Trăng tròn', 'deco-cut': 'Deco', ornament: 'Hoạ tiết', wave: 'Sóng', cloud: 'Mây', 'deco-fan': 'Quạt Deco',
+const LABELS: Record<'ornamentSet' | 'texture' | 'photoFrame' | 'divider', Record<string, string>> = {
+  ornamentSet: ORNAMENT_LABEL, texture: TEXTURE_LABEL, photoFrame: PHOTO_FRAME_LABEL, divider: DIVIDER_LABEL,
 };
+const resolvedOf = <T extends string>(key: CapabilityKey, v: T): T => (isSupported(key, v) ? v : (CAPABILITIES[key].fallback as T));
 const TOKEN_LABEL: Record<string, string> = { primary: 'Màu chủ đạo (chữ/nút)', accent: 'Màu nhấn', bg: 'Nền', surface: 'Nền thẻ', text: 'Chữ', muted: 'Chữ phụ', line: 'Đường kẻ' };
 
 const supported = () => (CAPABILITIES.theme.supported as readonly ThemeId[]).map((id) => PRESETS[id]).filter((p) => !p.hidden);
@@ -54,7 +59,7 @@ function ThemeCard(p: { preset: ThemePreset; names: [string, string]; checked: b
   );
 }
 
-export default function ThemeRoute({ store, go }: RouteProps) {
+export default function ThemeRoute({ store, go, peek }: RouteProps) {
   const draft = useStore(store, (s) => s.draft);
   const [tag, setTag] = useState<ThemeTag | 'all'>('all');
   const [ask, setAsk] = useState<ThemeId | null>(null);
@@ -74,7 +79,7 @@ export default function ThemeRoute({ store, go }: RouteProps) {
   const apply = (id: ThemeId, mode: 'keep' | 'full') => {
     const before = store.s.draft;
     store.update((x) => changeTheme(x, id, mode), '', 'hero');
-    toast(`Đã đổi sang ${PRESETS[id].name}`, { action: { label: 'Hoàn tác', run: () => store.replaceDraft(before) } });
+    peek(`Đã đổi sang ${PRESETS[id].name}`, [{ label: 'Hoàn tác', run: () => store.replaceDraft(before) }]);
   };
   const pick = (id: ThemeId) => {
     if (id === draft.theme.preset) return;
@@ -92,12 +97,18 @@ export default function ThemeRoute({ store, go }: RouteProps) {
   const checkedIdx = Math.max(0, list.findIndex((p) => p.id === draft.theme.preset));
   const groupValue = (g: ThemeGroup): string => {
     const v: Record<ThemeGroup, string> = {
-      colors: '', fonts: '', ornament: LABELS[r.ornamentSet] ?? r.ornamentSet, texture: LABELS[r.texture] ?? r.texture,
-      photoFrame: LABELS[r.photoFrame] ?? r.photoFrame, divider: LABELS[r.divider] ?? r.divider, openStyle: r.openStyle,
-      burst: r.burstOnOpen, particles: r.particles.types.join(', '), reveal: r.reveal.style,
+      colors: '', fonts: '', ornament: ORNAMENT_LABEL[r.ornamentSet], texture: TEXTURE_LABEL[r.texture],
+      photoFrame: PHOTO_FRAME_LABEL[r.photoFrame], divider: DIVIDER_LABEL[r.divider], openStyle: OPEN_STYLE_LABEL[r.openStyle],
+      burst: BURST_LABEL[r.burstOnOpen], particles: r.particles.types.map((t) => PARTICLE_LABEL[t]).join(', '), reveal: REVEAL_LABEL[r.reveal.style],
     };
     return v[g];
   };
+  const sug = PRESETS[draft.theme.preset].suggest;
+  const suggestText = [
+    followThemeLabel(OPEN_STYLE_LABEL, sug.openStyle, resolvedOf('openStyle', sug.openStyle)).replace(/^Theo theme \((.*)\)$/, '$1'),
+    `sau khi mở: ${followThemeLabel(BURST_LABEL, sug.burstOnOpen, resolvedOf('burstOnOpen', sug.burstOnOpen)).replace(/^Theo theme \((.*)\)$/, '$1')}`,
+    `hạt: ${sug.particles.types.map((t) => capLabel('particle', PARTICLE_LABEL, t)).join(', ')}`,
+  ].join(' · ');
   const setOverride = (k: string, v: string | null) => store.update((x) => {
     const o = { ...x.theme.overrides } as Record<string, string>;
     if (v) o[k] = v; else delete o[k];
@@ -114,14 +125,17 @@ export default function ThemeRoute({ store, go }: RouteProps) {
   };
   const sel = (label: string, path: string, key: 'ornamentSet' | 'texture' | 'photoFrame' | 'divider', value: string) => (
     <Select label={label} value={value}
-      options={[{ value: 'theme', label: 'Theo theme' }, ...(CAPABILITIES[key].supported as readonly string[]).map((v) => ({ value: v, label: LABELS[v] ?? v }))]}
+      options={[
+        { value: 'theme', label: `Theo theme (${LABELS[key][resolvedOf(key, PRESETS[draft.theme.preset][key])] ?? 'mặc định'})` },
+        ...(CAPABILITIES[key].supported as readonly string[]).map((v) => ({ value: v, label: LABELS[key][v] ?? v })),
+      ]}
       onChange={(v) => store.setPath(path, v, 'hero')} />
   );
 
   return (
     <section>
       <h1>Theme &amp; Màu</h1>
-      <p class="muted">Chọn một phong cách. Bạn vẫn đổi được màu, font, họa tiết riêng sau khi chọn.</p>
+      <p class="muted">Chọn một phong cách. Bạn vẫn đổi được màu, font, hoạ tiết riêng sau khi chọn.</p>
       <div class="chips" role="group" aria-label="Lọc theme">
         {(['all', ...THEME_TAGS] as const).map((t) => (
           <button key={t} type="button" class="chip" aria-pressed={tag === t} onClick={() => setTag(t)}>{t === 'all' ? 'Tất cả' : TAG_LABEL[t]}</button>
@@ -154,7 +168,7 @@ export default function ThemeRoute({ store, go }: RouteProps) {
           })}
           <tr>
             <th scope="row">Hiệu ứng gợi ý</th>
-            <td>{r.openStyle} · {r.burstOnOpen}</td>
+            <td>{suggestText}</td>
             <td><button type="button" class="btn btn-link" onClick={() => go('effects')}>Sang tab Hiệu ứng</button></td>
           </tr>
         </tbody>
@@ -171,7 +185,7 @@ export default function ThemeRoute({ store, go }: RouteProps) {
       <p class="help">Các màu nền, chữ, đường kẻ tự suy ra từ màu chủ đạo để luôn dễ đọc.</p>
       {tb < 4.5 && <p class="banner banner--err" role="alert">Chữ trên nền chỉ đạt {tb.toFixed(2)}:1 (cần ≥ 4.5:1) - sẽ chặn Xuất bản. <button type="button" class="btn btn-secondary" onClick={autoFix}>Tự sửa</button></p>}
 
-      <Details summary="Nâng cao: từng màu, họa tiết, texture, khung ảnh, divider">
+      <Details summary="Nâng cao: từng màu, hoạ tiết, texture, khung ảnh, đường phân cách">
         {Object.keys(TOKEN_LABEL).map((k) => {
           const ov = (draft.theme.overrides as Record<string, string | undefined>)[k];
           const cur = (r.tokens as unknown as Record<string, string>)[k]!;
@@ -185,10 +199,10 @@ export default function ThemeRoute({ store, go }: RouteProps) {
             </div>
           );
         })}
-        {sel('Họa tiết', 'theme.ornamentSet', 'ornamentSet', draft.theme.ornamentSet)}
+        {sel('Hoạ tiết', 'theme.ornamentSet', 'ornamentSet', draft.theme.ornamentSet)}
         {sel('Texture nền', 'theme.texture', 'texture', draft.theme.texture)}
         {sel('Khung ảnh', 'theme.photoFrame', 'photoFrame', draft.theme.photoFrame)}
-        {sel('Divider', 'sections.divider', 'divider', draft.sections.divider)}
+        {sel('Đường phân cách', 'sections.divider', 'divider', draft.sections.divider)}
       </Details>
 
       <Modal open={ask !== null} onClose={() => setAsk(null)} title="Đổi theme"

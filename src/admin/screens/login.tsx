@@ -3,7 +3,8 @@
  * Sai -> "Passphrase chưa đúng"; 5 lần -> khoá 30s có đếm ngược; giải mã được nhưng GitHub 401/403 -> sang 8.2b.
  */
 import { useEffect, useState } from 'preact/hooks';
-import { UnlockGuard, VaultError, clearVault, saveSession, unlock, type Session, type VaultRecord } from '../auth/vault';
+import { UnlockGuard, VaultError, clearVault, loadMonogram, saveSession, unlock, type Session, type VaultRecord } from '../auth/vault';
+import { Icon } from '../ui/icons';
 import { GitHubAdapter } from '../storage/github';
 import { Modal, Spinner } from '../ui/ui';
 
@@ -66,11 +67,12 @@ export function LoginScreen(p: LoginProps) {
     }
   };
 
-  const mono = `${p.vault.owner.slice(0, 1).toUpperCase()}&`;
+  // chữ lồng thật của thiệp (lưu khi vào admin lần trước, A17); chưa có -> icon ổ khoá
+  const mono = loadMonogram(localStorage);
   return (
     <main class="login">
       <form class="login-card" onSubmit={(e) => void submit(e)}>
-        <div class="login-mono" aria-hidden="true">{mono}</div>
+        <div class={`login-mono${mono.length > 4 ? ' login-mono--long' : ''}`} aria-hidden="true">{mono || <Icon name="lock" size={28} />}</div>
         <h1>Quản lý thiệp cưới</h1>
         <p class="muted">Kết nối: {p.vault.owner}/{p.vault.repo}</p>
         {p.notice && <p class="banner banner--warn" role="alert">{p.notice}</p>}
@@ -80,7 +82,7 @@ export function LoginScreen(p: LoginProps) {
             <input id="login-pass" class="input" type={show ? 'text' : 'password'} value={pass} autoComplete="current-password" data-testid="login-pass"
               aria-invalid={err ? true : undefined} aria-describedby={err ? 'login-err' : undefined}
               onInput={(e) => setPass((e.currentTarget as HTMLInputElement).value)} />
-            <button type="button" class="icon-btn" aria-pressed={show} aria-label={show ? 'Ẩn passphrase' : 'Hiện passphrase'} onClick={() => setShow(!show)}>👁</button>
+            <button type="button" class="icon-btn" aria-pressed={show} aria-label={show ? 'Ẩn passphrase' : 'Hiện passphrase'} onClick={() => setShow(!show)}><Icon name="eye" /></button>
           </div>
           {err && <p class="err" id="login-err" role="alert">⚠ {err}</p>}
         </div>

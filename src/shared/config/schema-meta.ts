@@ -265,11 +265,11 @@ export const FORM_GROUPS: FormGroup[] = [
 /** Nhãn nhóm phụ (không nằm trong FORM_GROUPS) cho diff. */
 const EXTRA_LABELS: Record<string, string> = {
   theme: 'Theme & Màu', 'theme.preset': 'Theme', 'theme.primaryColor': 'Màu chủ đạo', 'theme.overrides': 'Màu tuỳ chỉnh',
-  'theme.ornamentSet': 'Họa tiết', 'theme.texture': 'Texture nền', 'theme.photoFrame': 'Khung ảnh',
+  'theme.ornamentSet': 'Hoạ tiết', 'theme.texture': 'Texture nền', 'theme.photoFrame': 'Khung ảnh',
   fonts: 'Font', 'fonts.preset': 'Bộ font', 'fonts.heading': 'Font tiêu đề', 'fonts.script': 'Font chữ ký', 'fonts.body': 'Font nội dung', 'fonts.scaleStep': 'Cỡ chữ',
   effects: 'Hiệu ứng', 'effects.intensity': 'Cường độ hiệu ứng', 'effects.particles': 'Hạt nền', 'effects.burst': 'Hiệu ứng sau khi mở',
   'effects.reveal': 'Hiện nội dung khi cuộn', music: 'Nhạc', 'music.src': 'Bài nhạc', 'music.title': 'Tên bài nhạc',
-  sections: 'Sections', 'sections.items': 'Thứ tự / bật tắt section', 'sections.showNumbers': 'Hiện số thứ tự', 'sections.divider': 'Divider',
+  sections: 'Các phần & thứ tự', 'sections.items': 'Thứ tự / bật tắt các phần', 'sections.showNumbers': 'Hiện số thứ tự', 'sections.divider': 'Đường phân cách',
   'cover.openStyle': 'Kiểu mở thiệp', 'cover.envelope': 'Mẫu phong bì', 'cover.envelope.style': 'Mẫu phong bì',
   'cover.envelope.color': 'Màu phong bì', 'cover.envelope.guestOnFront': 'Ghi tên khách trên phong bì', 'cover.envelope.liner': 'Lót hoa văn trong nắp',
   'effects.autoScroll': 'Tự động cuộn', 'effects.autoScroll.enabled': 'Tự cuộn sau khi mở thiệp', 'effects.autoScroll.speed': 'Tốc độ tự cuộn',

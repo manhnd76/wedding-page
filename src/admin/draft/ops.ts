@@ -92,8 +92,8 @@ export function afterRestore(restored: WeddingConfig): { published: WeddingConfi
 export type ThemeGroup = 'colors' | 'fonts' | 'ornament' | 'texture' | 'photoFrame' | 'divider' | 'openStyle' | 'burst' | 'particles' | 'reveal';
 
 export const THEME_GROUP_LABEL: Record<ThemeGroup, string> = {
-  colors: 'Màu sắc', fonts: 'Font chữ', ornament: 'Họa tiết', texture: 'Texture nền', photoFrame: 'Khung ảnh',
-  divider: 'Divider', openStyle: 'Kiểu mở thiệp', burst: 'Hiệu ứng sau khi mở', particles: 'Hạt nền', reveal: 'Hiện nội dung khi cuộn',
+  colors: 'Màu sắc', fonts: 'Font chữ', ornament: 'Hoạ tiết', texture: 'Texture nền', photoFrame: 'Khung ảnh',
+  divider: 'Đường phân cách', openStyle: 'Kiểu mở thiệp', burst: 'Hiệu ứng sau khi mở', particles: 'Hạt nền', reveal: 'Hiện nội dung khi cuộn',
 };
 
 /** Nhóm nào đang "Đã chỉnh riêng" (khác mặc định-theo-theme). */

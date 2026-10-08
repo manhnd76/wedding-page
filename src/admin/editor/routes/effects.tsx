@@ -1,67 +1,78 @@
 /**
  * Hiệu ứng (design 8.13): cường độ, gallery kiểu mở thiệp (hoạt ảnh CSS thu nhỏ khi hover/focus/chọn),
- * sau khi mở, hạt nền (≤ 2), màu, phạm vi, gói reveal, pháo hoa. Chọn = phát ngay trong preview (fx:replay).
- * Chỉ hiển thị lựa chọn đã có trong capabilities của bản hiện tại.
+ * mẫu phong bì, sau khi mở, hạt nền (≤ 2), màu, phạm vi, gói reveal, tự động cuộn, pháo hoa.
+ * Chọn = phát ngay trong preview (fx:replay); trên mobile kèm toast [Xem ↗] (A05).
+ * Chỉ hiển thị lựa chọn đã có trong capabilities của bản hiện tại; mọi nhãn là tiếng Việt (A07).
  */
-import { CAPABILITIES } from '@shared/capabilities';
-import type { OpenStyle, ParticleType } from '@shared/config/enums';
+import { CAPABILITIES, isSupported, type CapabilityKey } from '@shared/capabilities';
+import type { BurstOnOpen, OpenStyle, ParticleType, RevealStyle } from '@shared/config/enums';
 import type { WeddingConfig } from '@shared/config/types';
 import { PRESETS } from '@shared/theme/presets';
 import { resolveTheme } from '@shared/theme/resolve';
+import {
+  BURST_LABEL, COUNTDOWN_STYLE_LABEL, INTENSITY_LABEL, OPEN_STYLE_LABEL, PARTICLE_LABEL, REVEAL_LABEL, capLabel, followThemeLabel,
+} from '@shared/labels';
 import type { RouteProps } from '../editor';
 import { useStore } from '../../state/store';
 import { Details, NumberField, Segmented, Select, Toggle } from '../../ui/ui';
+import { Icon } from '../../ui/icons';
 import { AUTO_SCROLL_LIMITS } from '@shared/config/merge';
 import { EnvelopeGallery } from '../envelope-gallery';
 
 const SPEEDS = [{ value: '32', label: 'Chậm' }, { value: '45', label: 'Vừa' }, { value: '64', label: 'Nhanh' }, { value: 'custom', label: 'Tuỳ chỉnh' }];
-const OPEN_LABEL: Record<string, string> = { envelope: 'Phong bì', 'card-flip': 'Lật thiệp', 'fade-zoom': 'Mờ dần', none: 'Không hiệu ứng' };
-const OPEN_COST: Record<string, 'Thấp' | 'Vừa' | 'Cao'> = { envelope: 'Vừa', 'card-flip': 'Vừa', 'fade-zoom': 'Thấp', none: 'Thấp', 'light-gather': 'Cao' };
-const PARTICLE_LABEL: Record<string, string> = { 'petal-rose': 'Cánh hồng', heart: 'Tim', 'petal-peach': 'Hoa đào', 'gold-dust': 'Bụi vàng', firefly: 'Đom đóm' };
-const BURST_LABEL: Record<string, string> = { none: 'Không', petals: 'Cánh hoa' };
-const REVEAL_LABEL: Record<string, string> = { soft: 'Mềm mại', gentle: 'Nhẹ nhàng', editorial: 'Tạp chí', letter: 'Từng chữ', playful: 'Vui tươi', cinematic: 'Điện ảnh' };
+const OPEN_COST: Partial<Record<OpenStyle, 'Thấp' | 'Vừa' | 'Cao'>> = { envelope: 'Vừa', 'card-flip': 'Vừa', 'fade-zoom': 'Thấp', none: 'Thấp', 'light-gather': 'Cao' };
 const INTENSITY_HINT: Record<string, string> = {
   off: 'Tắt: không chuyển động, chỉ mờ dần nhanh.', low: 'Nhẹ: ít hạt, chuyển động ngắn, hợp máy cũ.',
   medium: 'Vừa: đủ hiệu ứng, chạy mượt trên đa số điện thoại.', high: 'Nhiều: thêm gió, parallax, pháo hoa dày hơn.',
 };
 
-export default function EffectsRoute({ store, preview }: RouteProps) {
+/** Giá trị theme gợi ý sau khi xét capability (cái khách thực sự thấy khi chọn "Theo theme"). */
+const resolvedOf = <T extends string>(key: CapabilityKey, v: T): T => (isSupported(key, v) ? v : (CAPABILITIES[key].fallback as T));
+
+export default function EffectsRoute({ store, preview, peek }: RouteProps) {
   const draft = useStore(store, (s) => s.draft);
   const e = draft.effects;
   const r = resolveTheme(draft);
   const preset = PRESETS[draft.theme.preset];
-  const set = (path: string, v: unknown, target: string, label: string) => {
+  const sug = preset.suggest;
+  /** ghi nháp + phát đúng phần đó trong preview; mobile: toast [Xem ↗] */
+  const set = (path: string, v: unknown, target: string, label: string, notify = true) => {
     store.setPath(path, v);
     setTimeout(() => preview.replay(target, label), 0);
+    if (notify) peek(`Đã chọn: ${label}`);
   };
   const types: ParticleType[] = e.particles.types === 'theme' ? [] : e.particles.types;
   const toggleType = (t: ParticleType) => {
-    const cur = e.particles.types === 'theme' ? [...preset.suggest.particles.types] : [...types];
+    const cur = e.particles.types === 'theme' ? [...sug.particles.types] : [...types];
     const n = cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t].slice(-2);
     set('effects.particles.types', n.length ? n : 'theme', 'particles', 'Hạt nền');
   };
-  const opens = ['theme', ...(CAPABILITIES.openStyle.supported as readonly OpenStyle[])];
+  const opens = ['theme', ...(CAPABILITIES.openStyle.supported as readonly OpenStyle[])] as const;
+  const themeOpen = resolvedOf('openStyle', sug.openStyle);
+  const themeBurst = resolvedOf('burstOnOpen', sug.burstOnOpen);
+  const themeReveal = resolvedOf('revealStyle', sug.revealStyle);
   const colorMode = e.particles.color === 'theme' || e.particles.color === 'multi' ? e.particles.color : 'custom';
+  const a = e.autoScroll;
 
   return (
     <section>
       <h1>Hiệu ứng</h1>
       <Segmented legend="Cường độ" name="intensity" value={e.intensity} help={INTENSITY_HINT[e.intensity]}
-        options={[{ value: 'off', label: 'Tắt' }, { value: 'low', label: 'Nhẹ' }, { value: 'medium', label: 'Vừa' }, { value: 'high', label: 'Nhiều' }]}
-        onChange={(v) => { store.setPath('effects.intensity', v); setTimeout(() => preview.replay('cover', 'Mở thiệp'), 0); }} />
+        options={(['off', 'low', 'medium', 'high'] as const).map((v) => ({ value: v, label: INTENSITY_LABEL[v] }))}
+        onChange={(v) => set('effects.intensity', v, 'cover', 'Mở thiệp')} />
 
       <h2>Kiểu mở thiệp</h2>
       <div class="ogrid" role="radiogroup" aria-label="Kiểu mở thiệp">
         {opens.map((id) => {
-          const real = id === 'theme' ? preset.suggest.openStyle : id;
+          const real: OpenStyle = id === 'theme' ? themeOpen : id;
           const on = draft.cover.openStyle === id;
-          const label = id === 'theme' ? `Theo theme (${OPEN_LABEL[real] ?? real})` : OPEN_LABEL[id] ?? id;
+          const label = id === 'theme' ? followThemeLabel(OPEN_STYLE_LABEL, sug.openStyle, themeOpen) : OPEN_STYLE_LABEL[id];
           return (
             <button key={id} type="button" role="radio" aria-checked={on} class={`ocard${on ? ' is-on' : ''}`} data-testid={`open-${id}`}
               onClick={() => set('cover.openStyle', id, 'cover', `Mở thiệp · ${label}`)}>
               <span class={`omini omini--${real}`} aria-hidden="true"><i /><b /></span>
               <span class="ocard-name">{label}{on ? ' ✓' : ''}</span>
-              {id !== 'theme' && real === preset.suggest.openStyle && <span class="badge">Gợi ý cho theme</span>}
+              {id !== 'theme' && id === sug.openStyle && <span class="badge">Gợi ý cho theme</span>}
               {OPEN_COST[real] === 'Cao' && <span class="badge badge--warn">Nặng ⚠</span>}
             </button>
           );
@@ -74,21 +85,25 @@ export default function EffectsRoute({ store, preview }: RouteProps) {
             store.setPath('cover.envelope.style', style);
             if (color !== undefined) store.setPath('cover.envelope.color', color);
             setTimeout(() => preview.replay('cover', `Mở thiệp · ${label}`), 0);
+            peek(`Đã chọn: ${label}`);
           }}
-          setPath={(path, v) => set(path, v, 'cover', 'Mở thiệp')} />
+          setPath={(path, v) => set(path, v, 'cover', 'Mở thiệp', false)} />
       )}
 
       <Select label="Sau khi mở" value={e.burst.onOpen}
-        options={[{ value: 'theme', label: `Theo theme (${BURST_LABEL[r.burstOnOpen] ?? r.burstOnOpen})` }, ...(CAPABILITIES.burstOnOpen.supported as readonly string[]).map((v) => ({ value: v, label: BURST_LABEL[v] ?? v }))]}
+        options={[
+          { value: 'theme', label: followThemeLabel(BURST_LABEL, sug.burstOnOpen, themeBurst) },
+          ...(CAPABILITIES.burstOnOpen.supported as readonly BurstOnOpen[]).map((v) => ({ value: v, label: BURST_LABEL[v] })),
+        ]}
         onChange={(v) => set('effects.burst.onOpen', v, 'cover', 'Mở thiệp + hiệu ứng sau khi mở')} />
 
       <h2>Hạt nền</h2>
       <Toggle label="Hiện hạt nền" checked={e.particles.enabled} onChange={(v) => set('effects.particles.enabled', v, 'particles', 'Hạt nền')} />
       <fieldset class="field">
-        <legend>Loại (tối đa 2){e.particles.types === 'theme' ? ` · đang theo theme: ${preset.suggest.particles.types.map((t) => PARTICLE_LABEL[t] ?? t).join(', ')}` : ''}</legend>
+        <legend>Loại (tối đa 2){e.particles.types === 'theme' ? ` · đang theo theme: ${sug.particles.types.map((t) => capLabel('particle', PARTICLE_LABEL, t)).join(', ')}` : ''}</legend>
         <div class="chips">
           {(CAPABILITIES.particle.supported as readonly ParticleType[]).map((t) => (
-            <button key={t} type="button" class="chip" aria-pressed={types.includes(t)} onClick={() => toggleType(t)}>{types.includes(t) ? '✓ ' : ''}{PARTICLE_LABEL[t] ?? t}</button>
+            <button key={t} type="button" class="chip" aria-pressed={types.includes(t)} onClick={() => toggleType(t)}>{types.includes(t) ? '✓ ' : ''}{PARTICLE_LABEL[t]}</button>
           ))}
           {e.particles.types !== 'theme' && <button type="button" class="chip" onClick={() => set('effects.particles.types', 'theme', 'particles', 'Hạt nền')}>Theo theme</button>}
         </div>
@@ -96,7 +111,7 @@ export default function EffectsRoute({ store, preview }: RouteProps) {
       <Segmented legend="Màu hạt" name="pcolor" value={colorMode}
         options={[{ value: 'theme', label: 'Theo theme' }, { value: 'multi', label: 'Nhiều màu' }, { value: 'custom', label: 'Tự chọn' }]}
         onChange={(v) => set('effects.particles.color', v === 'custom' ? r.tokens.accent : v, 'particles', 'Hạt nền')} />
-      {colorMode === 'custom' && <input type="color" aria-label="Màu hạt" value={e.particles.color} onInput={(ev) => set('effects.particles.color', (ev.currentTarget as HTMLInputElement).value.toUpperCase(), 'particles', 'Hạt nền')} />}
+      {colorMode === 'custom' && <input type="color" aria-label="Màu hạt" value={e.particles.color} onInput={(ev) => set('effects.particles.color', (ev.currentTarget as HTMLInputElement).value.toUpperCase(), 'particles', 'Hạt nền', false)} />}
       <Segmented legend="Hiện ở" name="pscope" value={e.particles.scope}
         help="Cả trang: hạt thưa dần ở phần nhiều chữ và tránh ô nhập, tự dừng khi khách đang gõ."
         options={[{ value: 'all', label: 'Cả trang' }, { value: 'hero-thankyou', label: 'Chỉ Hero & Cảm ơn' }]}
@@ -104,19 +119,23 @@ export default function EffectsRoute({ store, preview }: RouteProps) {
 
       <h2>Hiện nội dung khi cuộn</h2>
       <div class="chips" role="radiogroup" aria-label="Gói hiện nội dung">
-        {['theme', ...CAPABILITIES.revealStyle.supported].map((v) => (
-          <button key={v} type="button" role="radio" aria-checked={e.reveal.style === v} class="chip"
-            onClick={() => set('effects.reveal.style', v, 'reveal', `Hiện nội dung · ${REVEAL_LABEL[v] ?? 'Theo theme'}`)}>
-            {v === 'theme' ? `Theo theme (${REVEAL_LABEL[r.reveal.style]})` : REVEAL_LABEL[v] ?? v}{e.reveal.style === v ? ' ✓' : ''}
-          </button>
-        ))}
+        {(['theme', ...CAPABILITIES.revealStyle.supported] as ('theme' | RevealStyle)[]).map((v) => {
+          const label = v === 'theme' ? followThemeLabel(REVEAL_LABEL, sug.revealStyle, themeReveal) : REVEAL_LABEL[v];
+          return (
+            <button key={v} type="button" role="radio" aria-checked={e.reveal.style === v} class="chip"
+              onClick={() => set('effects.reveal.style', v, 'reveal', `Hiện nội dung · ${label}`)}>
+              {label}{e.reveal.style === v ? ' ✓' : ''}
+            </button>
+          );
+        })}
       </div>
 
-      <AutoScrollBlock e={e} set={(path, v) => store.setPath(path, v)} replay={() => preview.replay('autoscroll', 'Tự cuộn')} />
+      <AutoScrollBlock a={a} intensityOff={e.intensity === 'off'} set={(path, v) => store.setPath(path, v)}
+        replay={() => { preview.replay('autoscroll', 'Tự cuộn'); peek('Đang phát: Tự cuộn'); }} />
 
       <h2>Chi tiết nhỏ</h2>
       <Select label="Kiểu số đếm ngược" value={draft.content.countdown.style}
-        options={(CAPABILITIES.countdownStyle.supported as readonly string[]).map((v) => ({ value: v, label: v === 'flip' ? 'Lật số' : 'Đơn giản' }))}
+        options={(CAPABILITIES.countdownStyle.supported as readonly (keyof typeof COUNTDOWN_STYLE_LABEL)[]).map((v) => ({ value: v, label: COUNTDOWN_STYLE_LABEL[v] }))}
         onChange={(v) => set('content.countdown.style', v, 'micro:countdown', 'Đếm ngược')} />
       <Select label="Pháo hoa đếm ngược" value={e.burst.countdownFireworks}
         options={[{ value: 'every-view', label: 'Mỗi lần cuộn tới (cách nhau ít nhất 15 giây)' }, { value: 'wedding-day', label: 'Chỉ ngày cưới' }, { value: 'off', label: 'Tắt' }]}
@@ -134,16 +153,18 @@ export default function EffectsRoute({ store, preview }: RouteProps) {
   );
 }
 
-/** Khối "Tự động cuộn" (design-review-v1 5.4). */
-function AutoScrollBlock({ e, set, replay }: { e: WeddingConfig['effects']; set: (path: string, v: unknown) => void; replay: () => void }) {
-  const a = e.autoScroll;
+/** Khối "Tự động cuộn" (design 8.13 v4, design-review-v1 5.4). */
+function AutoScrollBlock({ a, intensityOff, set, replay }: { a: WeddingConfig['effects']['autoScroll']; intensityOff: boolean; set: (path: string, v: unknown) => void; replay: () => void }) {
   const speedMode = ['32', '45', '64'].includes(String(a.speed)) ? String(a.speed) : 'custom';
   const [lo, hi] = AUTO_SCROLL_LIMITS.startDelayMs;
+  const [dlo, dhi] = AUTO_SCROLL_LIMITS.dwellMs;
+  const sec = (ms: number) => (ms / 1000).toLocaleString('vi-VN');
   return (
     <section class="ablock" aria-labelledby="h-autoscroll">
       <h2 id="h-autoscroll">Tự động cuộn</h2>
       <Toggle label="Tự cuộn sau khi mở thiệp" checked={a.enabled} testId="as-enabled"
         help="Khách chạm, cuộn hoặc bấm phím là dừng ngay; khách bấm ▶ để tiếp tục." onChange={(v) => set('effects.autoScroll.enabled', v)} />
+      {a.enabled && intensityOff && <p class="note">Cường độ Tắt: tự cuộn không tự chạy, khách vẫn bật được trong menu.</p>}
       {a.enabled && (
         <>
           <Segmented legend="Tốc độ" name="asspeed" value={speedMode} options={SPEEDS}
@@ -152,14 +173,23 @@ function AutoScrollBlock({ e, set, replay }: { e: WeddingConfig['effects']; set:
             <NumberField label="Tốc độ (px/giây)" value={a.speed} min={AUTO_SCROLL_LIMITS.speed[0]} max={AUTO_SCROLL_LIMITS.speed[1]}
               onChange={(v) => set('effects.autoScroll.speed', Math.min(AUTO_SCROLL_LIMITS.speed[1], Math.max(AUTO_SCROLL_LIMITS.speed[0], Math.round(v))))} />
           )}
-          <Toggle label="Dừng ngắn ở mỗi phần" checked={a.mode === 'flow'} help="Dừng khoảng 1,2 giây ở đầu mỗi phần như ngắt chương (đếm ngược dừng 2 giây)."
+          <Toggle label="Dừng ngắn ở mỗi phần" checked={a.mode === 'flow'} help={`Dừng khoảng ${sec(a.dwellMs)} giây ở đầu mỗi phần như ngắt chương (đếm ngược dừng ít nhất 2 giây).`}
             onChange={(v) => set('effects.autoScroll.mode', v ? 'flow' : 'steady')} />
           <div class="field">
-            <label for="as-delay">Bắt đầu sau: {(a.startDelayMs / 1000).toLocaleString('vi-VN')} giây</label>
+            <label for="as-delay">Bắt đầu sau: {sec(a.startDelayMs)} giây</label>
             <input id="as-delay" class="range" type="range" min={lo} max={hi} step={500} value={a.startDelayMs}
               onInput={(ev) => set('effects.autoScroll.startDelayMs', Number((ev.currentTarget as HTMLInputElement).value))} />
           </div>
-          <button type="button" class="btn btn-secondary" data-testid="as-replay" onClick={replay}>↻ Phát lại tự cuộn</button>
+          {a.mode === 'flow' && (
+            <Details summary="Nâng cao: thời gian dừng mỗi phần">
+              <div class="field">
+                <label for="as-dwell">Dừng ở mỗi phần: {sec(a.dwellMs)} giây</label>
+                <input id="as-dwell" class="range" type="range" min={dlo} max={dhi} step={200} value={a.dwellMs}
+                  onInput={(ev) => set('effects.autoScroll.dwellMs', Number((ev.currentTarget as HTMLInputElement).value))} />
+              </div>
+            </Details>
+          )}
+          <button type="button" class="btn btn-secondary" data-testid="as-replay" onClick={replay}><Icon name="refresh" /> Phát lại tự cuộn</button>
         </>
       )}
     </section>

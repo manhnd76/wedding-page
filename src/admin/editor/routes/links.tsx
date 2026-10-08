@@ -8,6 +8,7 @@ import { useStore } from '../../state/store';
 import { GUESTS_KEY, buildLinks, inviteMessage, toCsv, type LinkOptions } from '../../links/link-gen';
 import { saveFile } from '../../storage/local-adapters';
 import { Segmented, TextArea, TextField, Toggle, copyText, toast } from '../../ui/ui';
+import { Icon } from '../../ui/icons';
 
 interface Saved { text: string; base: string; style: LinkOptions['style']; encode: boolean; mode: LinkOptions['mode']; template: string }
 
@@ -15,7 +16,7 @@ function load(def: Saved): Saved {
   try { return { ...def, ...(JSON.parse(localStorage.getItem(GUESTS_KEY) ?? '{}') as Partial<Saved>) }; } catch { return def; }
 }
 
-export default function LinksRoute({ store, preview }: RouteProps) {
+export default function LinksRoute({ store, preview, peek }: RouteProps) {
   const guest = useStore(store, (s) => s.draft.guest);
   const siteUrl = useStore(store, (s) => s.draft.meta.siteUrl);
   const [st, setSt] = useState<Saved>(() => load({
@@ -34,7 +35,7 @@ export default function LinksRoute({ store, preview }: RouteProps) {
     if (navigator.share) {
       try { await navigator.share({ title: 'Thiệp cưới', text, url: r.link }); return; } catch { /* huỷ */ }
     }
-    if (await copyText(text)) toast('Đã chép tin nhắn mời');
+    if (await copyText(text)) toast('Đã sao chép tin nhắn mời');
   };
 
   return (
@@ -56,7 +57,7 @@ export default function LinksRoute({ store, preview }: RouteProps) {
         <>
           <p class="links-sum">
             {rows.length} link{dup ? ` · ⚠ ${dup} tên trùng` : ''} ·
-            <button type="button" class="btn btn-link" onClick={() => void copyText(rows.map((r) => `${r.name}\t${r.link}`).join('\n')).then(() => toast('Đã chép tất cả'))}>Sao chép tất cả</button>
+            <button type="button" class="btn btn-link" onClick={() => void copyText(rows.map((r) => `${r.name}\t${r.link}`).join('\n')).then(() => toast('Đã sao chép tất cả'))}>Sao chép tất cả</button>
             <button type="button" class="btn btn-link" onClick={() => saveFile(new Blob([toCsv(rows)], { type: 'text/csv;charset=utf-8' }), 'link-khach-moi.csv')}>Tải CSV</button>
           </p>
           <TextField label="Tin nhắn mẫu khi Chia sẻ ({name}, {link})" value={st.template} onInput={(v) => upd({ template: v })} />
@@ -66,13 +67,15 @@ export default function LinksRoute({ store, preview }: RouteProps) {
               <tbody>
                 {rows.map((r, i) => (
                   <tr key={i} class={r.duplicate ? 'is-dup' : ''}>
-                    <td>{r.name}{r.duplicate && <span class="badge badge--warn"> trùng</span>}</td>
-                    <td>{r.display}</td>
+                    <td class="lk-name">{r.name}{r.duplicate && <span class="badge badge--warn"> trùng</span>}</td>
+                    <td class="lk-display"><span class="lk-k">Trên thiệp: </span>{r.display}</td>
                     <td class="link-cell"><code>{r.readable}</code></td>
-                    <td class="btn-row">
-                      <button type="button" class="btn btn-secondary btn-sm" onClick={() => void copyText(r.link).then(() => toast('Đã chép link'))} data-link={r.link}>Chép</button>
-                      <button type="button" class="btn btn-ghost btn-sm" onClick={() => void share(i)}>Chia sẻ</button>
-                      <button type="button" class="icon-btn" aria-label={`Xem trước thiệp gửi ${r.name}`} onClick={() => preview.previewGuest(r.name)}>👁</button>
+                    <td class="btn-row lk-actions">
+                      <button type="button" class="btn btn-secondary btn-sm" onClick={() => void copyText(r.link).then(() => toast('Đã sao chép link'))} data-link={r.link}
+                        aria-label={`Sao chép link của ${r.name}`}>Sao chép</button>
+                      <button type="button" class="btn btn-ghost btn-sm" onClick={() => void share(i)} aria-label={`Chia sẻ thiệp cho ${r.name}`}>Chia sẻ</button>
+                      <button type="button" class="btn btn-ghost btn-sm" aria-label={`Xem trước thiệp gửi ${r.name}`}
+                        onClick={() => { preview.previewGuest(r.name); peek(`Thiệp gửi ${r.name}`); }}><Icon name="eye" /> Xem</button>
                     </td>
                   </tr>
                 ))}

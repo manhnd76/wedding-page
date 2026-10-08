@@ -1,18 +1,19 @@
 /**
- * Sections: bật/tắt + sắp xếp (design 8.6): tay cầm kéo (giữ 200ms trên touch), luôn có nút ↑↓ (WCAG 2.5.7),
+ * "Các phần & thứ tự" (design 8.6): tay cầm kéo (giữ 200ms trên touch), luôn có nút ↑↓ (WCAG 2.5.7),
  * bàn phím (Space nhấc, mũi tên di chuyển, Space thả, thông báo aria-live). Hero ghim đầu, footer ghim cuối.
  */
 import { useRef, useState } from 'preact/hooks';
 import type { SectionItem } from '@shared/config/types';
 import { SECTION_META, planSections } from '@shared/sections/meta';
 import { DIVIDERS } from '@shared/config/enums';
+import { DIVIDER_LABEL } from '@shared/labels';
+import { Icon } from '../../ui/icons';
 import { CAPABILITIES } from '@shared/capabilities';
 import type { EditorStore } from '../../state/store';
 import { useStore } from '../../state/store';
 import { groupById } from '@shared/config/schema-meta';
 import { Select, Toggle } from '../../ui/ui';
 
-const DIVIDER_LABEL: Record<string, string> = { ornament: 'Hoạ tiết', wave: 'Sóng', none: 'Không', cloud: 'Mây', 'deco-fan': 'Quạt Deco' };
 
 /** Di chuyển phần tử giữa (không đụng hero/footer). */
 export function moveItem(items: SectionItem[], from: number, to: number): SectionItem[] {
@@ -39,7 +40,8 @@ export function SectionsRoute(p: { store: EditorStore; go: (r: string) => void }
 
   const plan = planSections(draft, 'none');
   const numberOf = new Map(plan.map((x) => [x.item.id, x.number]));
-  const label = (it: SectionItem) => SECTION_META[it.type]?.label ?? it.type;
+  /** cùng tên với mục ở thanh bên (vd "Ảnh bìa (Hero)") - A22 */
+  const label = (it: SectionItem) => groupById(it.type)?.title ?? SECTION_META[it.type]?.label ?? it.type;
 
   const setItems = (n: SectionItem[]) => store.update((c) => ({ ...c, sections: { ...c.sections, items: n } }), '', 'sections');
   const move = (i: number, to: number, announce = true) => {
@@ -86,8 +88,8 @@ export function SectionsRoute(p: { store: EditorStore; go: (r: string) => void }
 
   return (
     <section>
-      <h1>Sections</h1>
-      <p class="muted">Kéo để sắp xếp. Section đang tắt sẽ không hiển thị với khách.</p>
+      <h1>Các phần &amp; thứ tự</h1>
+      <p class="muted">Kéo để sắp xếp. Phần đang tắt sẽ không hiển thị với khách.</p>
       <ol class="sec-list" ref={listRef} data-testid="sections-list">
         {items.map((it, i) => {
           const meta = SECTION_META[it.type];
@@ -96,18 +98,18 @@ export function SectionsRoute(p: { store: EditorStore; go: (r: string) => void }
           const num = numberOf.get(it.id);
           return (
             <li key={it.id} class={`sec-row${it.enabled ? '' : ' is-off'}${lifted === i || dragIdx === i ? ' is-lifted' : ''}`} data-testid={`sec-${it.id}`}>
-              {pinned ? <span class="sec-lock" aria-hidden="true">🔒</span> : (
+              {pinned ? <span class="sec-lock" aria-hidden="true"><Icon name="lock" /></span> : (
                 <button type="button" class="sec-handle" aria-label={`Sắp xếp ${label(it)}`} aria-pressed={lifted === i}
-                  onKeyDown={(e) => onKey(e, i)} onPointerDown={(e) => onPointerDown(e, i)} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>⋮⋮</button>
+                  onKeyDown={(e) => onKey(e, i)} onPointerDown={(e) => onPointerDown(e, i)} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}><Icon name="grip" /></button>
               )}
               <span class="sec-num">{num ?? '--'}</span>
               <span class="sec-name">
-                {label(it)}{pinned ? ` (luôn ở ${it.type === 'hero' ? 'đầu' : 'cuối'})` : ''}
+                {label(it)}{pinned ? <span class="muted"> · luôn ở {it.type === 'hero' ? 'đầu' : 'cuối'}</span> : ''}
                 {empty && <span class="badge badge--warn"> ⚠ chưa có nội dung, sẽ tự ẩn</span>}
               </span>
               {!pinned && <>
-                <button type="button" class="icon-btn" aria-label={`Đưa ${label(it)} lên`} disabled={i <= 1} onClick={() => move(i, i - 1)}>↑</button>
-                <button type="button" class="icon-btn" aria-label={`Đưa ${label(it)} xuống`} disabled={i >= items.length - 2} onClick={() => move(i, i + 1)}>↓</button>
+                <button type="button" class="icon-btn" aria-label={`Đưa ${label(it)} lên`} disabled={i <= 1} onClick={() => move(i, i - 1)}><Icon name="up" /></button>
+                <button type="button" class="icon-btn" aria-label={`Đưa ${label(it)} xuống`} disabled={i >= items.length - 2} onClick={() => move(i, i + 1)}><Icon name="down" /></button>
               </>}
               <label class="toggle toggle--sm">
                 <input type="checkbox" role="switch" checked={it.enabled} aria-label={`Hiện ${label(it)}`} data-testid={`sec-toggle-${it.id}`}
@@ -122,8 +124,8 @@ export function SectionsRoute(p: { store: EditorStore; go: (r: string) => void }
       </ol>
       <p class="sr-only" aria-live="assertive">{live}</p>
       <Toggle label="Hiện số thứ tự (01, 02…)" checked={draft.sections.showNumbers} onChange={(v) => store.setPath('sections.showNumbers', v)} />
-      <Select label="Đường phân cách giữa các section" value={draft.sections.divider}
-        options={[{ value: 'theme', label: 'Theo theme' }, ...DIVIDERS.filter((d) => (CAPABILITIES.divider.supported as readonly string[]).includes(d)).map((d) => ({ value: d, label: DIVIDER_LABEL[d] ?? d }))]}
+      <Select label="Đường phân cách giữa các phần" value={draft.sections.divider}
+        options={[{ value: 'theme', label: 'Theo theme' }, ...DIVIDERS.filter((d) => (CAPABILITIES.divider.supported as readonly string[]).includes(d)).map((d) => ({ value: d, label: DIVIDER_LABEL[d] }))]}
         onChange={(v) => store.setPath('sections.divider', v)} />
     </section>
   );

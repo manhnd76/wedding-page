@@ -41,6 +41,8 @@ export interface EditorState {
   canRedo: boolean;
   /** section vừa sửa (preview cuộn tới + highlight) */
   focus: { section: string; at: number } | null;
+  /** chế độ không kết nối: lần tải gói gần nhất (nháp lúc đó - so sánh theo tham chiếu) */
+  exported: { at: string; draft: WeddingConfig } | null;
 }
 
 type Listener = (s: EditorState) => void;
@@ -73,7 +75,7 @@ export class EditorStore {
     this.s = {
       ready: false, adapter, commit: '', manifest: null, paths: {}, published: empty, draft: empty,
       save: 'idle', busy: null, error: null, lastPublishAt: null, live: null, blobUrls: {}, tokenExpiresAt,
-      staleDraft: null, canUndo: false, canRedo: false, focus: null,
+      staleDraft: null, canUndo: false, canRedo: false, focus: null, exported: null,
     };
   }
 
@@ -264,7 +266,7 @@ export class EditorStore {
       const res = await this.s.adapter.publish({ config: cfg, uploads, deletes, baseCommit: this.s.commit }, (done, total) =>
         this.set({ busy: { kind: 'publish', done, total } }));
       if (this.s.adapter.kind === 'download') {
-        this.set({ busy: null });
+        this.set({ busy: null, exported: { at: new Date().toISOString(), draft: this.s.draft } });
         return res;
       }
       this.history.clear();

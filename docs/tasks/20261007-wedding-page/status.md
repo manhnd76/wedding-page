@@ -1,14 +1,15 @@
 # Status - 20261007-wedding-page
 
-- Giai đoạn hiện tại: **v2.1** trên `feat/20261007-wedding-page-v2.1` (tách từ v2 commit ce58f31). Song song:
-  - frontend-developer: sửa 24 điểm design-review-v1.md + 6 mẫu phong thư + tự cuộn + config mẫu về tram-vang -> frontend-report-v2.1.md
-  - ui-ux-designer: cập nhật design.md theo review/quyết định + review UX admin v2 -> design-review-admin-v2.md
-- Commit: v1 3780836 (branch v1), v2 ce58f31 (branch v2). Chưa push.
-- Cần kiểm tra tay: GitHub thật + CF Pages, Safari nén ảnh, QR thật, webview.
+- Giai đoạn hiện tại: **v2.2** trên `feat/20261007-wedding-page-v2.2` (tách từ v2.1 f0a6465). Song song:
+  - frontend-developer: sửa các điểm còn lại trong design-review-admin-v2.md (A01 đã sửa ở v2.1) + kiểm tra autoScroll defaults theo decisions -> frontend-report-v2.2.md
+  - ui-ux-designer: duyệt visual phong bì mới + 6 mẫu phong thư + tự cuộn (chỉ đọc) -> design-review-envelopes.md
+- Commit: v1 3780836, v2 ce58f31, v2.1 f0a6465. Chưa push.
+- Cần kiểm tra tay: GitHub thật + CF Pages, Safari nén ảnh, QR thật, webview, tự cuộn trên máy thật.
 - Vòng lặp sửa đã dùng: 0/3
 
-## Cập nhật
-- ui-ux-designer XONG: design.md "Bản sửa 4" + design-review-admin-v2.md (24 điểm: 4 Cao/11 Vừa/9 Thấp; A01 switch vỡ, A02 trạng thái "Đã xuất bản" sai, A03 thiếu Undo mobile, A04 preview mobile). 5 câu hỏi chờ người duyệt.
-- frontend-developer v2.1: đang chạy.
-- frontend-developer v2.1 XONG (chưa commit). Orchestrator kiểm tra: build exit 0 (guest JS 30.54/60, admin 67.75/80), unit 368/368, e2e 19/19, config mẫu = tram-vang. 23/24 điểm review v1 đã sửa (R23 -> v4). Đã sửa luôn lỗi switch admin (A01).
-- 🚦 Chờ người duyệt: commit v2.1, 5 câu hỏi admin, bước tiếp (v2.2 sửa 23 điểm admin còn lại).
+## Sự cố
+- 2026-10-08: cả 2 agent v2.2 dừng giữa chừng do giới hạn phiên API (429). Frontend đã sửa dở nhiều file trong src/admin, src/shared, tests (chưa có report). Designer chưa ghi gì; còn để lại vite server cổng 5180 (PID 4012). Đã giao lại cả hai, tiếp tục từ trạng thái hiện tại (không làm lại từ đầu).
+- frontend v2.2 XONG (chưa commit). Orchestrator kiểm tra: build exit 0 (guest JS 30.52/60, admin JS 73.45/80), unit 392/392, e2e 26/26. A01–A24 đã sửa (A23 giữ font hệ thống theo quyết định).
+- ui-ux-designer (duyệt phong bì + tự cuộn): đang chạy.
+- ui-ux-designer XONG: design-review-envelopes.md. 22/23 R-points đạt. 12 điểm mới (2 Cao/4 Vừa/6 Thấp). BLOCKER E01: tên khách trên phong bì mất dấu nặng ("Mạnh" -> "Manh") do -webkit-line-clamp:2 + overflow:hidden, ở 5/6 mẫu. Server 5180 đã dừng.
+- 🚦 Chờ người duyệt: commit v2.2, 6 câu hỏi phong bì, bước tiếp (v2.3 sửa E01–E11).

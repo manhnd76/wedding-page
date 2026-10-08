@@ -4,16 +4,19 @@ import { useEffect, useId, useRef, useState } from 'preact/hooks';
 
 // ------------------------------------------------------------------ toast (role=status)
 
-interface ToastItem { id: number; text: string; action?: { label: string; run: () => void }; tone?: 'ok' | 'err' }
+interface ToastAction { label: string; run: () => void }
+interface ToastItem { id: number; text: string; actions: ToastAction[]; tone?: 'ok' | 'err' }
 let toasts: ToastItem[] = [];
 const toastSubs = new Set<(t: ToastItem[]) => void>();
 let tid = 0;
-export function toast(text: string, opts: { action?: ToastItem['action']; ms?: number; tone?: ToastItem['tone'] } = {}): void {
-  const t: ToastItem = { id: ++tid, text, ...(opts.action ? { action: opts.action } : {}), ...(opts.tone ? { tone: opts.tone } : {}) };
+export function toast(text: string, opts: { action?: ToastAction; actions?: ToastAction[]; ms?: number; tone?: ToastItem['tone'] } = {}): void {
+  const actions = [...(opts.action ? [opts.action] : []), ...(opts.actions ?? [])];
+  const t: ToastItem = { id: ++tid, text, actions, ...(opts.tone ? { tone: opts.tone } : {}) };
   toasts = [...toasts.slice(-2), t];
   toastSubs.forEach((f) => f(toasts));
-  setTimeout(() => { toasts = toasts.filter((x) => x.id !== t.id); toastSubs.forEach((f) => f(toasts)); }, opts.ms ?? (opts.action ? 5000 : 4000));
+  setTimeout(() => dropToast(t.id), opts.ms ?? (actions.length ? 5000 : 4000));
 }
+function dropToast(id: number) { toasts = toasts.filter((x) => x.id !== id); toastSubs.forEach((f) => f(toasts)); }
 export function Toasts() {
   const [list, setList] = useState(toasts);
   useEffect(() => { toastSubs.add(setList); return () => { toastSubs.delete(setList); }; }, []);
@@ -22,7 +25,11 @@ export function Toasts() {
       {list.map((t) => (
         <div key={t.id} class={`toast${t.tone ? ` toast--${t.tone}` : ''}`}>
           <span>{t.text}</span>
-          {t.action && <button type="button" class="btn btn-link" onClick={() => { t.action!.run(); toasts = toasts.filter((x) => x.id !== t.id); toastSubs.forEach((f) => f(toasts)); }}>{t.action.label}</button>}
+          {t.actions.length > 0 && (
+            <span class="toast-actions">
+              {t.actions.map((a) => <button key={a.label} type="button" class="btn btn-link" onClick={() => { a.run(); dropToast(t.id); }}>{a.label}</button>)}
+            </span>
+          )}
         </div>
       ))}
     </div>
@@ -111,6 +118,7 @@ export function Toggle(p: Base & { checked: boolean; onChange: (v: boolean) => v
           onChange={(e) => p.onChange((e.currentTarget as HTMLInputElement).checked)} />
         <span class="toggle-track" aria-hidden="true"><span class="toggle-thumb" /></span>
         <span class="toggle-label">{p.label}</span>
+        <span class="toggle-state" aria-hidden="true">{p.checked ? 'Bật' : 'Tắt'}</span>
       </label>
       {p.help && <p class="help">{p.help}</p>}
     </div>

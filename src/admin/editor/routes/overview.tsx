@@ -5,11 +5,14 @@ import { useStore } from '../../state/store';
 import { runChecklist } from '../../draft/checklist';
 import { expiryWarning, weddingDateOf } from '../../storage/github';
 import { fmtTime } from '../util';
+import { publishLabel, statusOf } from '../status';
 
 export function Overview(p: { store: EditorStore; go: (r: string) => void; openPublish: () => void }) {
   const s = useStore(p.store, (x) => x);
   const checks = useMemo(() => runChecklist(s.draft, { tokenExpiresAt: s.tokenExpiresAt }), [s.draft]);
   const n = useMemo(() => p.store.changes().length, [s.draft, s.published]);
+  const st = statusOf(s, n);
+  const zip = s.adapter.kind === 'download';
   const exp = expiryWarning(s.tokenExpiresAt, weddingDateOf(s.draft));
   const c = s.draft.content.couple;
   return (
@@ -29,12 +32,13 @@ export function Overview(p: { store: EditorStore; go: (r: string) => void; openP
         </div>
         <div class="ov-card">
           <h2>Trạng thái</h2>
-          <p>{n > 0 ? `Có ${n} thay đổi chưa xuất bản` : 'Không có thay đổi chưa xuất bản'}</p>
-          <p class="muted">{s.published.publish.at ? `Xuất bản gần nhất: ${fmtTime(s.published.publish.at)}` : 'Chưa xuất bản lần nào'}</p>
+          <p class={`ov-status tb-status--${st.tone}`} data-testid="ov-status"><span class="dot" aria-hidden="true" />{st.text}</p>
+          {!zip && s.published.publish.at && <p class="muted">Xuất bản gần nhất: {fmtTime(s.published.publish.at)}</p>}
+          {zip && <p class="muted">Chế độ này không xuất bản trực tiếp: tải gói .zip rồi commit lên repo.</p>}
           {s.live?.state === 'waiting' && <p>◌ Đang chờ trang cập nhật (Cloudflare Pages build 30-90 giây)…</p>}
           {s.live?.state === 'live' && <p class="ok-text">✓ Khách đã thấy bản mới</p>}
           {s.live?.state === 'timeout' && <p class="err">Sau 5 phút trang vẫn chưa đổi. Kiểm tra trạng thái build trên Cloudflare Pages.</p>}
-          <button type="button" class="btn btn-primary" disabled={n === 0 && s.adapter.kind !== 'download'} onClick={p.openPublish}>Xuất bản…</button>
+          <button type="button" class="btn btn-primary" disabled={(n === 0 && !zip) || !!s.busy} onClick={p.openPublish} data-testid="ov-publish">{publishLabel(s.adapter.kind)}</button>
         </div>
       </div>
       <h2>Việc cần làm</h2>

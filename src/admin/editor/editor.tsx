@@ -3,19 +3,23 @@
  * ≥ 1200px: 3 cột; 768-1199px: preview ẩn/hiện; < 768px: bottom tab Chỉnh sửa · Xem trước · Thêm.
  */
 import type { ComponentType } from 'preact';
-import { useEffect, useMemo, useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { FORM_GROUPS, groupById } from '@shared/config/schema-meta';
+import { saveMonogram } from '../auth/vault';
 import type { EditorStore } from '../state/store';
 import { useStore } from '../state/store';
 import { Modal, Spinner, toast } from '../ui/ui';
+import { Icon, type IconName } from '../ui/icons';
 import { Preview, type PreviewApi } from './preview';
 import { GroupForm } from './form';
 import { Overview } from './routes/overview';
 import { SectionsRoute } from './routes/sections';
 import { PublishDialog } from './publish-dialog';
-import { fmtTime } from './util';
+import { publishLabel, statusOf } from './status';
 
 const CONTENT_IDS = ['cover', 'hero', 'couple', 'families', 'announcement', 'events', 'countdown', 'timeline', 'loveStory', 'album', 'gift', 'guestbook', 'rsvp', 'thankyou', 'footer'];
+
+const isCompact = () => typeof matchMedia !== 'undefined' && matchMedia('(max-width: 767px)').matches;
 
 /** Route nặng tải lười (solution 9.1: gallery/hiệu ứng/crop lazy). */
 const LAZY: Record<string, () => Promise<{ default: ComponentType<RouteProps> }>> = {
@@ -30,7 +34,17 @@ const LAZY: Record<string, () => Promise<{ default: ComponentType<RouteProps> }>
   album: () => import('./routes/album'),
 };
 
-export interface RouteProps { store: EditorStore; go: (r: string) => void; preview: PreviewApi }
+export interface PeekAction { label: string; run: () => void }
+export interface RouteProps {
+  store: EditorStore;
+  go: (r: string) => void;
+  preview: PreviewApi;
+  /**
+   * Sau một lựa chọn "chọn = phát" (theme, kiểu mở, hạt…): trên mobile hiện toast có nút [Xem ↗] chuyển sang tab
+   * Xem trước (preview đang ẩn giữ lại hiệu ứng và phát khi hiện - A05). Desktop: chỉ toast khi có `actions`.
+   */
+  peek: (text: string, actions?: PeekAction[]) => void;
+}
 
 function Lazy(p: RouteProps & { id: string }) {
   const [C, setC] = useState<ComponentType<RouteProps> | null>(null);
@@ -40,22 +54,22 @@ function Lazy(p: RouteProps & { id: string }) {
     void LAZY[p.id]!().then((m) => { if (alive) setC(() => m.default); });
     return () => { alive = false; };
   }, [p.id]);
-  return C ? <C store={p.store} go={p.go} preview={p.preview} /> : <p class="muted"><Spinner /> Đang tải…</p>;
+  return C ? <C store={p.store} go={p.go} preview={p.preview} peek={p.peek} /> : <p class="muted"><Spinner /> Đang tải…</p>;
 }
 
-const NAV: { id: string; icon: string; label: string; more?: boolean }[] = [
-  { id: 'overview', icon: '◧', label: 'Tổng quan' },
-  { id: 'general', icon: '⚙', label: 'Chung' },
-  { id: 'theme', icon: '◐', label: 'Theme & Màu' },
-  { id: 'fonts', icon: 'Aa', label: 'Font' },
-  { id: 'effects', icon: '✦', label: 'Hiệu ứng' },
-  { id: 'music', icon: '♪', label: 'Nhạc' },
-  { id: 'sections', icon: '☰', label: 'Sections' },
-  { id: 'content', icon: '✎', label: 'Nội dung' },
-  { id: 'media', icon: '▣', label: 'Ảnh', more: true },
-  { id: 'links', icon: '🔗', label: 'Link khách mời', more: true },
-  { id: 'backup', icon: '⟲', label: 'Sao lưu/Khôi phục', more: true },
-  { id: 'json', icon: '{ }', label: 'Chỉnh JSON nâng cao', more: true },
+const NAV: { id: string; icon: IconName; label: string; more?: boolean }[] = [
+  { id: 'overview', icon: 'overview', label: 'Tổng quan' },
+  { id: 'general', icon: 'gear', label: 'Chung' },
+  { id: 'theme', icon: 'palette', label: 'Theme & Màu' },
+  { id: 'fonts', icon: 'font', label: 'Font' },
+  { id: 'effects', icon: 'sparkle', label: 'Hiệu ứng' },
+  { id: 'music', icon: 'music', label: 'Nhạc' },
+  { id: 'sections', icon: 'list', label: 'Các phần & thứ tự' },
+  { id: 'content', icon: 'pen', label: 'Nội dung' },
+  { id: 'media', icon: 'image', label: 'Ảnh', more: true },
+  { id: 'links', icon: 'link', label: 'Link khách mời', more: true },
+  { id: 'backup', icon: 'backup', label: 'Sao lưu/Khôi phục', more: true },
+  { id: 'json', icon: 'braces', label: 'Chỉnh JSON nâng cao', more: true },
 ];
 
 const readHash = () => decodeURIComponent(location.hash.replace(/^#\/?/, '')) || 'overview';
@@ -71,6 +85,9 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
   const [publishOpen, setPublishOpen] = useState(false);
   const [revertOpen, setRevertOpen] = useState(false);
   const [api, setApi] = useState<PreviewApi | null>(null);
+  const edRef = useRef<HTMLDivElement>(null);
+  const tbRef = useRef<HTMLElement>(null);
+  const errRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void store.init().catch(() => { /* lỗi hiện qua s.error */ });
@@ -87,6 +104,23 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
     return () => { window.removeEventListener('hashchange', onHash); window.removeEventListener('keydown', onKey); window.removeEventListener('beforeunload', onUnload); };
   }, [store]);
 
+  // chiều cao thật của top bar (mobile không cố định 56px) -> khung preview mobile nằm ngay dưới, không bị che (A04)
+  useEffect(() => {
+    const tb = tbRef.current;
+    const ed = edRef.current;
+    if (!tb || !ed) return;
+    const set = () => ed.style.setProperty('--a-tbh', `${Math.round(tb.getBoundingClientRect().height)}px`);
+    set();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(set);
+    ro.observe(tb);
+    return () => ro.disconnect();
+  }, []);
+
+  // chữ lồng cho màn Login lần sau (A17) - không bí mật
+  const mono = s.ready ? s.draft.cover.monogram : '';
+  useEffect(() => { saveMonogram(localStorage, mono); }, [mono]);
+
   const go = (r: string) => {
     location.hash = `#/${r}`;
     setRoute(r);
@@ -97,31 +131,26 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
 
   const changes = useMemo(() => (s.ready ? store.changes() : []), [s.draft, s.published, s.ready]);
   const n = changes.length;
-
-  const statusText = s.busy?.kind === 'publish' ? `Đang xuất bản… ${s.busy.total > 1 ? `(${s.busy.done}/${s.busy.total} tệp)` : ''}`
-    : s.busy?.kind === 'restore' ? 'Đang khôi phục…'
-    : s.error ? `✕ ${s.error.message}`
-    : s.save === 'saving' ? '◌ Đang lưu nháp…'
-    : n > 0 ? `Có ${n} thay đổi chưa xuất bản`
-    : s.live?.state === 'waiting' ? 'Đã xuất bản! Khách sẽ thấy sau khoảng 1 phút'
-    : s.live?.state === 'live' ? `Khách đã thấy bản mới${s.lastPublishAt ? ` · ${fmtTime(s.lastPublishAt)}` : ''}`
-    : `Đã xuất bản${s.published.publish.at ? ` · ${fmtTime(s.published.publish.at)}` : ''}`;
-  const tone = s.error ? 'err' : s.busy ? 'busy' : n > 0 ? 'dirty' : s.live?.state === 'waiting' ? 'ok' : 'clean';
+  const st = statusOf(s, n);
+  const peek = (text: string, actions: PeekAction[] = []) => {
+    if (isCompact()) toast(text, { actions: [...actions, { label: 'Xem ↗', run: () => setMobileTab('preview') }] });
+    else if (actions.length) toast(text, { actions });
+  };
 
   let content;
   if (!s.ready) content = s.error ? <ErrorPanel store={store} /> : <p class="muted"><Spinner /> Đang tải dữ liệu…</p>;
   else if (route === 'overview') content = <Overview store={store} go={go} openPublish={() => setPublishOpen(true)} />;
   else if (route === 'sections') content = <SectionsRoute store={store} go={go} />;
   else if (route === 'content') content = <ContentList go={go} />;
-  else if (LAZY[route]) content = api ? <Lazy id={route} store={store} go={go} preview={api} /> : null;
+  else if (LAZY[route]) content = api ? <Lazy id={route} store={store} go={go} preview={api} peek={peek} /> : null;
   else if (groupById(route)) content = <GroupForm store={store} group={groupById(route)!} go={go} />;
   else content = <p>Không có mục này. <button type="button" class="btn btn-link" onClick={() => go('overview')}>Về Tổng quan</button></p>;
 
   const navItem = (it: (typeof NAV)[number]) => (
-    <li key={it.id}>
+    <li key={it.id} class={it.more ? 'nav-more' : undefined}>
       <a href={`#/${it.id}`} class={`nav-a${route === it.id || (it.id === 'content' && CONTENT_IDS.includes(route)) ? ' is-on' : ''}`}
         aria-current={route === it.id ? 'page' : undefined} onClick={(e) => { e.preventDefault(); go(it.id); }}>
-        <span class="nav-ic" aria-hidden="true">{it.icon}</span>{it.label}
+        <span class="nav-ic"><Icon name={it.icon} /></span>{it.label}
       </a>
       {it.id === 'content' && (
         <ul class="nav-sub">
@@ -134,39 +163,53 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
     </li>
   );
 
+  const zip = s.adapter.kind === 'download';
   return (
-    <div class={`ed${showPreview ? ' has-preview' : ''}`} data-tab={mobileTab} data-sub={sub ? '1' : undefined}>
-      <header class="topbar">
+    <div class={`ed${showPreview ? ' has-preview' : ''}`} data-tab={mobileTab} data-sub={sub ? '1' : undefined} ref={edRef}>
+      <header class="topbar" ref={tbRef}>
         <div class="tb-brand">
           <span class="tb-mono" aria-hidden="true">{s.draft.cover.monogram || '♡'}</span>
           <span class="tb-title">Quản lý thiệp</span>
-          <span class="tb-mode" title={s.adapter.label}>{s.adapter.kind === 'download' ? 'Chế độ không kết nối' : s.adapter.kind === 'dev' ? 'Máy chủ dev' : s.adapter.label}</span>
+          <span class="tb-mode" title={s.adapter.label}>{zip ? 'Chế độ không kết nối' : s.adapter.kind === 'dev' ? 'Máy chủ dev' : s.adapter.label}</span>
         </div>
-        <p class={`tb-status tb-status--${tone}`} role="status" aria-live="polite" data-testid="save-status">
-          <span class="dot" aria-hidden="true" />{statusText}
-          {s.error && <>
-            <button type="button" class="btn btn-link" onClick={() => { store.clearError(); void store.reloadSnapshot({ keepDraft: true }).catch(() => {}); }}>Tải lại</button>
-          </>}
+        <p class={`tb-status tb-status--${st.tone}`} role="status" aria-live="polite" data-testid="save-status">
+          <span class="dot" aria-hidden="true" />
+          {s.error && s.ready
+            ? <span class="tb-text">✕ Lỗi · <button type="button" class="btn btn-link" onClick={() => errRef.current?.focus()}>Xem</button></span>
+            : <span class="tb-text">{st.text}</span>}
         </p>
         <div class="tb-actions">
-          <button type="button" class="btn btn-ghost" disabled={!s.canUndo} onClick={() => store.undo()} title="Ctrl+Z">Hoàn tác</button>
+          <button type="button" class="btn btn-ghost tb-undo" disabled={!s.canUndo} onClick={() => store.undo()} title="Hoàn tác (Ctrl+Z)"
+            aria-label="Hoàn tác" data-testid="undo-btn"><Icon name="undo" /><span class="tb-undo-l">Hoàn tác</span></button>
           <button type="button" class="btn btn-ghost hide-sm" disabled={n === 0 || !!s.busy} onClick={() => setRevertOpen(true)}>Hoàn tác tất cả</button>
-          <button type="button" class="btn btn-ghost hide-lg" aria-pressed={showPreview} onClick={() => setShowPreview(!showPreview)}>Xem trước</button>
+          <button type="button" class="btn btn-ghost hide-lg hide-sm" aria-pressed={showPreview} onClick={() => setShowPreview(!showPreview)}>Xem trước</button>
           <a class="btn btn-ghost hide-sm" href={import.meta.env.BASE_URL} target="_blank" rel="noopener">Xem trang ↗</a>
-          <button type="button" class="btn btn-primary" data-testid="publish-btn" disabled={!s.ready || !!s.busy || (n === 0 && s.adapter.kind !== 'download')}
+          <button type="button" class="btn btn-primary" data-testid="publish-btn" disabled={!s.ready || !!s.busy || (n === 0 && !zip)}
             onClick={() => setPublishOpen(true)}>
-            {s.busy?.kind === 'publish' ? <><Spinner /> Đang xuất bản…</> : s.adapter.kind === 'download' ? 'Tải gói xuất bản (.zip)' : 'Xuất bản'}
+            {s.busy?.kind === 'publish' ? <><Spinner /> {zip ? 'Đang tạo gói…' : 'Đang xuất bản…'}</>
+              : zip ? <><span class="lbl-long">{publishLabel('download')}</span><span class="lbl-short">Tải gói</span></>
+              : publishLabel(s.adapter.kind)}
           </button>
         </div>
       </header>
 
-      {s.staleDraft && (
-        <div class="banner banner--warn stale" role="alert">
-          Trang vừa được xuất bản từ nơi khác sau khi bạn bắt đầu bản nháp này.
-          <button type="button" class="btn btn-secondary" onClick={() => void store.resolveStale(true)}>Tiếp tục nháp</button>
-          <button type="button" class="btn btn-ghost" onClick={() => void store.resolveStale(false)}>Dùng bản đang xuất bản</button>
-        </div>
-      )}
+      <div class="tb-banners">
+        {s.staleDraft && (
+          <div class="banner banner--warn stale" role="alert">
+            Trang vừa được xuất bản từ nơi khác sau khi bạn bắt đầu bản nháp này.
+            <button type="button" class="btn btn-secondary" onClick={() => void store.resolveStale(true)}>Tiếp tục nháp</button>
+            <button type="button" class="btn btn-ghost" onClick={() => void store.resolveStale(false)}>Dùng bản đang xuất bản</button>
+          </div>
+        )}
+        {s.error && s.ready && (
+          <div class="banner banner--err stale" role="alert" tabIndex={-1} ref={errRef} data-testid="error-banner">
+            <span>✕ {s.error.message}</span>
+            <button type="button" class="btn btn-secondary" onClick={() => { store.clearError(); void store.reloadSnapshot({ keepDraft: true }).catch(() => {}); }}>Tải lại</button>
+            <button type="button" class="btn btn-ghost" onClick={() => store.clearError()}>Đóng</button>
+            {s.error.detail && <details class="details"><summary>Chi tiết kỹ thuật</summary><code>{s.error.detail}</code></details>}
+          </div>
+        )}
+      </div>
 
       <nav class="sidebar" aria-label="Mục quản lý">
         <ul>{NAV.map(navItem)}</ul>
@@ -174,13 +217,14 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
       </nav>
 
       <main class="form-col" id="form-col" tabIndex={-1}>
-        <button type="button" class="btn btn-link back mobile-only" onClick={() => (CONTENT_IDS.includes(route) ? go('content') : setSub(false))}>← Quay lại</button>
+        <button type="button" class="btn btn-link back mobile-only" onClick={() => (CONTENT_IDS.includes(route) ? go('content') : setSub(false))}>
+          <Icon name="left" /> Quay lại
+        </button>
         {content}
       </main>
 
       <aside class="preview-col" aria-label="Xem trước">
         <Preview store={store} onReady={setApi} />
-        <button type="button" class="btn btn-secondary mobile-only back-to-edit" onClick={() => setMobileTab('edit')}>← Quay lại chỉnh sửa</button>
       </aside>
 
       <nav class="bottom-tabs" aria-label="Chế độ">
@@ -191,8 +235,11 @@ export function Editor(p: { store: EditorStore; onLogout: () => void }) {
       {mobileTab === 'more' && (
         <div class="more-sheet">
           <ul>
-            {NAV.filter((x) => x.more).map((it) => <li key={it.id}><button type="button" class="list-btn" onClick={() => go(it.id)}>{it.icon} {it.label}</button></li>)}
-            <li><button type="button" class="list-btn" disabled={n === 0} onClick={() => setRevertOpen(true)}>↶ Hoàn tác tất cả</button></li>
+            {NAV.filter((x) => x.more).map((it) => (
+              <li key={it.id}><button type="button" class="list-btn" onClick={() => go(it.id)}><span class="list-ic"><Icon name={it.icon} /> {it.label}</span></button></li>
+            ))}
+            <li><button type="button" class="list-btn" disabled={!s.canRedo} onClick={() => store.redo()} data-testid="redo-btn"><span class="list-ic"><Icon name="redo" /> Làm lại</span></button></li>
+            <li><button type="button" class="list-btn" disabled={n === 0} onClick={() => setRevertOpen(true)}><span class="list-ic"><Icon name="undo" /> Hoàn tác tất cả</span></button></li>
             <li><a class="list-btn" href={import.meta.env.BASE_URL} target="_blank" rel="noopener">Xem trang ↗</a></li>
             <li><button type="button" class="list-btn" onClick={p.onLogout}>Đăng xuất</button></li>
           </ul>

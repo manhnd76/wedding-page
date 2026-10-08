@@ -2,6 +2,8 @@
  * Tự động cuộn (design-review-v1 mục 5; decisions 2026-10-08): mặc định + migration kẹp 1500 + logic dừng/tiếp tục.
  * Bộ điều khiển thuần (`src/guest/autoscroll/core.ts`) chạy với môi trường cuộn giả + đồng hồ giả.
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG } from '@shared/config/defaults';
 import { mergeWithDefaults } from '@shared/config/merge';
@@ -19,6 +21,25 @@ describe('effects.autoScroll - mặc định + migration', () => {
   it('import config.js cũ (wedding-site: enabled true, 55px/s, 650ms): giữ enabled + speed, kẹp startDelayMs lên 1500', () => {
     const { config } = mergeWithDefaults(migrate({ effects: { autoScroll: { enabled: true, speed: 55, startDelayMs: 650 } } }).config);
     expect(config.effects.autoScroll).toEqual({ enabled: true, speed: 55, startDelayMs: 1500, mode: 'flow', dwellMs: 1200 });
+  });
+
+  it('import config v0 có enabled:false -> vẫn BẬT (decisions 2026-10-08); speed cũ giữ, startDelayMs kẹp ≥ 1500', () => {
+    const { config } = mergeWithDefaults(migrate({ effects: { autoScroll: { enabled: false, speed: 30, startDelayMs: 200 } } }).config);
+    expect(config.effects.autoScroll).toEqual({ enabled: true, speed: 30, startDelayMs: 1500, mode: 'flow', dwellMs: 1200 });
+    // v0 không có speed/startDelayMs -> mặc định 45px/s, 2.5s
+    const d = mergeWithDefaults(migrate({ effects: { autoScroll: { enabled: false } } }).config).config.effects.autoScroll;
+    expect(d).toEqual({ enabled: true, speed: 45, startDelayMs: 2500, mode: 'flow', dwellMs: 1200 });
+  });
+
+  it('config mẫu public/content/config.json: tự cuộn bật 45px/s, 2.5s', () => {
+    const raw = JSON.parse(readFileSync(resolve(__dirname, '../public/content/config.json'), 'utf8')) as unknown;
+    const { config } = mergeWithDefaults(migrate(raw).config);
+    expect(config.effects.autoScroll).toEqual({ enabled: true, speed: 45, startDelayMs: 2500, mode: 'flow', dwellMs: 1200 });
+  });
+
+  it('config v1 KHÔNG bị migration đổi enabled (chỉ v0 mới ép bật)', () => {
+    const { config } = mergeWithDefaults(migrate({ schemaVersion: 1, effects: { autoScroll: { enabled: false } } }).config);
+    expect(config.effects.autoScroll.enabled).toBe(false);
   });
 
   it('config.js cũ không có autoScroll -> mặc định mới (bật)', () => {

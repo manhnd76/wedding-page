@@ -111,6 +111,15 @@ export function loadConn(s: KV): ConnInfo | null {
 }
 export const saveConn = (s: KV, c: ConnInfo) => s.setItem(CONN_KEY, JSON.stringify({ owner: c.owner, repo: c.repo, branch: c.branch }));
 
+/** Chữ lồng của thiệp (`cover.monogram`, không bí mật) để màn Login hiện đúng (design-review-admin-v2 A17). */
+const MONO_KEY = 'wp_admin_mono_v1';
+export function loadMonogram(s: KV): string {
+  try { return (s.getItem(MONO_KEY) ?? '').trim().slice(0, 12); } catch { return ''; }
+}
+export function saveMonogram(s: KV, mono: string): void {
+  try { if (mono.trim()) s.setItem(MONO_KEY, mono.trim().slice(0, 12)); } catch { /* đầy / chặn */ }
+}
+
 /** Phiên: token chỉ trong bộ nhớ + sessionStorage của tab (mất khi đóng tab). */
 export interface Session extends ConnInfo { token: string; expiresAt: string | null }
 export function loadSession(s: KV): Session | null {

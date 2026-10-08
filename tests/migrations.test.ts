@@ -39,7 +39,8 @@ const TRANSFORMED: Record<string, (v: unknown) => boolean> = {
   'effects.petals.types[*]': () => JSON.stringify(config.effects.particles.types) === JSON.stringify(['petal-rose', 'heart']),
   'effects.petals.colors[0]': (v) => config.effects.particles.color === v,
   'effects.coverUnlock.unlockAnimation': (v) => config.cover.openStyle === v,
-  'effects.autoScroll.enabled': (v) => config.effects.autoScroll.enabled === v,
+  // decisions 2026-10-08: import v0 luôn bật tự cuộn (giá trị cũ không giữ, có chủ đích)
+  'effects.autoScroll.enabled': () => config.effects.autoScroll.enabled === true,
   'effects.autoScroll.speed': (v) => config.effects.autoScroll.speed === v,
   // v2.1: kẹp tối thiểu 1500ms (design-review-v1 5.4: 650 của wedding-site -> 1500)
   'effects.autoScroll.startDelayMs': (v) => config.effects.autoScroll.startDelayMs === Math.max(1500, v as number),

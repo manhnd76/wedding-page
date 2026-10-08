@@ -1,5 +1,5 @@
 /**
- * Album (design 8.7): thêm nhiều ảnh (hàng đợi tuần tự có tiến trình), sắp xếp kéo/nút ←→, xoá có Hoàn tác 5s,
+ * Album (design 8.7): thêm nhiều ảnh (hàng đợi tuần tự có tiến trình), sắp xếp bằng nút ←→ (lên trước / ra sau), xoá có Hoàn tác 5s,
  * mỗi ảnh dùng ImageSlot. Ảnh đã xoá ở lần xuất bản gần nhất chỉ lấy lại bằng Khôi phục cả trang.
  */
 import { useRef, useState } from 'preact/hooks';
@@ -10,6 +10,7 @@ import { GroupForm } from '../form';
 import { ImageSlot, ingestImage } from '../../media/image-slot';
 import { ACCEPT_IMAGES } from '../../media/image-pipeline';
 import { Spinner, toast } from '../../ui/ui';
+import { Icon } from '../../ui/icons';
 
 export default function AlbumRoute({ store, go }: RouteProps) {
   const images = useStore(store, (s) => s.draft.content.album.images);
@@ -35,12 +36,28 @@ export default function AlbumRoute({ store, go }: RouteProps) {
       }
     }
   };
+  /**
+   * Key ổn định theo ảnh (src + lần xuất hiện): dời ảnh không remount phần tử, rồi focus đặt lại đúng nút của ảnh vừa dời
+   * (đánh giá lệch #4: nút ←→ phải đủ a11y). Ra tới đầu/cuối thì nút cùng chiều bị tắt -> focus nút chiều ngược lại.
+   */
+  const seen = new Map<string, number>();
+  const keys = images.map((im) => { const c = (seen.get(im.src) ?? 0) + 1; seen.set(im.src, c); return `${im.src}#${c}`; });
+  const gridRef = useRef<HTMLUListElement>(null);
+  const [live, setLive] = useState('');
   const move = (i: number, d: number) => {
     const j = i + d;
     if (j < 0 || j >= images.length) return;
+    const k = keys[i]!;
     const n = [...images];
     [n[i], n[j]] = [n[j]!, n[i]!];
     setImages(n);
+    setLive(`Ảnh ${i + 1} đã dời tới vị trí ${j + 1} trên ${n.length}`);
+    if (open === i) setOpen(j); else if (open === j) setOpen(i);
+    const dir = j === 0 || j === n.length - 1 ? -d : d;
+    requestAnimationFrame(() => {
+      const li = Array.from(gridRef.current?.querySelectorAll<HTMLElement>('.album-item') ?? []).find((x) => x.dataset.k === k);
+      li?.querySelector<HTMLElement>(`[data-mv="${dir}"]`)?.focus();
+    });
   };
   const remove = (i: number) => {
     const removed = images[i]!;
@@ -59,20 +76,21 @@ export default function AlbumRoute({ store, go }: RouteProps) {
           {queue.map((q, i) => <li key={i}>{q.state === 'run' ? <Spinner /> : q.state === 'ok' ? '✓' : q.state === 'err' ? '✕' : '◌'} {q.name}{q.msg ? ` - ${q.msg}` : ''}</li>)}
         </ul>
       )}
-      <ul class="album-grid">
+      <ul class="album-grid" ref={gridRef}>
         {images.map((im, i) => (
-          <li key={`${im.src}-${i}`} class="album-item">
+          <li key={keys[i]} class="album-item" data-k={keys[i]}>
             <button type="button" class="album-thumb" aria-expanded={open === i} onClick={() => setOpen(open === i ? null : i)}>
               <img src={store.urlOf(im.thumb ?? im.src)} alt={im.alt || `Ảnh ${i + 1}`} loading="lazy" width={im.w || undefined} height={im.h || undefined} />
             </button>
             <div class="btn-row">
-              <button type="button" class="icon-btn" aria-label={`Dời ảnh ${i + 1} sang trái`} disabled={i === 0} onClick={() => move(i, -1)}>←</button>
-              <button type="button" class="icon-btn" aria-label={`Dời ảnh ${i + 1} sang phải`} disabled={i === images.length - 1} onClick={() => move(i, 1)}>→</button>
-              <button type="button" class="icon-btn" aria-label={`Xoá ảnh ${i + 1}`} onClick={() => remove(i)}>🗑</button>
+              <button type="button" class="icon-btn" data-mv="-1" aria-label={`Dời ảnh ${i + 1} lên trước`} disabled={i === 0} onClick={() => move(i, -1)}><Icon name="left" /></button>
+              <button type="button" class="icon-btn" data-mv="1" aria-label={`Dời ảnh ${i + 1} ra sau`} disabled={i === images.length - 1} onClick={() => move(i, 1)}><Icon name="right" /></button>
+              <button type="button" class="icon-btn" aria-label={`Xoá ảnh ${i + 1}`} onClick={() => remove(i)}><Icon name="trash" /></button>
             </div>
           </li>
         ))}
       </ul>
+      <p class="sr-only" aria-live="polite">{live}</p>
       {open !== null && images[open] && (
         <ImageSlot store={store} path={`content.album.images[${open}]`} kind="album" label={`Ảnh ${open + 1}`} section="album" onRemove={() => { remove(open); setOpen(null); }} />
       )}

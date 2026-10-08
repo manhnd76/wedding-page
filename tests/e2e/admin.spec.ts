@@ -53,10 +53,11 @@ test('chế độ không kết nối: sửa text -> preview đổi; bật/tắt 
   const name = page.getByTestId('f-content.couple.groom.fullName');
   await name.fill('Quang Huy');
   await expect(preview(page).locator('#couple')).toContainText('Quang Huy', { timeout: 15_000 });
-  await expect(page.getByTestId('save-status')).toContainText(/thay đổi chưa xuất bản|Đang lưu nháp/);
+  // chế độ không kết nối: không bao giờ "Đã xuất bản" (A02)
+  await expect(page.getByTestId('save-status')).toContainText(/thay đổi chưa tải gói|Đang lưu nháp/);
 
   // tắt section Album -> biến mất trong preview; bật lại -> hiện
-  await page.getByRole('link', { name: 'Sections' }).click();
+  await page.getByRole('link', { name: 'Các phần & thứ tự' }).click();
   await expect(preview(page).locator('#album')).toBeAttached();
   await page.getByTestId('sec-toggle-album').uncheck();
   await expect(preview(page).locator('#album')).toHaveCount(0, { timeout: 15_000 });
@@ -88,6 +89,7 @@ test('chế độ không kết nối: sửa text -> preview đổi; bật/tắt 
   const dl = page.waitForEvent('download');
   await page.getByTestId('publish-confirm').click();
   expect((await dl).suggestedFilename()).toMatch(/\.zip$/);
+  await expect(page.getByTestId('save-status')).toContainText('Đã tải gói xuất bản');
   expect(errors).toEqual([]);
 });
 
@@ -143,6 +145,8 @@ test('máy chủ dev: xuất bản ghi vào thư mục (tạm), khôi phục = h
   await waitPreviewReady(page);
   const snap = () => page.evaluate(async () => (await (await fetch('/__admin/snapshot')).json()) as { config: { meta: { title: string }; publish: { id: string } }; manifest: { reason: string } | null });
   const title0 = (await snap()).config.meta.title;
+  // config mẫu chưa từng xuất bản (publish.at rỗng) -> không được ghi "Đã xuất bản" (A02)
+  if (!(await snap()).config.publish.id) await expect(page.getByTestId('save-status')).toContainText('Chưa xuất bản lần nào');
 
   await page.getByRole('link', { name: 'Chung' }).click();
   await page.getByTestId('f-meta.title').fill('Tiêu đề thử E2E');
@@ -177,9 +181,9 @@ test('link khách: giữ dấu mặc định, toggle Mã hoá link, CSV', async 
   await page.getByTestId('links-make').click();
   const table = page.getByTestId('links-table');
   await expect(table).toContainText('?to=Gia-đình-anh-Mạnh');
-  await expect(table.getByRole('button', { name: 'Chép' }).first()).toHaveAttribute('data-link', /\?to=Gia-đình-anh-Mạnh$/);
+  await expect(table.getByRole('button', { name: /^Sao chép link của/ }).first()).toHaveAttribute('data-link', /\?to=Gia-đình-anh-Mạnh$/);
   await page.getByTestId('links-encode').check();
-  await expect(table.getByRole('button', { name: 'Chép' }).first()).toHaveAttribute('data-link', /\?to=Gia-%C4%91%C3%ACnh-anh-M%E1%BA%A1nh$/);
+  await expect(table.getByRole('button', { name: /^Sao chép link của/ }).first()).toHaveAttribute('data-link', /\?to=Gia-%C4%91%C3%ACnh-anh-M%E1%BA%A1nh$/);
   await expect(table).toContainText('?to=Gia-đình-anh-Mạnh'); // bảng vẫn dạng dễ đọc
 });
 

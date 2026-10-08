@@ -65,3 +65,10 @@
 - Tự cuộn với config cũ: chuyển sang BẬT 45px/s. Thực tế chưa có config nào được publish, nên chỉ cần: defaults + config mẫu + import config v0 đều ra `enabled: true` (v0 có `speed` thì giữ, `startDelayMs` kẹp ≥ 1500). Không thêm migration cho config v1.
 - Giả định admin được chấp nhận: Undo mobile đặt ở top bar; mini preview sticky mobile để v4 (v2.x dùng toast "[Xem ↗]"); admin dùng font hệ thống; đổi tên "Sections" -> "Các phần & thứ tự".
 - v2.1 commit trên `feat/20261007-wedding-page-v2.1`; v2.2 (sửa 23 điểm admin còn lại) trên `feat/20261007-wedding-page-v2.2`.
+
+## Đổi luồng đăng nhập admin (2026-10-08)
+- Người duyệt hỏi có thể sửa cấu hình "không cần deploy" không; sau khi biết site tĩnh thì mọi thay đổi (kể cả text) đều phải publish -> **giữ nguyên luồng publish qua GitHub**, không thêm nơi lưu runtime.
+- **Cổng login** khi vào `/admin`: mật khẩu `manh111`, lưu **dạng hash** trong code (không có chuỗi rõ trong repo/bundle). Sau login được sửa/xem trước/upload vào nháp thoải mái.
+- **Token GitHub chỉ hỏi khi cần**: lần đầu bấm Publish/Khôi phục (hoặc thao tác bắt buộc gọi GitHub) mới mở màn Kết nối GitHub — không bắt kết nối ngay khi vào admin.
+- Giả định mặc định (orchestrator): token "ghi nhớ" được mã hoá bằng chính mật khẩu login (bỏ passphrase riêng); bản xuất bản hiện tại đọc từ chính site (`/content/config.json` cùng origin) khi chưa có token.
+- Phạm vi: v2.2 commit; **v2.3** = login mới + sửa E01–E11 (design-review-envelopes.md) theo giả định designer: tên khách dài tự giảm cỡ, tối đa 3 dòng (≥15px), không mất dấu; nút "Tiếp tục tự cuộn" ẩn khi khách cuộn, hiện lại sau 1.2s đứng yên; kraft dây dừng ở mép thẻ; theme tối pha 14% accent cho classic/minimal/lace; chấp nhận hình nắp mới. E12 (hiệu ứng "Nhiều" riêng từng mẫu) để v4.
