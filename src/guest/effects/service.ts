@@ -24,6 +24,11 @@ export function readGuestPref(): 'on' | 'off' | null {
 
 export function deviceInfo() {
   const n = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
+  const sim = ctx.preview?.simulate;
+  if (ctx.preview) {
+    // preview admin: mặc định như máy khoẻ, không giảm chuyển động (admin chủ động bấm xem); "Mô phỏng" ép nhánh tương ứng
+    return { hardwareConcurrency: sim?.lowEnd ? 2 : 8, deviceMemory: sim?.lowEnd ? 1 : 8, saveData: false, reducedMotion: !!sim?.reducedMotion };
+  }
   return {
     hardwareConcurrency: n.hardwareConcurrency,
     ...(n.deviceMemory !== undefined ? { deviceMemory: n.deviceMemory } : {}),
@@ -76,13 +81,14 @@ export function getField(): Promise<ParticleField | null> {
 /** Sau khi mở thiệp: burst onOpen -> hạt nền -> reveal -> FPS probe. */
 export async function afterOpen(): Promise<void> {
   const state = ctx.fx.state;
-  startReveal(document);
+  if (ctx.preview && !ctx.preview.animateReveal) revealAll(document);
+  else startReveal(document);
   setupParallax(state);
   if (state === 'off' || state === 'reduced') return;
   const f = await getField();
   if (!f) return;
   const burst = ctx.resolved.burstOnOpen;
-  if (burst === 'petals') {
+  if (burst === 'petals' && (!ctx.preview || ctx.preview.burst)) {
     const n = burstCount('petals', state);
     const { playPetals } = await import('./burst/petals');
     EffectRegistry.register('burst', { play: () => playPetals(f, n, kindCount) });

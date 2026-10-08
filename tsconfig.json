@@ -17,9 +17,11 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "noEmit": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "types": ["vite/client", "node"],
     "baseUrl": ".",
-    "paths": { "@shared/*": ["src/shared/*"], "@guest/*": ["src/guest/*"] }
+    "paths": { "@shared/*": ["src/shared/*"], "@guest/*": ["src/guest/*"], "@admin/*": ["src/admin/*"] }
   },
   "include": ["src", "tests", "scripts", "vite.config.ts", "vitest.config.ts", "playwright.config.ts"]
 }

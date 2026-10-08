@@ -21,6 +21,14 @@ export interface GuestCtx {
   /** đang gõ trong ô nhập (kéo dài 1.5s sau blur) */
   typing: boolean;
   debug: boolean;
+  /** chỉ có khi chạy trong khung preview của admin (?preview=1) */
+  preview?: {
+    simulate: { lowEnd?: boolean; reducedMotion?: boolean };
+    /** chạy reveal có hoạt ảnh (Phát lại reveal / kiểu mở); ngược lại hiện ngay */
+    animateReveal: boolean;
+    /** cho phép burst sau mở thiệp */
+    burst: boolean;
+  };
 }
 
 export const ctx = {} as GuestCtx;

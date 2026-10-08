@@ -23,6 +23,8 @@ import { guestbook } from './sections/guestbook';
 import { rsvp } from './sections/rsvp';
 import { divider } from './sections/common';
 import { assetUrl } from '@shared/assets';
+import { EffectRegistry } from './effects/registry';
+import type { PreviewBoot } from './preview-bridge';
 
 const SCROLL_KEY = 'wp_scroll_v1';
 
@@ -32,10 +34,15 @@ function readJson<T>(id: string): T | null {
   return JSON.parse(el.textContent) as T;
 }
 
-async function loadConfig(): Promise<{ config: WeddingConfig; resolved: Resolved }> {
-  let config = readJson<WeddingConfig>('wp-config');
-  let resolved = readJson<Resolved>('wp-resolved');
-  if (!config) {
+async function loadConfig(boot: PreviewBoot | null): Promise<{ config: WeddingConfig; resolved: Resolved }> {
+  let config = boot ? null : readJson<WeddingConfig>('wp-config');
+  let resolved = boot ? null : readJson<Resolved>('wp-resolved');
+  if (boot) {
+    // preview (admin): cấu hình nháp + ảnh mới qua blob: URL; luôn resolve lúc chạy
+    const [{ migrate }, { mergeWithDefaults }, bridge] = await Promise.all([import('@shared/config/migrations'), import('@shared/config/merge'), import('./preview-bridge')]);
+    config = mergeWithDefaults(migrate(bridge.applyAssets(boot.config, boot.assets)).config).config;
+    if (boot.options.muteMusic !== false) config.music.autoplayAfterOpen = false;
+  } else if (!config) {
     const res = await fetch(`${import.meta.env.BASE_URL}content/config.json`, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw: unknown = await res.json();
@@ -49,6 +56,11 @@ async function loadConfig(): Promise<{ config: WeddingConfig; resolved: Resolved
     const { resolveTheme, themeCssVars } = await import('@shared/theme/resolve');
     const { fontStack } = await import('@shared/fonts/registry');
     resolved = resolveTheme(config);
+    if (boot) {
+      const bridge = await import('./preview-bridge');
+      resolved.ornamentUrl = await bridge.ornamentUrlFor(import.meta.env.BASE_URL, resolved.ornamentSet);
+      await bridge.ensureFonts(import.meta.env.BASE_URL, [resolved.fonts.heading, resolved.fonts.script, resolved.fonts.body]);
+    }
     const vars = themeCssVars(resolved, { heading: fontStack(resolved.fonts.heading), script: fontStack(resolved.fonts.script), body: fontStack(resolved.fonts.body) });
     for (const [k, v] of Object.entries(vars)) document.documentElement.style.setProperty(k, v);
     document.documentElement.dataset.mode = resolved.mode;
@@ -85,31 +97,45 @@ function renderSection(p: PlannedSection, visible: Set<SectionType>): HTMLElemen
 }
 
 export async function bootstrap(): Promise<void> {
+  const url = new URL(location.href);
+  // preview trong admin (?preview=1): chờ cấu hình nháp qua postMessage (solution 4.3)
+  const bridge = url.searchParams.get('preview') === '1' ? await import('./preview-bridge') : null;
+  const boot = bridge ? await bridge.waitForBoot() : null;
   let loaded: { config: WeddingConfig; resolved: Resolved };
   try {
-    loaded = await loadConfig();
+    loaded = await loadConfig(boot);
   } catch (e) {
     console.error('[wedding-page] Không tải được cấu hình', e);
+    bridge?.post({ type: 'wp:preview-error', message: String(e) });
     errorScreen();
     return;
   }
-  const url = new URL(location.href);
+  const fxTarget = boot?.fx?.target ?? null;
+  if (boot?.fx?.speed) EffectRegistry.setTimeScale(boot.fx.speed);
+  const guestUrl = boot?.options.guestName ? new URL(`/?to=${encodeURIComponent(boot.options.guestName)}`, location.origin) : url;
   Object.assign(ctx, {
     config: loaded.config,
     resolved: loaded.resolved,
-    guest: guestNameFromUrl(url, loaded.config.guest),
+    guest: guestNameFromUrl(guestUrl, boot?.options.guestName ? { ...loaded.config.guest, queryParam: 'to' } : loaded.config.guest),
     base: import.meta.env.BASE_URL,
     opened: false,
     overlays: new Set<string>(),
     typing: false,
     debug: url.searchParams.get('debug') === 'fx',
+    preview: boot ? {
+      simulate: boot.fx?.simulate ?? {},
+      animateReveal: fxTarget === 'reveal' || fxTarget === 'cover',
+      burst: fxTarget === 'cover' || fxTarget === 'burst',
+    } : undefined,
   });
   ctx.fx = computeFx();
   applyFxClasses(ctx.fx.state);
   for (const w of loaded.resolved.warnings ?? []) console.warn(`[wedding-page] ${w}`);
   watchTyping();
 
-  const withCover = ctx.config.cover.enabled && url.searchParams.get('cover') !== '0';
+  const withCover = boot
+    ? fxTarget === 'cover' || (!fxTarget && ctx.config.cover.enabled && !boot.options.skipCover)
+    : ctx.config.cover.enabled && url.searchParams.get('cover') !== '0';
   // bật trước khi render landing: landing dưới cover không được layout -> chỉ tải font cover lúc đầu
   if (withCover) document.documentElement.classList.add('cover-on', 'landing-wait');
 
@@ -146,13 +172,14 @@ export async function bootstrap(): Promise<void> {
     main.inert = false;
     main.removeAttribute('aria-hidden');
     document.documentElement.classList.add('is-opened');
-    const saved = Number(sessionStorage.getItem(SCROLL_KEY) ?? 0);
-    if (saved > 0) window.scrollTo(0, saved);
+    const saved = boot ? 0 : Number(sessionStorage.getItem(SCROLL_KEY) ?? 0);
+    if (boot) previewAfterOpen(boot, fxTarget, bridge!);
+    else if (saved > 0) window.scrollTo(0, saved);
     else document.getElementById('hero-title')?.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
     emit('pause-change');
     void afterOpen();
     let t: ReturnType<typeof setTimeout> | null = null;
-    window.addEventListener('scroll', () => {
+    if (!boot) window.addEventListener('scroll', () => {
       if (t) return;
       t = setTimeout(() => { t = null; try { sessionStorage.setItem(SCROLL_KEY, String(Math.round(window.scrollY))); } catch { /* ignore */ } }, 300);
     }, { passive: true });
@@ -163,7 +190,55 @@ export async function bootstrap(): Promise<void> {
     main.setAttribute('aria-hidden', 'true');
     const cover = mountCover(music);
     void cover.opened.then(onOpened);
+    if (fxTarget === 'cover') autoOpen(cover.el);
   } else {
     onOpened();
   }
+  if (boot && bridge) {
+    bridge.listenAfterRender(boot);
+    bridge.post({ type: 'wp:preview-ready', phase: 'rendered' });
+  }
 }
+
+/** Preview "Phát lại kiểu mở thiệp": tự chạm mở khi cover sẵn sàng. */
+function autoOpen(cover: HTMLElement): void {
+  const tryOpen = () => {
+    const cta = cover.querySelector<HTMLButtonElement>('.cv-cta');
+    if (cta && !cta.disabled) { setTimeout(() => cta.click(), 450); return; }
+    setTimeout(tryOpen, 60);
+  };
+  tryOpen();
+}
+
+/** Preview: giữ vị trí cuộn / cuộn tới phần đang xem, chạy hiệu ứng được yêu cầu, báo fx:done. */
+function previewAfterOpen(boot: PreviewBoot, target: string | null, bridge: typeof import('./preview-bridge')): void {
+  const o = boot.options;
+  const done = (ms: number) => { if (target) setTimeout(() => bridge.post({ type: 'fx:done', target }), ms * Math.max(1, 1 / (boot.fx?.speed ?? 1))); };
+  if (!target) {
+    if (o.scrollY) window.scrollTo(0, o.scrollY);
+    bridge.applyOptions(o);
+    return;
+  }
+  if (target === 'cover') { done(1600); return; }
+  if (target === 'burst' || target === 'particles') { window.scrollTo(0, 0); done(target === 'burst' ? 2600 : 1200); return; }
+  if (target === 'reveal') {
+    const secs = Array.from(document.querySelectorAll<HTMLElement>('main .sec'));
+    const first = secs.find((s, i) => i > 0 && s.querySelector('img')) ?? secs[1];
+    if (first) {
+      window.scrollTo(0, Math.max(0, first.offsetTop - window.innerHeight * 0.6));
+      setTimeout(() => window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' }), 250);
+    }
+    done(2200);
+    return;
+  }
+  // micro:<mã> hoặc tên section -> cuộn tới section liên quan
+  const sec = target.startsWith('micro:') ? MICRO_SECTION[target.slice(6)] ?? '' : target;
+  if (sec) document.getElementById(sec)?.scrollIntoView({ block: 'start' });
+  else if (o.scrollY) window.scrollTo(0, o.scrollY);
+  done(900);
+}
+
+const MICRO_SECTION: Record<string, string> = {
+  wishFly: 'guestbook', 'wish-fly': 'guestbook', rsvp: 'rsvp', 'rsvp-success': 'rsvp', countdown: 'countdown',
+  fireworks: 'countdown', photoTilt: 'album', 'photo-tilt': 'album', buttonShine: 'hero',
+};

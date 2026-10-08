@@ -1,0 +1,54 @@
+/** Tổng quan: trạng thái xuất bản, banner token sắp hết hạn (solution 2.6), checklist thiếu thông tin. */
+import { useMemo } from 'preact/hooks';
+import type { EditorStore } from '../../state/store';
+import { useStore } from '../../state/store';
+import { runChecklist } from '../../draft/checklist';
+import { expiryWarning, weddingDateOf } from '../../storage/github';
+import { fmtTime } from '../util';
+
+export function Overview(p: { store: EditorStore; go: (r: string) => void; openPublish: () => void }) {
+  const s = useStore(p.store, (x) => x);
+  const checks = useMemo(() => runChecklist(s.draft, { tokenExpiresAt: s.tokenExpiresAt }), [s.draft]);
+  const n = useMemo(() => p.store.changes().length, [s.draft, s.published]);
+  const exp = expiryWarning(s.tokenExpiresAt, weddingDateOf(s.draft));
+  const c = s.draft.content.couple;
+  return (
+    <section>
+      <h1>Tổng quan</h1>
+      {exp && (
+        <p class="banner banner--warn" role="alert">
+          {exp} <a class="btn btn-link" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Tạo token mới ↗</a>
+        </p>
+      )}
+      {s.adapter.kind === 'download' && <p class="banner banner--info">Chế độ không kết nối: thay đổi được lưu trên máy này; nút Xuất bản tải về gói .zip để bạn tự commit lên repo.</p>}
+      {s.adapter.kind === 'dev' && <p class="banner banner--info">Máy chủ dev: Xuất bản ghi thẳng vào <code>public/content/</code> và <code>backup/</code> của dự án.</p>}
+      <div class="ov-cards">
+        <div class="ov-card">
+          <h2>{c.groom.shortName || c.groom.fullName || 'Chú rể'} &amp; {c.bride.shortName || c.bride.fullName || 'Cô dâu'}</h2>
+          <p class="muted">{s.draft.meta.title}</p>
+        </div>
+        <div class="ov-card">
+          <h2>Trạng thái</h2>
+          <p>{n > 0 ? `Có ${n} thay đổi chưa xuất bản` : 'Không có thay đổi chưa xuất bản'}</p>
+          <p class="muted">{s.published.publish.at ? `Xuất bản gần nhất: ${fmtTime(s.published.publish.at)}` : 'Chưa xuất bản lần nào'}</p>
+          {s.live?.state === 'waiting' && <p>◌ Đang chờ trang cập nhật (Cloudflare Pages build 30-90 giây)…</p>}
+          {s.live?.state === 'live' && <p class="ok-text">✓ Khách đã thấy bản mới</p>}
+          {s.live?.state === 'timeout' && <p class="err">Sau 5 phút trang vẫn chưa đổi. Kiểm tra trạng thái build trên Cloudflare Pages.</p>}
+          <button type="button" class="btn btn-primary" disabled={n === 0 && s.adapter.kind !== 'download'} onClick={p.openPublish}>Xuất bản…</button>
+        </div>
+      </div>
+      <h2>Việc cần làm</h2>
+      {checks.length === 0 ? <p class="ok-text">✓ Không thấy thông tin nào còn thiếu.</p> : (
+        <ul class="checklist">
+          {checks.map((ch, i) => (
+            <li key={i} class={`chk chk--${ch.level}`}>
+              <span aria-hidden="true">{ch.level === 'error' ? '✕' : '!'}</span>
+              <span>{ch.message}</span>
+              {ch.fix !== 'connect' && <button type="button" class="btn btn-link" onClick={() => p.go(ch.fix)}>Sửa</button>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}

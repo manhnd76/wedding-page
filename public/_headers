@@ -37,6 +37,7 @@
 
 /admin/*
   ! Content-Security-Policy
-  Content-Security-Policy: default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; connect-src 'self' https://api.github.com https://script.google.com https://script.googleusercontent.com; frame-src 'self'; frame-ancestors 'none'; script-src 'self'; base-uri 'self'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com https://script.google.com https://script.googleusercontent.com; frame-src 'self'; frame-ancestors 'none'; script-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'
+  Referrer-Policy: no-referrer
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-cache

@@ -1,6 +1,7 @@
 /**
  * Ngân sách bundle guest (solution 9.1). Danh sách file lấy từ .wp-build/budget.json
- * (plugin inject-config-og ghi lúc build: entry + module openStyle + loại hạt đang dùng = "JS ban đầu").
+ * (plugin inject-config-og ghi lúc build: entry + module openStyle + loại hạt đang dùng = "JS ban đầu";
+ * admin: entry admin + import tĩnh = "Admin JS ban đầu", route tải lười = "admin lazy").
  */
 const fs = require('node:fs');
 const path = require('node:path');
@@ -20,4 +21,8 @@ module.exports = [
   ...b.openStyle.map((f) => ({ name: `openStyle: ${base(f)}`, path: p(f), limit: '4 KB', gzip: true })),
   ...b.particle.map((f) => ({ name: `hạt: ${base(f)}`, path: p(f), limit: '1.5 KB', gzip: true })),
   ...b.lazy.map((f) => ({ name: `lazy: ${base(f)}`, path: p(f), limit: '15 KB', gzip: true })),
+  // admin (v2) - solution 9.1 cho phép ≤ 150 KB; đặt chặt hơn để phát hiện phình sớm (frontend-report-v2 mục ngân sách)
+  ...(b.adminInitialJs?.length ? [{ name: 'Admin JS ban đầu', path: b.adminInitialJs.map(p), limit: '80 KB', gzip: true }] : []),
+  ...(b.adminInitialCss?.length ? [{ name: 'Admin CSS', path: b.adminInitialCss.map(p), limit: '10 KB', gzip: true }] : []),
+  ...(b.adminLazy ?? []).map((f) => ({ name: `admin lazy: ${base(f)}`, path: p(f), limit: '15 KB', gzip: true })),
 ];

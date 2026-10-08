@@ -16,6 +16,14 @@ async function openCard(page: Page, url = '/?to=gia-%C4%91%C3%ACnh-anh-M%E1%BA%A
   await expect(page.locator('.cover')).toHaveCount(0, { timeout: 4000 });
 }
 
+/** Theme đã resolve lúc build (config mẫu trong public/ là file người dùng sửa được - không ghim cứng theme). */
+async function builtTheme(): Promise<{ preset: string; tokens: { primary: string } }> {
+  const { readFileSync } = await import('node:fs');
+  const html = readFileSync('dist/index.html', 'utf8');
+  const m = /<script type="application\/json" id="wp-resolved">([\s\S]*?)<\/script>/.exec(html)!;
+  return JSON.parse(m[1]!) as { preset: string; tokens: { primary: string } };
+}
+
 type Snap = { bg: { x: number; y: number; a: number }[]; bursts: { x: number; y: number; a: number }[]; zones: unknown[]; running: boolean; frames: number };
 const snap = (page: Page) => page.evaluate(() => (window as unknown as { __wpFx?: { snapshot: () => Snap } }).__wpFx?.snapshot() ?? null);
 
@@ -24,7 +32,7 @@ test('cover: tên khách từ ?to=, chạm mở, landing hiện, không lỗi co
   await page.goto('/?to=gia-%C4%91%C3%ACnh-anh-M%E1%BA%A1nh');
   await expect(page.locator('.cv-guest')).toHaveText('Gia đình anh Mạnh');
   await expect(page.locator('#main')).toHaveAttribute('aria-hidden', 'true');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'tram-vang');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', (await builtTheme()).preset);
   await page.locator('.cv-cta').click();
   await expect(page.locator('.cover')).toHaveCount(0, { timeout: 4000 });
   await expect(page.locator('#main')).not.toHaveAttribute('aria-hidden', 'true');
@@ -166,7 +174,7 @@ test('CSP production (dist/_headers): không vi phạm, theme inline áp dụng 
   });
   await openCard(page);
   // giá trị viết hoa đến từ <style id="wp-theme"> inline (tokens.css fallback viết thường)
-  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--c-primary').trim())).toBe('#8A6A3B');
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--c-primary').trim())).toBe((await builtTheme()).tokens.primary);
   await page.locator('#gift').scrollIntoViewIfNeeded();
   await page.locator('.gift-btn').click();
   await expect(page.locator('.qr-box canvas')).toHaveCount(1);

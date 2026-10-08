@@ -19,6 +19,8 @@ import { FONT_REGISTRY, FONT_SUBSETS, fontStack, fontsourceFile, type FontMeta }
 import { planSections } from '../../src/shared/sections/meta.ts';
 import { resolveTheme, themeCssVars, type ResolvedTheme } from '../../src/shared/theme/resolve.ts';
 import { assetUrl, safeHttpsUrl } from '../../src/shared/assets.ts';
+import { CAPABILITIES } from '../../src/shared/capabilities.ts';
+import type { FontId } from '../../src/shared/config/enums.ts';
 
 interface FontFile { url: string; abs: string; family: string; weight: number; style: string; subset: string; range: string; role: string }
 interface Asset { url: string; abs: string }
@@ -39,6 +41,61 @@ const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').
 const escText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 
+/** File woff2 (vietnamese + latin) của 1 family; null nếu thiếu package. */
+export function fontFiles(root: string, id: FontId, role: string): FontFile[] | null {
+  const meta: FontMeta = FONT_REGISTRY[id];
+  const pkgDir = path.join(root, 'node_modules', '@fontsource', meta.pkg);
+  let ranges: Record<string, string> = {};
+  try {
+    ranges = JSON.parse(readFileSync(path.join(pkgDir, 'unicode.json'), 'utf8')) as Record<string, string>;
+  } catch {
+    return null;
+  }
+  const out: FontFile[] = [];
+  for (const face of meta.faces) {
+    for (const subset of FONT_SUBSETS) {
+      const file = fontsourceFile(meta.pkg, subset, face);
+      const abs = path.join(pkgDir, 'files', file);
+      if (!existsSync(abs) || !ranges[subset]) continue;
+      const name = file.replace(/\.woff2$/, `.${hash8(readFileSync(abs))}.woff2`);
+      out.push({ url: `/fonts/${name}`, abs, family: meta.family, weight: face.weight, style: face.style, subset, range: ranges[subset]!, role });
+    }
+  }
+  return out;
+}
+
+export interface PreviewAssets {
+  fonts: Record<string, FontFile[]>;
+  ornaments: Record<string, Asset>;
+}
+
+/**
+ * Asset cho khung preview của admin (solution 9.1 mục 5: "mọi module vẫn được build ra"):
+ * mọi font + ornament đã bật trong capabilities, để đổi theme/font trong admin xem được ngay.
+ * Khách KHÔNG tải các file này (chỉ khung preview đọc /preview-assets.json).
+ */
+export function previewAssets(root: string): PreviewAssets {
+  const fonts: Record<string, FontFile[]> = {};
+  for (const id of CAPABILITIES.font.supported) {
+    const f = fontFiles(root, id, FONT_REGISTRY[id].role);
+    if (f) fonts[id] = f;
+  }
+  const ornaments: Record<string, Asset> = {};
+  for (const set of CAPABILITIES.ornamentSet.supported) {
+    const abs = path.join(root, 'src', 'guest', 'theme-assets', 'ornaments', `${set}.svg`);
+    if (existsSync(abs)) ornaments[set] = { abs, url: `/ornaments/${set}.${hash8(readFileSync(abs))}.svg` };
+  }
+  return { fonts, ornaments };
+}
+
+export function previewAssetsJson(p: PreviewAssets): string {
+  const fonts: Record<string, { family: string; weight: number; style: string; url: string; range: string }[]> = {};
+  for (const [id, list] of Object.entries(p.fonts)) fonts[id] = list.map((f) => ({ family: f.family, weight: f.weight, style: f.style, url: f.url, range: f.range }));
+  const ornaments: Record<string, string> = {};
+  for (const [k, a] of Object.entries(p.ornaments)) ornaments[k] = a.url;
+  return JSON.stringify({ fonts, ornaments });
+}
+
 /** Tính toàn bộ dữ liệu inject từ config thô (tách riêng để unit test). */
 export function buildState(root: string, raw: unknown, fail: (m: string) => never | void = () => {}): State {
   const m = migrate(raw);
@@ -51,24 +108,9 @@ export function buildState(root: string, raw: unknown, fail: (m: string) => neve
   // fonts: 3 family đã resolve
   const fonts: FontFile[] = [];
   for (const role of ['heading', 'script', 'body'] as const) {
-    const meta: FontMeta = FONT_REGISTRY[r.fonts[role]];
-    const pkgDir = path.join(root, 'node_modules', '@fontsource', meta.pkg);
-    let ranges: Record<string, string> = {};
-    try {
-      ranges = JSON.parse(readFileSync(path.join(pkgDir, 'unicode.json'), 'utf8')) as Record<string, string>;
-    } catch {
-      fail(`[inject-config-og] Thiếu @fontsource/${meta.pkg} (font "${meta.family}"). Chạy npm install.`);
-      continue;
-    }
-    for (const face of meta.faces) {
-      for (const subset of FONT_SUBSETS) {
-        const file = fontsourceFile(meta.pkg, subset, face);
-        const abs = path.join(pkgDir, 'files', file);
-        if (!existsSync(abs) || !ranges[subset]) continue;
-        const name = file.replace(/\.woff2$/, `.${hash8(readFileSync(abs))}.woff2`);
-        fonts.push({ url: `/fonts/${name}`, abs, family: meta.family, weight: face.weight, style: face.style, subset, range: ranges[subset]!, role });
-      }
-    }
+    const files = fontFiles(root, r.fonts[role], role);
+    if (!files) { fail(`[inject-config-og] Thiếu @fontsource/${FONT_REGISTRY[r.fonts[role]].pkg} (font "${FONT_REGISTRY[r.fonts[role]].family}"). Chạy npm install.`); continue; }
+    fonts.push(...files);
   }
 
   const ornAbs = path.join(root, 'src', 'guest', 'theme-assets', 'ornaments', `${r.ornamentSet}.svg`);
@@ -168,13 +210,23 @@ export function injectConfigOg(): Plugin {
       server.watcher.on('change', (f) => {
         if (path.resolve(f) === path.resolve(configPath())) {
           state = load((m) => cfg.logger.error(m));
-          server.ws.send({ type: 'full-reload' });
+          // sự kiện riêng: trang khách tự tải lại (main.ts); trang admin KHÔNG bị tải lại (giữ phiên chỉnh sửa)
+          server.ws.send({ type: 'custom', event: 'wp:content-changed', data: {} });
         }
       });
+      let pa: PreviewAssets | null = null;
       server.middlewares.use((req, res, next) => {
         const url = (req.url ?? '').split('?')[0]!;
+        if (url === '/preview-assets.json') {
+          pa ??= previewAssets(root);
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Cache-Control', 'no-store');
+          return res.end(previewAssetsJson(pa));
+        }
         if (!state || !(url.startsWith('/fonts/') || url.startsWith('/ornaments/'))) return next();
-        const hit = [...state.fonts, state.ornament].find((a) => a.url === url);
+        pa ??= previewAssets(root);
+        const all = [...state.fonts, state.ornament, ...Object.values(pa.fonts).flat(), ...Object.values(pa.ornaments)];
+        const hit = all.find((a) => a.url === url);
         if (!hit) return next();
         res.setHeader('Content-Type', url.endsWith('.svg') ? 'image/svg+xml' : 'font/woff2');
         res.end(readFileSync(hit.abs));
@@ -182,8 +234,19 @@ export function injectConfigOg(): Plugin {
     },
     generateBundle(_o, bundle) {
       if (!state) return;
-      for (const f of state.fonts) this.emitFile({ type: 'asset', fileName: f.url.slice(1), source: readFileSync(f.abs) });
-      if (state.ornament.url) this.emitFile({ type: 'asset', fileName: state.ornament.url.slice(1), source: readFileSync(state.ornament.abs) });
+      const emitted = new Set<string>();
+      const emit = (a: Asset) => {
+        if (!a.url || emitted.has(a.url)) return;
+        emitted.add(a.url);
+        this.emitFile({ type: 'asset', fileName: a.url.slice(1), source: readFileSync(a.abs) });
+      };
+      state.fonts.forEach(emit);
+      emit(state.ornament);
+      // asset cho khung preview admin (không nằm trong trang đầu của khách)
+      const pa = previewAssets(root);
+      Object.values(pa.fonts).flat().forEach(emit);
+      Object.values(pa.ornaments).forEach(emit);
+      this.emitFile({ type: 'asset', fileName: 'preview-assets.json', source: previewAssetsJson(pa) });
 
       // phân loại chunk cho size-limit
       const initialJs = new Set<string>();
@@ -202,14 +265,34 @@ export function injectConfigOg(): Plugin {
         meta?.importedCss?.forEach((css) => initialCss.add(css));
         ch.imports.forEach(visit);
       };
+      /** mọi chunk tới được từ 1 entry (tĩnh + động) */
+      const reach = (entryName: string, dynamic: boolean) => {
+        const seen = new Set<string>();
+        const go = (n: string) => {
+          if (seen.has(n)) return;
+          const ch = byName.get(n);
+          if (!ch || ch.type !== 'chunk') return;
+          seen.add(n);
+          ch.imports.forEach(go);
+          if (dynamic) ch.dynamicImports.forEach(go);
+        };
+        go(entryName);
+        return seen;
+      };
+      let guestEntry = '';
+      let adminEntry = '';
       for (const ch of chunks) {
-        if (ch.type !== 'chunk') continue;
+        if (ch.type !== 'chunk' || !ch.isEntry) continue;
         const id = (ch.facadeModuleId ?? '').replace(/\\/g, '/');
-        if (ch.isEntry && id.endsWith('/src/guest/main.ts')) visit(ch.fileName);
+        // facade = file HTML (nhiều entry) hoặc file TS
+        if (id.endsWith('/admin/index.html') || id.endsWith('/src/admin/main.tsx')) adminEntry = ch.fileName;
+        else if (id.endsWith('/index.html') || id.endsWith('/src/guest/main.ts')) guestEntry = ch.fileName;
       }
+      if (guestEntry) visit(guestEntry);
+      const guestAll = guestEntry ? reach(guestEntry, true) : new Set<string>();
       const r = state.resolved;
       for (const ch of chunks) {
-        if (ch.type !== 'chunk' || ch.isEntry) continue;
+        if (ch.type !== 'chunk' || ch.isEntry || !guestAll.has(ch.fileName)) continue;
         const id = (ch.facadeModuleId ?? '').replace(/\\/g, '/');
         if (id.includes('/cover/styles/')) {
           open.push(ch.fileName);
@@ -219,7 +302,19 @@ export function injectConfigOg(): Plugin {
           if (r.particles.types.some((t) => id.endsWith(`/particles/types/${t}.ts`))) visit(ch.fileName);
         } else if (!initialJs.has(ch.fileName)) lazy.push(ch.fileName);
       }
-      budget = { initialJs: [...initialJs], initialCss: [...initialCss], openStyle: open, particle, lazy: lazy.filter((x) => !initialJs.has(x)) };
+      // admin (solution 9.1: "Admin JS ban đầu ≤ 150 KB"; route nặng lazy)
+      const adminInitial = adminEntry ? reach(adminEntry, false) : new Set<string>();
+      const adminAll = adminEntry ? reach(adminEntry, true) : new Set<string>();
+      const adminCss = new Set<string>();
+      for (const n of adminInitial) {
+        const meta = (byName.get(n) as unknown as { viteMetadata?: { importedCss?: Set<string> } } | undefined)?.viteMetadata;
+        meta?.importedCss?.forEach((css) => adminCss.add(css));
+      }
+      budget = {
+        initialJs: [...initialJs], initialCss: [...initialCss], openStyle: open, particle, lazy: lazy.filter((x) => !initialJs.has(x)),
+        adminInitialJs: [...adminInitial], adminInitialCss: [...adminCss],
+        adminLazy: [...adminAll].filter((x) => !adminInitial.has(x) && !guestAll.has(x)),
+      };
     },
     transformIndexHtml: {
       order: 'post',

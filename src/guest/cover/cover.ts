@@ -8,6 +8,7 @@ import { ctx } from '../context';
 import { h, multiline, nonEmpty } from '../dom';
 import { icon, ornament } from '../icons';
 import { fx } from '../effects/intensity';
+import { EffectRegistry } from '../effects/registry';
 import type { MusicPlayer } from '../music/player';
 import { fade200, fadeZoom, loadOpenStyle, type PlayFn } from './open-registry';
 import type { OpenRun } from './anim';
@@ -141,7 +142,7 @@ export function mountCover(music: MusicPlayer): CoverHandle {
     el.setAttribute('aria-busy', 'true');
     cta.classList.remove('is-breathe');
     const fn = play ?? fadeZoom;
-    run = fn(el, { level: mode === 'full+' ? 'full+' : mode === 'light' ? 'light' : 'full', greeting: c.showOpenedGreeting, timeScale: 1 });
+    run = fn(el, { level: mode === 'full+' ? 'full+' : mode === 'light' ? 'light' : 'full', greeting: c.showOpenedGreeting, timeScale: EffectRegistry.timeScale });
     void run.finished.then(() => {
       el.remove();
       document.documentElement.classList.remove('cover-on');

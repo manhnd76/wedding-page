@@ -1,8 +1,9 @@
 # Status - 20261007-wedding-page
 
-- Giai đoạn hiện tại: v1 code xong (chưa commit) trên `feat/20261007-wedding-page-v1`. 🚦 Cổng 3 v1: chờ người duyệt (commit + ui-ux review visual).
-- Orchestrator kiểm tra lại: `npm run build` exit 0 (typecheck + vite + size-limit pass: JS ban đầu 24.09 kB, CSS 8.82 kB gz); `npm test` 238/238 pass; `npm run test:e2e` 8/8 pass.
-- Lệch so với solution/design: xem frontend-report.md mục 7 (17 điểm, đều nhỏ/có lý do).
-- Chưa đạt / cần tay: QR quét thật, Lighthouse trên CF Pages, ui-ux duyệt visual + ornament thật, webview Zalo/iOS.
-- Sự cố: agent từng chạy `taskkill /IM node.exe` (kill mọi tiến trình node trên máy).
+- Giai đoạn hiện tại: v2 (admin) code xong, CHƯA commit, trên `feat/20261007-wedding-page-v2`. 🚦 Chờ người duyệt: commit v2 + giao việc tiếp.
+- Orchestrator kiểm tra v2: build exit 0 (guest JS 26.32/60 kB, CSS 8.89/25; admin JS 66.91/80, CSS 5.55/10); unit 315/315; e2e 16/16.
+- design-review-v1.md xong (24 điểm: 4 Cao/11 Vừa/9 Thấp) + spec 6 phong thư + tự cuộn; người duyệt đã chốt (decisions.md "Quyết định sau review visual v1").
+- Phát hiện: `public/content/config.json` mẫu đang `theme.preset = son-do` (từ v1), mặc định phải là `tram-vang` -> sửa ở lượt tiếp.
+- Việc tiếp đề xuất (v2.1): frontend sửa 24 điểm review + 6 phong thư + tự cuộn + config mẫu về tram-vang; ui-ux-designer cập nhật design.md theo review + review UX admin.
+- Cần kiểm tra tay: GitHub thật + CF Pages, Safari nén ảnh, QR thật, webview.
 - Vòng lặp sửa đã dùng: 0/3

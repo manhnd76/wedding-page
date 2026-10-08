@@ -48,3 +48,15 @@
 
 ## Đặt tên giai đoạn (2026-10-07)
 - Người duyệt yêu cầu đổi tên giai đoạn M1..M4 thành **v1..v4** (v4a/v4b). Branch code: `feat/20261007-wedding-page-v1`.
+
+## Nhận xét sau khi xem v1 local (2026-10-07)
+- Thêm **nhiều mẫu phong thư** cho màn mở đầu (kiểu `envelope`), admin cấu hình chọn được. (ui-ux-designer đề xuất mẫu + field schema; triển khai sau khi người duyệt xem xét.)
+- **Tự động cuộn sau khi mở thiệp**: BẬT mặc định (thay giả định cũ "Tự cuộn: tắt"); dừng ngay khi khách tác động cuộn/chạm/phím. (ui-ux-designer spec chi tiết: tốc độ, tiếp tục lại hay không, reduced-motion.)
+- v1 đã commit trên `feat/20261007-wedding-page-v1` (3780836). v2 làm trên `feat/20261007-wedding-page-v2` (tách từ v1).
+
+## Quyết định sau review visual v1 (2026-10-08)
+- Phong bì: "Kính gửi + tên khách" in trên mặt phong bì; tên cặp đôi đặt phía trên, ngoài phong bì.
+- Làm đủ 6 mẫu phong thư (`classic` ★, `kraft`, `song-hy`, `lace`, `minimal`, `velvet`); `song-hy`/`kraft`/`velvet` giữ màu cố định (vẫn chọn được "Theo theme").
+- Tự cuộn: bật mặc định, 45px/s, bắt đầu sau 2.5s, `flow` dừng 1.2s đầu mỗi section; khách tác động -> dừng hẳn, có nút Tiếp tục (không tự tiếp tục). Reduced-motion: không tự chạy, khách tự bấm được. Import config cũ: kẹp `startDelayMs` tối thiểu 1500.
+- Hạt nền bay qua chữ quan trọng (tên khách, tên cặp đôi, lời mời): mờ xuống 0.3 (không ẩn hẳn).
+- Áp dụng toàn bộ 24 điểm trong design-review-v1.md theo đề xuất của designer (trừ khi người duyệt nói khác).

@@ -58,7 +58,8 @@ describe('planSections (solution 5.8, design 4.0)', () => {
 describe('plugin inject-config-og: sửa config.json -> HTML đổi đúng', () => {
   const st = (patch: (c: Record<string, any>) => void = () => {}) => buildState(ROOT, withSample(patch));
   it('mặc định: Trầm Vàng, 3 family, CSS vars + @font-face, không cảnh báo', () => {
-    const s = st();
+    // config mẫu trong public/ là file người dùng sửa được (hiện đang son-do) -> ghim theme mặc định
+    const s = st((c) => { c.theme.preset = 'tram-vang'; c.theme.ornamentSet = 'theme'; c.theme.texture = 'theme'; c.theme.photoFrame = 'theme'; c.fonts = { ...c.fonts, preset: 'theme', heading: 'theme', script: 'theme', body: 'theme' }; });
     expect(s.resolved.preset).toBe('tram-vang');
     expect(s.styleText).toContain('--c-primary:#8A6A3B');
     expect(s.styleText).toContain("font-family:'Great Vibes'");

@@ -5,11 +5,13 @@ Stack của dự án này (thay cho CLAUDE.md global - decisions.md "Quyết đ�
 ## Lệnh
 - Build: `npm run build` (typecheck + vite build + size-limit)
 - Unit test: `npm test` (vitest, `tests/**/*.test.ts`)
-- E2E: `npm run build && npm run test:e2e` (Playwright, Chrome đã cài trên máy)
+- E2E: `npm run build && npm run test:e2e` (Playwright, Chrome đã cài trên máy; tự chạy `vite preview` :4173 + `vite dev` :5175 với `WP_DEV_SAVE_ROOT` = thư mục tạm. KHÔNG dùng cổng 5173)
 - Typecheck/lint: `npm run typecheck`
 
 ## Quy ước
 - `src/shared`: code dùng chung guest/admin/plugin build (schema, migrations, merge, theme, fonts, vietqr...). Import tương đối có đuôi `.ts`.
+- `src/admin`: trang quản lý Preact (JSX qua Oxc của Vite, `jsxImportSource: preact`). Route nặng tải lười (`editor/editor.tsx` LAZY). Không gọi GitHub thật trong test: dùng `tests/helpers/fake-github.ts`.
+- `src/shared/storage`: manifest + thuật toán publish/restore (swap) dùng chung GitHubAdapter và plugin `dev-admin-save`.
 - `src/guest`: guest app. Không `innerHTML`, không thuộc tính `style` (CSP) - dùng helper `h()` / `css()` trong `src/guest/dom.ts`.
 - Thêm theme/kiểu mở/hạt mới: thêm module + bật trong `src/shared/capabilities.ts`; không đổi schema.
 - Tài liệu task: `docs/tasks/<task-id>/` (không sửa request/decisions/solution/design/status khi không được giao).
