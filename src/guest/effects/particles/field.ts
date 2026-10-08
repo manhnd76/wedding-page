@@ -7,7 +7,7 @@
  */
 import { ctx, fxBlocked, on } from '../../context';
 import { targetParticleCount, type FxState } from '../intensity';
-import { SpawnLimiter, approach, insideAny, visibleZones, weightedDensity, type Rect, type SectionVis } from './geometry';
+import { MAX_SOFT_ZONES, SOFT_SELECTOR, SpawnLimiter, alphaTarget, approach, visibleZones, weightedDensity, type Rect, type SectionVis } from './geometry';
 import type { Motion, ParticleKind } from './kind';
 
 export const BG_HARD_CAP = 40;
@@ -66,6 +66,9 @@ export class ParticleField {
   private density = { density: 1, maxOpacity: 1 };
   private zoneEls: Element[] = [];
   private zones: Rect[] = [];
+  /** vùng dịu (R03): chữ trọng tâm, hạt mờ xuống ≤ 0.3 */
+  private softEls: Element[] = [];
+  private soft: Rect[] = [];
   private zonesDirty = true;
   private io: IntersectionObserver | null = null;
   private ro: ResizeObserver | null = null;
@@ -137,6 +140,7 @@ export class ParticleField {
   // ---------- lớp 2: vùng loại trừ (form, thẻ sự kiện)
   private observeZones() {
     this.zoneEls = Array.from(document.querySelectorAll('[data-fx-exclude]'));
+    this.softEls = Array.from(document.querySelectorAll(SOFT_SELECTOR));
     if ('ResizeObserver' in window) {
       this.ro = new ResizeObserver(() => { this.zonesDirty = true; });
       this.zoneEls.forEach((el) => this.ro!.observe(el));
@@ -144,6 +148,7 @@ export class ParticleField {
   }
   refreshZones(): void {
     this.zoneEls = Array.from(document.querySelectorAll('[data-fx-exclude]'));
+    this.softEls = Array.from(document.querySelectorAll(SOFT_SELECTOR));
     this.zonesDirty = true;
   }
   private zonesAt = 0;
@@ -153,11 +158,13 @@ export class ParticleField {
     if (!this.zonesDirty && now - this.zonesAt < 250) return;
     this.zonesDirty = false;
     this.zonesAt = now;
-    const rects = this.zoneEls.map((el) => {
+    const rect = (el: Element) => {
       const r = el.getBoundingClientRect();
       return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
-    });
-    this.zones = visibleZones(rects, this.w, this.h);
+    };
+    this.zones = visibleZones(this.zoneEls.map(rect), this.w, this.h);
+    // ≤ 4 vùng dịu gần giữa màn (chi phí: ≤ 4 hình chữ nhật mỗi frame)
+    this.soft = visibleZones(this.softEls.map(rect), this.w, this.h, MAX_SOFT_ZONES);
   }
 
   private onScroll = () => {
@@ -165,6 +172,7 @@ export class ParticleField {
     if (!this.windOn) return;
     const now = performance.now();
     const y = window.scrollY;
+    if (document.documentElement.classList.contains('is-autoscroll')) { this.lastScrollY = y; this.lastScrollT = now; return; }
     const dt = Math.max(16, now - this.lastScrollT);
     const v = ((y - this.lastScrollY) / dt) * 1000; // px/s
     this.lastScrollY = y;
@@ -301,7 +309,7 @@ export class ParticleField {
       p.rot += p.vr * dt;
       p.x += (p.vx + Math.sin(p.ph) * p.sway + this.windVx) * dt;
       p.y += p.vy * dt;
-      let tA = insideAny(p.x, p.y, this.zones) ? 0 : maxA;
+      let tA = alphaTarget(p.x, p.y, maxA, this.zones, this.soft);
       if (p.motion === 'twinkle') tA *= 0.55 + 0.45 * Math.sin(p.ph * 2.2);
       p.a = approach(p.a, tA, dtMs, 200);
       const off = p.y > h + p.s * 2 || p.y < -p.s * 3 || p.x > w + p.s * 3 || p.x < -p.s * 3;
@@ -334,8 +342,7 @@ export class ParticleField {
         const edge = Math.min(p.x - p.clip.left, p.clip.right - p.x, p.y - p.clip.top, p.clip.bottom - p.y);
         a *= Math.max(0, Math.min(1, edge / 24));
       }
-      if (insideAny(p.x, p.y, this.zones)) a = 0;
-      p.a = a;
+      p.a = Math.min(a, alphaTarget(p.x, p.y, 1, this.zones, this.soft));
       if (p.age >= p.life) {
         if (p.toBg && this.bg.length < target && this.o.kinds[p.kindIdx]) {
           const k2 = this.o.kinds[p.kindIdx]!;
@@ -377,6 +384,7 @@ export class ParticleField {
       bg: this.bg.map((p) => ({ x: p.x, y: p.y, a: p.a * this.ramp })),
       bursts: this.bursts.map((p) => ({ x: p.x, y: p.y, a: p.a })),
       zones: this.zones,
+      soft: this.soft,
       target: this.target(),
       running: this.running,
       frames: this.frames,

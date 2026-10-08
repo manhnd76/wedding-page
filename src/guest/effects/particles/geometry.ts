@@ -14,6 +14,22 @@ export function insideAny(x: number, y: number, rects: readonly Rect[], margin =
   return false;
 }
 
+/**
+ * "Vùng dịu" (design-review-v1 R03, decisions 2026-10-08): chữ trọng tâm (tên khách, tên cặp đôi, lời mời,
+ * tiêu đề section đang hiện). Hạt đi vào vùng + 8px thì alpha kẹp về ≤ 0.3 (fade 200ms) - không ẩn hẳn.
+ */
+export const SOFT_SELECTOR = '.hero-names, .ann-names, .ann-invite, .sec-head';
+export const SOFT_MARGIN = 8;
+export const SOFT_ALPHA = 0.3;
+export const MAX_SOFT_ZONES = 4;
+
+/** Alpha đích của 1 hạt: trong vùng loại trừ = 0; trong vùng dịu ≤ 0.3; còn lại = maxA. */
+export function alphaTarget(x: number, y: number, maxA: number, exclusion: readonly Rect[], soft: readonly Rect[]): number {
+  if (insideAny(x, y, exclusion)) return 0;
+  if (soft.length && insideAny(x, y, soft, SOFT_MARGIN)) return Math.min(maxA, SOFT_ALPHA);
+  return maxA;
+}
+
 /** Lọc vùng loại trừ: chỉ vùng cắt viewport, tối đa 6 (ưu tiên vùng gần giữa màn). */
 export function visibleZones(rects: readonly Rect[], vw: number, vh: number, max = MAX_EXCLUSION_ZONES): Rect[] {
   const inView = rects.filter((r) => r.bottom > 0 && r.top < vh && r.right > 0 && r.left < vw && r.bottom > r.top);

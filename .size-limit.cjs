@@ -19,6 +19,7 @@ module.exports = [
   { name: 'JS ban đầu (entry + openStyle + hạt đang dùng)', path: b.initialJs.map(p), limit: '60 KB', gzip: true },
   { name: 'CSS ban đầu', path: b.initialCss.map(p), limit: '25 KB', gzip: true },
   ...b.openStyle.map((f) => ({ name: `openStyle: ${base(f)}`, path: p(f), limit: '4 KB', gzip: true })),
+  ...(b.envelopeSkin ?? []).map((f) => ({ name: `mẫu phong bì: ${base(f)}`, path: p(f), limit: '1.5 KB', gzip: true })),
   ...b.particle.map((f) => ({ name: `hạt: ${base(f)}`, path: p(f), limit: '1.5 KB', gzip: true })),
   ...b.lazy.map((f) => ({ name: `lazy: ${base(f)}`, path: p(f), limit: '15 KB', gzip: true })),
   // admin (v2) - solution 9.1 cho phép ≤ 150 KB; đặt chặt hơn để phát hiện phình sớm (frontend-report-v2 mục ngân sách)

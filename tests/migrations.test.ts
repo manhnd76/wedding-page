@@ -41,7 +41,8 @@ const TRANSFORMED: Record<string, (v: unknown) => boolean> = {
   'effects.coverUnlock.unlockAnimation': (v) => config.cover.openStyle === v,
   'effects.autoScroll.enabled': (v) => config.effects.autoScroll.enabled === v,
   'effects.autoScroll.speed': (v) => config.effects.autoScroll.speed === v,
-  'effects.autoScroll.startDelayMs': (v) => config.effects.autoScroll.startDelayMs === v,
+  // v2.1: kẹp tối thiểu 1500ms (design-review-v1 5.4: 650 của wedding-site -> 1500)
+  'effects.autoScroll.startDelayMs': (v) => config.effects.autoScroll.startDelayMs === Math.max(1500, v as number),
   'guestbook.pollIntervalSeconds': (v) => config.content.guestbook.pollIntervalSec === v,
   'sections.order[*]': (v) => config.sections.items.some((s) => s.type === v && s.enabled),
   'cover.caption': (v) => config.content.hero.image?.alt === v,

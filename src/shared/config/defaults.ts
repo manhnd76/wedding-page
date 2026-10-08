@@ -26,7 +26,8 @@ export const DEFAULT_CONFIG: WeddingConfig = {
     parallax: true,
     kenBurns: true,
     micro: { buttonShine: true, photoTilt: true, wishFly: 'paper-plane', scrollProgress: false, coupleHeartTap: false },
-    autoScroll: { enabled: false, speed: 55, startDelayMs: 650 },
+    // v2.1 (decisions 2026-10-08): bật mặc định, 45px/s, sau 2.5s, flow dừng 1.2s đầu mỗi section
+    autoScroll: { enabled: true, speed: 45, startDelayMs: 2500, mode: 'flow', dwellMs: 1200 },
   },
   music: { enabled: true, src: null, title: '', autoplayAfterOpen: true, loop: true, startAt: 0 },
   guest: { fromUrl: true, queryParam: 'to', pathPrefix: 'invite', fallbackName: 'Quý khách', template: '{name}', maxLength: 60 },
@@ -35,6 +36,7 @@ export const DEFAULT_CONFIG: WeddingConfig = {
     eyebrow: 'Thiệp mời cưới', dateText: '12 · 12 · 2026', monogram: 'M & L', guestPrefix: 'Kính gửi:',
     tapToOpenLabel: 'Chạm để mở thiệp', musicHint: 'Thiệp có nhạc, bật loa',
     showOpenedGreeting: true, openedGreeting: 'Chúng mình sắp cưới!', openedSubline: '',
+    envelope: { style: 'theme', color: 'auto', guestOnFront: true, liner: true },
   },
   sections: {
     items: [

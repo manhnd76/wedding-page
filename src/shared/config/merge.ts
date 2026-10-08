@@ -1,13 +1,16 @@
 import { DEFAULT_CONFIG, ITEM_TEMPLATES } from './defaults.ts';
 import {
-  ALBUM_LAYOUTS, BODY_FONTS, BURSTS_ON_OPEN, COUNTDOWN_FIREWORKS, COUNTDOWN_STYLES, COUPLE_ORDERS,
-  COVER_BACKGROUNDS, DIVIDERS, FONT_PRESETS, HEADING_FONTS, INTENSITIES, OPEN_STYLES, ORNAMENT_SETS,
+  ALBUM_LAYOUTS, AUTO_SCROLL_MODES, BODY_FONTS, BURSTS_ON_OPEN, COUNTDOWN_FIREWORKS, COUNTDOWN_STYLES, COUPLE_ORDERS,
+  COVER_BACKGROUNDS, DIVIDERS, ENVELOPE_STYLES, FONT_PRESETS, HEADING_FONTS, INTENSITIES, OPEN_STYLES, ORNAMENT_SETS,
   PARTICLE_SCOPES, PARTICLE_TYPES, PHOTO_FRAMES, REVEAL_ATOMS, REVEAL_STYLES, SCRIPT_FONTS, SECTION_TYPES,
   TEXTURES, THEME_IDS, WISH_FLY, isHex, isOneOf,
 } from './enums.ts';
 import type { SectionItem, WeddingConfig } from './types.ts';
 
 type Obj = Record<string, unknown>;
+
+/** Giới hạn tự cuộn (design-review-v1 5.4) - admin dùng chung. */
+export const AUTO_SCROLL_LIMITS = { speed: [20, 120], startDelayMs: [1500, 8000], dwellMs: [0, 4000] } as const;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /**
@@ -101,11 +104,20 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
       r[role] = null;
     }
   }
+  const as = e.autoScroll;
+  fix('effects.autoScroll.mode', isOneOf(AUTO_SCROLL_MODES, as.mode), () => as.mode, (v) => (as.mode = v), 'flow');
+  as.speed = clampInt(as.speed, AUTO_SCROLL_LIMITS.speed[0], AUTO_SCROLL_LIMITS.speed[1], 45);
+  // config cũ (wedding-site 650ms) -> kẹp tối thiểu 1500 (design-review-v1 5.4)
+  as.startDelayMs = clampInt(as.startDelayMs, AUTO_SCROLL_LIMITS.startDelayMs[0], AUTO_SCROLL_LIMITS.startDelayMs[1], 2500);
+  as.dwellMs = clampInt(as.dwellMs, AUTO_SCROLL_LIMITS.dwellMs[0], AUTO_SCROLL_LIMITS.dwellMs[1], 1200);
   fix('effects.micro.wishFly', isOneOf(WISH_FLY, e.micro.wishFly), () => e.micro.wishFly, (v) => (e.micro.wishFly = v), 'paper-plane');
 
   const c = cfg.cover;
   fix('cover.openStyle', themeOr(OPEN_STYLES, c.openStyle), () => c.openStyle, (v) => (c.openStyle = v), 'theme');
   fix('cover.background', isOneOf(COVER_BACKGROUNDS, c.background), () => c.background, (v) => (c.background = v), 'paper');
+  const env = c.envelope;
+  fix('cover.envelope.style', themeOr(ENVELOPE_STYLES, env.style), () => env.style, (v) => (env.style = v), 'theme');
+  fix('cover.envelope.color', env.color === 'auto' || env.color === 'theme' || isHex(env.color), () => env.color, (v) => (env.color = v), 'auto');
 
   const s = cfg.sections;
   fix('sections.divider', themeOr(DIVIDERS, s.divider), () => s.divider, (v) => (s.divider = v), 'theme');

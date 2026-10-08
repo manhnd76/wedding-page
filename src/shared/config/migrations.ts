@@ -169,10 +169,11 @@ export function migrateV0toV1(old: Obj, warnings: string[] = []): DeepPartial<We
         ...(oldTypes.length ? { types: [...new Set(oldTypes)].slice(0, 2) as never } : {}),
         ...(colors.length ? { color: colors[0] } : {}),
       },
+      // chỉ mang field có trong file cũ; thiếu -> mặc định v2.1 (bật, 45px/s, 2.5s). startDelayMs được kẹp ≥ 1500 ở merge
       autoScroll: {
-        enabled: bool(autoScroll.enabled, false),
-        speed: typeof autoScroll.speed === 'number' ? autoScroll.speed : 55,
-        startDelayMs: typeof autoScroll.startDelayMs === 'number' ? autoScroll.startDelayMs : 650,
+        ...(typeof autoScroll.enabled === 'boolean' ? { enabled: autoScroll.enabled } : {}),
+        ...(typeof autoScroll.speed === 'number' ? { speed: autoScroll.speed } : {}),
+        ...(typeof autoScroll.startDelayMs === 'number' ? { startDelayMs: autoScroll.startDelayMs } : {}),
       },
     },
     music: {

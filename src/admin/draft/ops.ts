@@ -106,7 +106,8 @@ export function customizedGroups(c: WeddingConfig): ThemeGroup[] {
   if (c.theme.texture !== 'theme') out.push('texture');
   if (c.theme.photoFrame !== 'theme') out.push('photoFrame');
   if (c.sections.divider !== 'theme') out.push('divider');
-  if (c.cover.openStyle !== 'theme') out.push('openStyle');
+  // mẫu phong bì (v2.1) thuộc nhóm "Kiểu mở thiệp"
+  if (c.cover.openStyle !== 'theme' || (c.cover.envelope && c.cover.envelope.style !== 'theme')) out.push('openStyle');
   if (c.effects.burst.onOpen !== 'theme') out.push('burst');
   if (c.effects.particles.types !== 'theme' || c.effects.particles.color !== 'theme') out.push('particles');
   const r = c.effects.reveal;
@@ -124,7 +125,7 @@ export function resetGroup(c: WeddingConfig, g: ThemeGroup): WeddingConfig {
     case 'texture': n.theme.texture = 'theme'; break;
     case 'photoFrame': n.theme.photoFrame = 'theme'; break;
     case 'divider': n.sections.divider = 'theme'; break;
-    case 'openStyle': n.cover.openStyle = 'theme'; break;
+    case 'openStyle': n.cover.openStyle = 'theme'; if (n.cover.envelope) n.cover.envelope.style = 'theme'; break;
     case 'burst': n.effects.burst.onOpen = 'theme'; break;
     case 'particles': n.effects.particles.types = 'theme'; n.effects.particles.color = 'theme'; break;
     case 'reveal': n.effects.reveal = { style: 'theme', heading: null, block: null, image: null, ornament: null }; break;

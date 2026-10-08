@@ -4,6 +4,7 @@
 > Phạm vi: chỉ thiết kế UI/UX. Kiến trúc, lưu trữ, schema config, cơ chế publish/backup/login là phần của `solution.md`. Chỗ nào design phụ thuộc vào đó được ghi **Giả định**.
 > **Bản sửa 2 (2026-10-07, sau Cổng 1):** theo mục "Bổ sung từ người duyệt" trong `decisions.md`, mình mở rộng thư viện lên **12 theme** (mục 1.6), thêm **12 kiểu mở thiệp** (3.4b), danh mục hạt, reveal và micro-interaction (5.6 đến 5.10), admin gallery theme và trình chọn hiệu ứng (8.12, 8.13), phụ lục schema (cuối file). Các phần mới được đánh dấu **(mới)**. Mặc định không đổi: Trầm Vàng, phong bì, cường độ "Vừa".
 > **Bản sửa 3 (2026-10-07, sau "Quyết định vòng 2" trong `decisions.md` và mục "Còn mở" của `solution.md`):** `dem-nhung` có trong bản đầu (không mặc định); hạt nền mặc định **cả trang** với cơ chế giảm mật độ/né form (5.7); pháo hoa đếm ngược chạy **mỗi lần cuộn tới** có cooldown (5.7); link khách thêm toggle "Mã hoá link" (8.9); vẽ màn **Kết nối lần đầu** (8.2b); sửa luồng ảnh và câu chữ khôi phục cho khớp cơ chế "restore cả lần xuất bản gần nhất" (8.7, 8.10); album full thống nhất **1600px**; bỏ nút "Tự tính" âm lịch (8.11); mục 10 chuyển thành danh sách quyết định đã chốt. Các phần sửa được đánh dấu **(v3)**.
+> **Bản sửa 4 (2026-10-08, sau "Quyết định sau review visual v1" trong `decisions.md`):** đưa vào design các nội dung người duyệt đã chốt từ `design-review-v1.md`: **bố cục phong bì mới** (tên cặp đôi ở trên, NGOÀI phong bì; "Kính gửi + tên khách" in trên mặt phong bì) và timeline mở mới (3.2, 3.4); **6 mẫu phong thư** + field `cover.envelope.*` + map gợi ý theo 12 theme (3.4c, 8.13); **tự động cuộn BẬT mặc định** (5.11, thay câu "Tự cuộn: tắt" cũ); **vùng dịu** hạt nền mờ 0.3 ở chữ quan trọng (5.7); **pháo hoa không đè tiêu đề** + màu theo sáng/tối (5.7); và các quyết định visual khác trong 24 điểm R01 đến R24 (2.1, 2.4, 4.x, 7.1). Phần sửa đánh dấu **(v4)**. SVG đầy đủ của ornament, phong bì và seal nằm ở `design-review-v1.md` mục 3 (là một phần của spec này, không chép lại để file gọn).
 > Nguồn tham khảo: `request.md`, `wedding-site/data/config.js`, dự án cũ `wedding-site/` (style.css có 4 theme: tram-vang, xanh-ngoc, hong-phan, xanh-navy), trang mẫu thiepmoicuoi.vn (đã tải HTML và phân tích cấu trúc, font).
 
 ---
@@ -215,6 +216,8 @@ Theme chỉ là cách *kết hợp* các thành phần dưới đây, nên admin
 
 **Bộ họa tiết `ornamentSet`** (mỗi bộ là 1 SVG sprite ≤ 12KB gz, tô bằng `currentColor` = accent): `classic-line` · `romantic` · `traditional` · `minimal` · `deco` · `lotus` · `watercolor` (SVG line + 2 vệt màu nước WebP ≤ 40KB mỗi ảnh, tải lười) · `boho` · `korean` · `luxe` · `tropical`. Mỗi bộ gồm đủ 6 phần: góc trang, divider, khung tiêu đề nhỏ, biểu tượng "&", monogram frame (dấu sáp/khung tên), icon hộp quà.
 
+**(v4) Quy ước sprite và 3 bộ đầu đã vẽ thật (R14):** mỗi bộ có đủ 6 symbol `divider` (160×24) · `title` (80×16) · `corner` (96×96) · `amp` (120×24, khung hai bên; chữ "&" vẫn là text font script) · `monogram` (120×120) · `gift` (64×64); riêng `traditional` thêm `songhy` (84×64, song hỷ dựng bằng nét vuông, không cần font CJK, dùng màu `--c-primary`, cỡ ≥ 40px) và `cloud` (40×20). Nét 1px ở kích thước chuẩn, không có `<use>` lồng nhau (an toàn Safari với sprite ngoài), ≤ 4KB gz mỗi bộ. Hiển thị: divider 140×21 (mobile) / 200×30 (desktop); ornament góc cover 96px / 120px, `opacity .7`. SVG thật của `classic-line` (cành lá + hình thoi), `traditional` (mây cát tường, hồi văn, song hỷ) và `luxe` (art-deco, quạt nan) nằm ở `design-review-v1.md` mục 3.1; 8 bộ còn lại làm ở v4 theo cùng quy ước.
+
 **Texture `theme.texture`** (đều làm bằng CSS/SVG inline, trừ khi ghi chú):
 | id | Cách làm | Opacity |
 |---|---|---|
@@ -244,6 +247,8 @@ Texture là lớp `body::before` `position:fixed` và **không bao giờ animate
 - Font script **chỉ dùng cho tên và cụm ngắn ≥ 28px** (tên, "&", chữ ký, "Save the date"). Không dùng cho địa chỉ, giờ, đoạn văn.
 - `line-height` cho script ≥ 1.35 và heading viết HOA ≥ 1.3, vì dấu tiếng Việt trên chữ hoa (Ầ, Ễ) cao hơn chữ Latin. **Không đặt `overflow:hidden` hay `clip-path` sát khung chữ có dấu.** Hiệu ứng reveal phải chừa `padding-block: 0.2em`.
 - Chuẩn hóa Unicode **NFC** cho mọi text (tên khách từ URL, nhập từ admin), vì bàn phím Telex kiểu tổ hợp (NFD) hiển thị dấu lệch ở nhiều font.
+- **(v4, R08) Swash tràn ngang:** nét swash của Great Vibes, Imperial Script… (chữ "L", "T", "N" hoa) tràn ra ngoài hộp chữ 0.12 đến 0.15em về bên trái. Mọi khối chữ script (`.cv-names`, `.hero-names`, `.ann-names`, `.ty-sig`, tiêu đề script) có `padding-inline: .18em`. Mọi `clip-path: inset()` hoặc `overflow:clip` trên chữ script phải chừa biên **cả ngang** `-0.2em` lẫn dọc `-0.3em`.
+- **(v4, R15) Chữ mồ côi ở khối căn giữa:** `text-wrap: balance` cho `.sec-sub`, `.ann-*`, `.person-bio`, `.cv-greet-*`, `.ty-msg`, lời nhắn Mừng cưới; `text-wrap: pretty` cho đoạn văn. Trình duyệt chưa hỗ trợ thì giữ nguyên (không polyfill).
 
 ### 2.2 Kết quả kiểm chứng subset `vietnamese` (gọi thật Google Fonts CSS2 API ngày 2026-10-07)
 
@@ -255,7 +260,7 @@ Texture là lớp `body::before` `position:fixed` và **không bao giờ animate
 **KHÔNG có subset vietnamese, cấm đưa vào danh sách (đẹp nhưng lỗi dấu):**
 Parisienne, Sacramento, Tangerine, Rouge Script, Petit Formal Script, Monsieur La Doulaise, Mrs Saint Delafield, Herr Von Muellerhoff (các script rất "thiệp cưới" nhưng lỗi dấu); Cinzel, Marcellus, Gilda Display, Bodoni Moda, Libre Baskerville, Aboreto, Bellefair (serif sang nhưng lỗi dấu).
 
-**Có subset nhưng cần cẩn trọng:** Italianno, Corinthia, Ephesis, Waterfall (nét quá mảnh nên dấu nhỏ li ti trên mobile, chỉ dùng ≥ 44px); Pacifico (quá tròn, kiểu quán cà phê, không hợp thiệp cưới); Meow Script, Hurricane, Explora (độc đáo nhưng khó đọc tên người Việt dài).
+**Có subset nhưng cần cẩn trọng:** Italianno, Corinthia, Ephesis, Waterfall, **(v4, R09) Imperial Script** (nét quá mảnh nên dấu nhỏ li ti trên mobile, chỉ dùng ≥ 44px; với `dem-nhung`: `--fs-names` mobile tối thiểu 46px, chữ ký Cảm ơn 44px, lời chào sau mở dùng heading italic thay script, xem 3.4); Pacifico (quá tròn, kiểu quán cà phê, không hợp thiệp cưới); Meow Script, Hurricane, Explora (độc đáo nhưng khó đọc tên người Việt dài).
 
 ### 2.3 Danh sách tuyển chọn cho Admin
 Admin chọn **1 font cho mỗi vai trò** từ danh sách giới hạn (đúng Hick's Law: ít lựa chọn, tất cả đều đã test tiếng Việt). Mỗi option có preview trực tiếp bằng tên cặp đôi thật của config.
@@ -307,6 +312,8 @@ Dùng `clamp()`. Mobile tính theo 375px, desktop theo 1280px.
 | `--fs-small` | Âm lịch, địa chỉ, meta | 14px | 15px | body 400 / 1.55 |
 | `--fs-caption` | Ghi chú phụ (tối thiểu) | 13px | 13px | không nhỏ hơn 13px |
 
+**(v4, R10)** Ngoại lệ dưới 13px chỉ có nhóm **nhãn viết HOA kiểu eyebrow** (12px, body 600, `letter-spacing` ≥ .14em): eyebrow, nhãn ô đếm ngược `.cd-l`, badge thẻ sự kiện `.ev-badge`. Không có chữ nào 11px.
+
 ```css
 --fs-names:   clamp(52px, 13.5vw, 96px);
 --fs-display: clamp(64px, 17vw, 112px);
@@ -323,44 +330,47 @@ Input form luôn ≥ 16px, để iOS Safari không tự zoom khi focus.
 ### 3.1 Mục tiêu
 Tạo khoảnh khắc "nhận thiệp", cá nhân hóa bằng tên khách, và lấy **cử chỉ chạm đầu tiên** để được phép phát nhạc (chính sách autoplay của trình duyệt).
 
-### 3.2 Bố cục mobile (360 đến 430px, chiều cao 100svh)
+### 3.2 Bố cục mobile (360 đến 430px, chiều cao 100svh) (v4)
+**(v4, đã chốt 2026-10-08, R01)** Bản v1 dựng phong bì dọc, tên cặp đôi và tên khách đều nằm trên thẻ, nắp trắng trên thẻ trắng gần như vô hình, và lúc mở thì thẻ bị cắt mép trên ở 360×740. Bố cục mới dưới đây thay hoàn toàn bản cũ. Bố cục này áp dụng cho mọi kiểu mở có "phong bì" (`envelope` và 6 mẫu phong thư ở 3.4c). Các kiểu mở khác (3.4b) vẫn giữ khối tên cặp đôi + "Kính gửi" theo bố cục riêng của từng kiểu.
 ```
-┌──────────────────────────────┐  nền: texture giấy + ornament góc mờ
-│      THIỆP MỜI CƯỚI          │  eyebrow (invitation.eyebrow)
-│        12 · 12 · 2026        │
-│ ┌──────────────────────────┐ │
-│ │\                        /│ │  <- nắp phong bì (tam giác), có
-│ │  \      ( M&L )       /  │ │     dấu sáp tròn monogram ở giữa
-│ │    \_______________ /    │ │
-│ │   Minh Anh               │ │  tên script (fs ~44px)
-│ │        &                 │ │
-│ │          Thuỳ Linh       │ │
-│ │  ─────── ◇ ───────       │ │
-│ │  Kính gửi:               │ │  muted 14px (invitation.guestPrefix)
-│ │  Gia đình anh Mạnh       │ │  heading italic 24px, auto-fit 1-2 dòng
+┌──────────────────────────────┐  nền: texture giấy + ornament góc 96px, opacity .7
+│      THIỆP MỜI CƯỚI          │  eyebrow (muted)
+│        12 · 12 · 2026        │  heading, primary
+│          Minh Anh            │  tên cặp đôi: script clamp(40px,11vw,52px),
+│             &                │  NGOÀI phong bì, phía trên. Đây là LCP: đọc
+│          Thuỳ Linh           │  được ngay cả khi SVG phong bì chưa tải
+│ ┌─────────── 10:7 ─────────┐ │  phong bì NGANG, rộng min(88vw, 380px)
+│ │╲         (seal)         ╱│ │  nắp tam giác chạm ~55% chiều cao,
+│ │  ╲____________________╱  │ │  seal 64px ở mũi nắp
+│ │         Kính gửi          │ │  "ghi địa chỉ" trên MẶT phong bì:
+│ │     Gia đình anh Mạnh     │ │  muted 14px + heading italic 20–22px, ≤ 2 dòng
 │ └──────────────────────────┘ │
-│                              │
-│   ( ♡  Chạm để mở thiệp )    │  nút pill primary, cao 52px, rộng ≥ 220px
-│        ↑ nhấp nháy nhẹ       │  nằm ở 1/3 dưới màn hình (vùng ngón cái)
-│   ♪ Thiệp có nhạc, bật loa   │  caption 13px muted (tùy chọn)
+│   ( ♡  Chạm để mở thiệp )    │  pill primary 52px, rộng ≥ 220px, 1/3 dưới
+│   ♪ Thiệp có nhạc, bật loa   │  caption 13px muted (tuỳ chọn)
 └──────────────────────────────┘
 ```
-- Toàn bộ phong bì là vùng chạm (`role="button"`); nút "Chạm để mở thiệp" là target chính, có focus rõ.
-- Desktop (≥ 1024px): phong bì rộng 520px ở giữa, nền bàn gỗ hoặc vải mờ có ornament bao quanh, nút ngay dưới phong bì. Phím Enter/Space mở thiệp.
+- Mọi thứ nằm gọn trong `100svh`. Thiếu chỗ thì co phần trên trước. Màn cao ≤ 640px: tên cặp đôi gộp 1 dòng ("Minh Anh & Thuỳ Linh", 34px).
+- Toàn bộ phong bì là vùng chạm (`role="button"`); nút "Chạm để mở thiệp" là target chính, có focus rõ. Phím Enter/Space mở thiệp.
+- **Lớp (từ dưới lên):** `env-back` (lòng phong bì, lót hoa văn) → `env-card` (thẻ thiệp, rộng 92%, cao 128% phong bì, ban đầu nằm hẳn trong bao) → `env-front` (túi: 2 cánh bên + cánh đáy, **đục**, che thẻ) → `env-flap` (nắp, mặt trước là giấy, mặt sau là lót hoa văn, `backface-visibility:hidden` cả 2 mặt) → `seal`.
+- Tên khách là **text HTML** đặt trên `env-front` (không vẽ trong SVG), để screen reader đọc được và auto-fit chạy được (3.3). SVG phong bì có `aria-hidden`. Thẻ bên trong in lời chào sau mở ("Chúng mình sắp cưới!").
+- Màu theo token (mẫu `classic`): `--env-paper: var(--c-surface)`, `--env-paper-2: color-mix(in srgb, var(--c-accent) 10%, var(--c-bg))`, `--env-edge: var(--c-line)`, `--env-liner: var(--c-accent)`, `--env-seal: var(--c-primary)`, `--env-ink` (chữ trên mặt phong bì, bắt buộc ≥ 4.5:1 với `--env-paper`). Mẫu khác tự khai báo bộ biến riêng (3.4c).
+- **Seal (R16):** hình giọt sáp (9 bướu dính liền quanh lõi tròn) + 2 vành trong sáng/tối, 64px, gradient 3 điểm; monogram (`cover.monogram`) là text HTML 15–16px heading màu `--c-on-primary` đặt chồng lên. `color-mix` trong `stop-color` cần fallback: tính sẵn 2 màu sáng/tối bằng `derive.ts`. SVG ở `design-review-v1.md` 3.2.
+- **Desktop ≥ 1024px (R17):** phong bì 560px. Nền `radial-gradient(ellipse at 50% 45%, var(--c-surface), var(--c-bg) 70%)` + texture, ornament góc 120px.
 - Nền phía sau dùng ảnh cover mờ (blur tĩnh dựng sẵn, **không animate filter**) hoặc texture giấy, admin chọn.
+- `cover.envelope.guestOnFront = false` thì "Kính gửi …" quay về thẻ bên trong như v1, mặt phong bì chỉ còn seal và ornament.
 
 ### 3.3 Tên khách từ URL
 - `?to=gia-đình-anh-Mạnh` (tên tham số lấy từ config `guestUrlParam`) xử lý thành `decodeURIComponent`, rồi NFC, rồi đổi `-`/`_`/`+` thành khoảng trắng, gộp khoảng trắng thừa, **viết hoa chữ cái đầu tiên của chuỗi**, giữ nguyên phần còn lại. Kết quả: "Gia đình anh Mạnh".
 - Cần giữ dấu gạch thật (tên ghép) thì dùng `--` trong link (Giả định, báo solution).
 - Giới hạn 60 ký tự hiển thị; dài hơn thì cắt và thêm "…". **Luôn render bằng `textContent`** (không innerHTML) để chống XSS từ link.
 - Không có hoặc rỗng: dùng `invitation.guestName` ("Quý khách"). Dòng "Kính gửi:" vẫn giữ.
-- Auto-fit: tên dài hơn khoảng 22 ký tự thì giảm cỡ từ 24px xuống tối thiểu 19px và cho xuống 2 dòng; không bao giờ dùng font script cho tên khách (tên khách dài, nhiều dấu).
+- Auto-fit: tên dài hơn khoảng 22 ký tự thì giảm cỡ và cho xuống 2 dòng; không bao giờ dùng font script cho tên khách (tên khách dài, nhiều dấu). **(v4)** Trên mặt phong bì (3.2): heading italic 22px, giảm tối thiểu 18px, tối đa 2 dòng; các kiểu mở khác giữ 24px → 19px.
 - Tên khách tái sử dụng ở: lời mời ("Trân trọng kính mời **Gia đình anh Mạnh**"), ô "Họ tên" của RSVP và Lời chúc (điền sẵn, sửa được).
 
 ### 3.4 Kiểu animation mở thiệp (admin chọn `cover.openStyle`)
 | Mã | Tên hiển thị trong admin | Diễn biến | Thời lượng |
 |---|---|---|---|
-| `envelope` ★ | Phong bì mở nắp | Dấu sáp vỡ/mờ (200ms), nắp lật lên `rotateX(180deg)` quanh mép trên (500ms), thẻ thiệp trượt lên khỏi bao `translateY(-40%)` (500ms), thẻ phóng to lấp màn rồi fade sang landing (400ms) | khoảng 1.6s |
+| `envelope` ★ | Phong bì mở nắp | **(v4)** Seal tách đôi, nắp lật, thẻ rút lên khỏi túi, bao rơi xuống và mờ, thẻ về giữa màn với lời chào, rồi fade sang landing (timeline chi tiết ngay dưới bảng). Skin theo mẫu phong thư (3.4c) | khoảng 2.0s (≤ 2.4s) |
 | `card-flip` | Thiệp lật | Thẻ lật `rotateY(180deg)` lộ mặt trong có "Chúng mình sắp cưới!", giữ 600ms rồi zoom-fade | khoảng 1.4s |
 | `curtain` | Rèm kéo | Hai nửa màn (rèm vải/giấy có ornament) trượt `translateX(±100%)` ra hai bên, nội dung hero lộ ra từ giữa | khoảng 1.2s |
 | `fade-zoom` | Mờ dần | Cover `scale(1.08)` + `opacity 0` | 0.7s |
@@ -369,7 +379,22 @@ Tạo khoảnh khắc "nhận thiệp", cá nhân hóa bằng tên khách, và l
 - Easing: `cubic-bezier(.22,1,.36,1)` (ease-out mượt) cho chuyển động; nắp phong bì dùng `cubic-bezier(.65,0,.35,1)`.
 - Chỉ animate `transform`/`opacity`; bật `perspective: 1200px` ở container; `will-change` thêm lúc bắt đầu và gỡ khi xong.
 - Trong lúc mở: khóa nút (không bấm 2 lần), `aria-busy`.
-- Có `openedGreeting`/`openedSubline` ("Chúng mình sắp cưới!") hiện 600ms ở bước cuối của `envelope` và `card-flip`. Admin có thể tắt.
+- **(v4, R05) Mọi kiểu mở:** ngay trong handler chạm, `.cv-actions` (nút mở + dòng "Thiệp có nhạc") fade-out 120–200ms + `translateY(8px)`, để mắt khách không bị chia đôi và khách không tưởng phải bấm lại. Vùng chạm lần 2 để tua nhanh là **toàn bộ cover**, không chỉ nút.
+- Có `openedGreeting`/`openedSubline` ("Chúng mình sắp cưới!") hiện ở bước cuối của `envelope` và `card-flip`. Admin có thể tắt. **(v4, R06)** Lời chào: `text-wrap: balance`, cỡ `clamp(30px, 8.6vw, 38px)`; nếu font script thuộc nhóm "cần cẩn trọng" (2.2: Imperial Script, Moon Dance, Birthstone…) thì lời chào dùng **heading italic 28px** thay cho script.
+
+**(v4) Timeline `envelope` (mức Vừa, tổng ~2.0s, ≤ 2.4s), dùng chung cho mọi mẫu phong thư 3.4c:**
+| t (ms) | Phần tử | Chuyển động | Easing |
+|---|---|---|---|
+| 0–120 | `.cv-actions` | opacity 0 + translateY 8px | out |
+| 0–260 | seal | nhấn `scale .92` (0–90ms) rồi tách đôi: 2 nửa (clip ở tầng DOM, không animate clip) `translateX ±10px rotate ±16deg` + fade | `--ease-out` |
+| 180–720 | flap | `rotateX(0→180deg)` quanh mép trên, `perspective:1200px`; `z-index` 4→1 ở mốc 50% (WAAPI animate z-index rời rạc) để nắp lật xong nằm SAU thẻ | `--ease-inout` |
+| 650–1250 | card | `translateY(0 → -62%)` rút lên khỏi túi | `--ease-out` |
+| 1150–1550 | back + front + flap | `translateY(0 → 30%)` + opacity → 0 (bao "rơi" xuống) | `--ease-in` nhẹ |
+| 1150–1550 | card | về giữa màn `translateY(-62% → -20%)`, `scale(1 → 1.06)`; nội dung đổi sang lời chào (crossfade 200ms) | `--ease-out` |
+| 1550–1950 | cover | giữ lời chào 300ms rồi `scale 1.06→1.12` + fade | `--ease-out` |
+- Không khung nào bị cắt ở 360×740 (kiểm tra bằng chụp từng khung 0/250/500/750/1000/1250/1500ms).
+- **Nhẹ:** seal fade 120ms, flap 320ms, card rút 320ms, bỏ bước bao rơi (fade chung), tổng ~1.1s. **Nhiều:** + 12 hạt bụi vàng lóe ở chỗ seal tách (engine burst sẵn có). Không bao giờ dùng `clip-path` trên vùng chữ.
+- `will-change` chỉ gắn cho 4 phần tử (seal, flap, card, env) trong lúc chạy, xong thì gỡ.
 
 ### 3.4b 12 kiểu mở thiệp bổ sung (mới)
 Nguyên tắc chung cho mọi kiểu (cũ và mới):
@@ -401,12 +426,42 @@ Tổng cộng **17 kiểu** (5 cũ + 12 mới) và giá trị `"theme"` (theo th
 
 **Hiệu ứng nối tiếp sau khi mở (mới, `effects.burst.onOpen`):** `none` · `confetti` (giấy màu theo theme) · `petals` (cánh hoa theo hạt của theme) · `gold` (bụi vàng) · `red-paper` (xác pháo giấy đỏ, hợp `son-do`). Mặc định `"theme"`: Trầm Vàng dùng `petals`. Chi tiết ở 5.7.
 
+### 3.4c Mẫu phong thư (v4)
+**Đã chốt 2026-10-08:** làm đủ 6 mẫu; `song-hy`, `kraft`, `velvet` giữ màu cố định (admin vẫn chọn được "Theo theme"); mẫu "Thư hàng không" để dành v4 sau.
+
+**Nguyên tắc:**
+- Chỉ áp dụng khi kiểu mở resolve ra `envelope`. Mọi mẫu dùng **chung bố cục 3.2 và timeline 3.4** (cùng module `envelope.ts`). Mỗi mẫu là một **skin**: SVG + biến CSS + tối đa 1 bước animation riêng thay cho pha seal. Mỗi skin ≤ 1.5KB gz, import động theo mẫu đang chọn. Tổng thời lượng vẫn ≤ 2.4s.
+- 6 mẫu (Hick's Law: ≤ 7 lựa chọn, có ảnh xem trước). Chữ trên mặt phong bì luôn ≥ 4.5:1 với giấy (mỗi skin khai báo `--env-ink`).
+- Reduced-motion và cấp Tắt: mọi mẫu đều mở bằng fade 200ms (như 3.4b). Bản Nhẹ: bỏ bước animation riêng của skin, chỉ giữ timeline Nhẹ chung.
+
+| id | Tên trong admin | Visual | Màu | Animation riêng (thay pha seal 0–380ms) | Chi phí | Theme gợi ý |
+|---|---|---|---|---|---|---|
+| `classic` ★ | Cổ điển · dấu sáp | Giấy ngà, nắp tam giác nhọn, lót sọc chéo accent, dấu sáp monogram (3.2) | **Theo theme** (surface/accent/primary) | Dấu sáp tách đôi | Thấp | tram-vang, luc-bao, sen-cham |
+| `kraft` | Giấy kraft · dây gai | Giấy kraft có thớ (noise thô, tĩnh), dây gai buộc chữ thập + nơ, thẻ tên giấy ngà treo dây ghi "Kính gửi …", nhánh oải hương/cỏ lau khô kẹp dưới nút | **Cố định**: kraft `#C9A47A`, mặt `#D8B98F`, mực `#3A2A20` (9.1:1 trên `#D8B98F`), dây `#8B6B4A` | Nơ tuột bằng `stroke-dashoffset` vòng nơ 260ms, dây trượt `translateX(±120%)` sang hai bên + fade; thẻ tên lắc ±4° rồi rơi theo bao | Thấp–Vừa | dat-nung, hoai-co |
+| `song-hy` | Phong bì đỏ Song Hỷ | Đỏ son, viền chỉ vàng kép, mây cát tường chìm (opacity .12), nắp vát tù (góc 150°); thay seal bằng **huy hiệu tròn vàng có chữ 囍** (symbol `songhy`); thẻ bên trong màu ngà viền đỏ | **Cố định**: đỏ `#A3201D`, vàng `#D4A23C`, chữ trên đỏ `#FFF4DC` (7.3:1) | Huy hiệu `rotateY(0→90°)` rồi biến mất (200ms) + vệt sáng quét qua viền vàng (gradient translate 300ms). Mức Nhiều: burst `red-paper` 24 mảnh | Vừa | son-do |
+| `lace` | Ren & hoa | Màu nền theme pha hồng, **mép nắp lượn ren** (scallop + lỗ đục tròn, SVG tĩnh), giữ nắp bằng **cụm hoa ép** (2 bông + 3 lá, accent/accent2) thay seal | **Theo theme** (bg/accent/accent2) | Cụm hoa nhấc `translateY(-12px) rotate(-10deg)` + fade 260ms; mức Vừa/Nhiều rơi 6/12 cánh hoa qua engine hạt | Vừa (ren là SVG tĩnh, không animate mask) | hong-phan, mau-nuoc, pastel-han |
+| `minimal` | Tối giản | Giấy phẳng, **nắp chữ nhật thấp** (cao 38%), một đường kẻ mảnh, sticker tròn 28px màu accent có chữ cái đầu thay seal; dòng "GỬI · Gia đình anh Mạnh" kiểu tem nhãn (sans uppercase 12px + tên 18px) | **Theo theme** | Sticker bóc từ góc `rotate(-25deg) translate(8px,-6px)` + fade 220ms; nắp mở 380ms; tổng ~1.5s | Thấp nhất | muc-giay, bien-dao |
+| `velvet` | Nhung đêm | Nhung đen ánh đỏ (radial-gradient + noise tĩnh), viền chỉ vàng art-deco kép, nắp nhọn viền vàng, dấu sáp **vàng đồng ánh kim** (gradient 3 điểm), lót nắp hoạ tiết quạt deco | **Cố định khi theme sáng**: `#1C1517`/`#D9B77E`; **theo theme** khi `mode=dark` | Trước khi mở (0–350ms) vệt sáng chéo lướt qua viền vàng (gradient `translateX`, opacity). Mức Nhiều: 16 hạt `gold-dust` từ chỗ seal | Vừa | dem-nhung |
+
+**Map gợi ý theo 12 theme (`ThemePreset.suggest.envelopeStyle`, trong code):**
+| Theme | Mẫu | Theme | Mẫu |
+|---|---|---|---|
+| tram-vang ★ | `classic` | sen-cham | `classic` (giấy dó, seal chàm) |
+| hong-phan | `lace` | mau-nuoc | `lace` |
+| luc-bao | `classic` (lót xanh lục) | dat-nung | `kraft` |
+| son-do | `song-hy` | pastel-han | `lace` |
+| muc-giay | `minimal` | dem-nhung | `velvet` |
+| hoai-co | `kraft` | bien-dao | `minimal` |
+Map chỉ có tác dụng khi kiểu mở resolve ra `envelope`. Ví dụ `son-do` gợi ý kiểu mở `scroll`, nên mẫu `song-hy` chỉ hiện khi admin chọn kiểu mở "Phong bì".
+
+**Màu (`cover.envelope.color`):** `auto` = theo mặc định của mẫu (cố định với kraft/song-hy/velvet, theo theme với 3 mẫu còn lại) · `theme` = ép nhuộm theo token theme · hex = màu giấy tuỳ chọn (mực tự chọn trắng hoặc đen theo tương phản, bắt buộc ≥ 4.5:1; không đạt thì admin hiện badge ✗ và dùng mực tối đa tương phản). Chữ trong seal dùng lại `cover.monogram`. Admin: xem 8.13 "Mẫu phong bì". Field: Phụ lục B.
+
 ### 3.5 Chuyển tiếp sang landing và bắt đầu nhạc
 1. Ở **đúng handler click/tap** (đồng bộ, không await trước đó) gọi `audio.play()`. iOS chỉ cho phát khi gọi trực tiếp trong cử chỉ người dùng. Nếu promise bị reject thì nút nhạc chuyển trạng thái "Bấm để bật nhạc" (xem mục 6).
 2. Landing đã render sẵn bên dưới (cover là overlay `position:fixed`, `z-cover`) nên khi mở không phải chờ tải. Trong lúc cover hiện: `body` khóa cuộn, landing có `inert`.
 3. Kết thúc animation: gỡ cover khỏi DOM (hoặc `hidden`), bỏ `inert`, focus chuyển tới tiêu đề hero (`tabindex="-1"`), bắt đầu chuỗi animation vào của hero (stagger) và hiệu ứng hoa rơi.
 4. Mỗi lần tải trang đều hiện cover (đã chốt trong `decisions.md`). Reload khi đang ở giữa trang thì vẫn hiện cover, nhưng sau khi mở sẽ cuộn về vị trí cũ (lưu `sessionStorage`).
-5. **Tự cuộn (autoScroll)** của config cũ: mặc định **TẮT**. Tự cuộn giành quyền điều khiển của người dùng, NN/g xếp vào lỗi "user control & freedom". Nếu admin bật thì dừng ngay khi người dùng chạm hoặc cuộn, và không bao giờ bật khi reduced-motion.
+5. **(v4) Tự động cuộn sau khi mở thiệp: BẬT mặc định** (thay quyết định cũ "tắt", theo `decisions.md` 2026-10-07/08). Bắt đầu sau `startDelayMs` 2.5s tính từ lúc cover gỡ xong, 45px/s, chế độ `flow`. Khách chạm, cuộn hay bấm phím là **dừng hẳn**, có nút "Tiếp tục tự cuộn", không tự chạy lại. Spec đầy đủ ở **5.11**.
 
 ### 3.6 Trạng thái cover
 - **Đang tải** (font/ảnh cover chưa xong, > 300ms): hiện phong bì dạng nền giấy và monogram, nút ở trạng thái disabled với chữ "Đang chuẩn bị thiệp…"; quá 4s thì vẫn cho mở (không bao giờ chặn khách).
@@ -421,7 +476,7 @@ Tổng cộng **17 kiểu** (5 cũ + 12 mới) và giá trị `"theme"` (theo th
 - Container `<main>` render danh sách `sections.order` **sau khi lọc** các section bị tắt **và** các section rỗng dữ liệu (ví dụ album 0 ảnh hoặc events rỗng thì tự ẩn, không hiện khung rỗng cho khách).
 - **Số thứ tự** ("01", "02"…) = chỉ số trong danh sách đã lọc, chỉ đánh cho section có `numbered: true` (hero, countdown, thank-you, footer không đánh số). Admin có thể tắt toàn bộ số (`sections.showNumbers`).
 - **Nền xen kẽ** `bg`/`surface` tính theo chỉ số sau lọc, nên không bao giờ có 2 section cùng nền dính nhau. Section ảnh nền (hero, thank-you) bỏ qua quy tắc xen kẽ.
-- **Dải phân cách** do container chèn giữa 2 section, section không tự vẽ. Admin chọn `sections.divider`: `ornament` ★ (đường mảnh, hình thoi hoặc cành lá SVG 120px), `wave` (đường sóng giấy xé), `none`. Không chèn divider trước/sau section có ảnh nền.
+- **Dải phân cách** do container chèn giữa 2 section, section không tự vẽ. Admin chọn `sections.divider`: `ornament` ★ (đường mảnh, hình thoi hoặc cành lá SVG 120px), `wave` (đường sóng giấy xé), `none`. Không chèn divider trước/sau section có ảnh nền. **(v4, R07)** Divider **cao 0 và nằm trên đường ranh giới** giữa 2 section, không phải một dải riêng (bản v1 dùng `background: inherit` nên thành "sọc thứ ba" khác màu cả hai section): `.divider{height:0; position:relative; z-index:2}`, ornament `position:absolute; top:0; translate:-50% -50%`, `padding-inline:12px`, nền ornament = nền section **phía sau** (container truyền `--div-bg`). Nhìn như ornament "khâu" hai section vào nhau.
 - Mỗi section tự có `padding-block: var(--section-py)`, `max-width` riêng, không giả định section trước/sau là gì. Mỗi section có `id` cố định (`#events`, `#rsvp`…) cho menu nổi, anchor có `scroll-margin-top: 16px`.
 - Header section thống nhất:
 ```
@@ -494,6 +549,7 @@ Tổng cộng **17 kiểu** (5 cũ + 12 mới) và giá trị `"theme"` (theo th
           Vào lúc 11:30
 ```
 - **Animation:** từng dòng fade-in tuần tự (stagger 90ms), số "12" scale 0.85 lên 1.
+- **(v4, R15)** Tên khách trong dòng mời in đậm (`font-weight:600; color:var(--c-text)`); mọi dòng `text-wrap: balance` để không có chữ mồ côi ("tôi", "tới dự"). Tên khách, tên cặp đôi và dòng mời là **vùng dịu** của hạt nền (5.7).
 
 ### 4.5 Events + Map
 - **Config:** `events[]`: `name`, `date`, `displayDate`, `lunarDate`, `welcomeTime`, `startTime`, `venueName`, `address`, `mapUrl`, `mapEmbedUrl` (tùy chọn), `rsvpEnabled`, `image` (tùy chọn).
@@ -519,10 +575,11 @@ Tổng cộng **17 kiểu** (5 cũ + 12 mới) và giá trị `"theme"` (theo th
 - **Xác nhận tham dự:** cuộn tới `#rsvp` và tick sẵn sự kiện đó.
 - **Animation:** thẻ fade-up stagger 120ms; icon ghim bản đồ nhún 1 lần khi vào màn.
 - **Trạng thái:** sự kiện đã qua thì thẻ mờ 70% với nhãn "Đã diễn ra" và ẩn nút RSVP; iframe lỗi thì hiện link "Mở Google Maps".
+- **(v4, R20)** 2 nút outline: `padding-inline:14px`, icon cùng 18px; dưới 360px thì xếp dọc full-width. Badge "Sự kiện chính" 12px (2.4).
 
 ### 4.6 Countdown (Đếm ngược)
 - **Config:** `countdown.targetDate`, `heading`, `todayLabel`, `afterLabel` (mới: "Cảm ơn bạn đã đến chung vui"), `style` ("flip" ★ | "simple").
-- **Bố cục:** 4 ô vuông (Ngày, Giờ, Phút, Giây) ngang hàng; ở 360px mỗi ô 72×80, số 32px heading, nhãn 12px eyebrow. Desktop: ô 120×132, số 56px. Nền section có thể là ảnh mờ + overlay (tùy chọn).
+- **Bố cục:** 4 ô vuông (Ngày, Giờ, Phút, Giây) ngang hàng; ở 360px mỗi ô 72×80, số 32px heading, nhãn 12px eyebrow (`letter-spacing:.14em`, R10). **(v4, R18)** Không chừa khoảng trống dưới 4 ô cho chip milestone: luôn hiện một chip tĩnh "Còn 65 ngày" (nội dung đổi khi tới mốc 100/30/7/1 ngày), hoặc không có chip thì không có khoảng trống. Desktop: ô 120×132, số 56px. Nền section có thể là ảnh mờ + overlay (tùy chọn).
 - **Animation:** số đổi theo kiểu "flip" (nửa trên lật `rotateX(-90deg)` 300ms, nửa dưới 300ms) hoặc "slide" (số cũ trượt lên, số mới trượt từ dưới, 350ms). Chỉ ô thay đổi mới animate; ô "Giây" ở mức nhẹ thì dùng fade đơn giản. Khi tab ẩn thì dừng `setInterval`, khi quay lại thì tính lại ngay (không chạy bù).
 - **Trạng thái:**
   - Trước ngày: 4 ô.
@@ -570,12 +627,13 @@ Tổng cộng **17 kiểu** (5 cũ + 12 mới) và giá trị `"theme"` (theo th
 - QR: ưu tiên ảnh QR admin upload; nếu không có thì sinh **VietQR client-side** từ `bankBin + accountNumber` (đã chốt vòng 2; test bằng 1 tài khoản thật ở v1). Design chỉ cần một ảnh vuông.
 - Sao chép: `navigator.clipboard`, đổi nút thành "✓ Đã chép" 2s kèm toast `role="status"`; fallback chọn text.
 - `showBankInfo=false` thì section chỉ có lời nhắn, không có nút.
+- **(v4, R21, R22)** Lời nhắn: `max-width: 34ch` + balance; dài hơn 3 dòng thì căn trái (quy tắc 1.1). Nút "Sao chép" tối thiểu 44px.
 - **Animation:** sheet trượt lên 280ms `cubic-bezier(.22,1,.36,1)`, nền mờ fade 200ms.
 
 ### 4.10 Guestbook (Sổ lưu bút)
 - **Config:** `guestbook.heading`, `subheading`, `seedMessages[]`, `maxLength` (300), `showBubbles` (lời chúc bay nổi, mặc định TẮT). Chế độ lưu: **Giả định theo solution** (local / Google Apps Script / dịch vụ khác).
 - **Bố cục mobile:**
-  - Form ở trên: "Tên của bạn" (điền sẵn tên khách), "Lời chúc" (textarea tự giãn 3 đến 6 dòng, bộ đếm "120/300"), 4 chip gợi ý chạm-để-chèn ("Trăm năm hạnh phúc", "Sớm có tin vui"... giảm nỗi sợ trang trắng), nút "Gửi lời chúc" full-width.
+  - Form ở trên: "Tên của bạn" (điền sẵn tên khách), "Lời chúc" (textarea tự giãn 3 đến 6 dòng, bộ đếm "120/300"), 4 chip gợi ý chạm-để-chèn ("Trăm năm hạnh phúc", "Sớm có tin vui"... giảm nỗi sợ trang trắng), nút "Gửi lời chúc" full-width. **(v4, R11)** Chip `min-height:44px`; dưới 480px gói chip thành **một hàng cuộn ngang** (`overflow-x:auto; scroll-snap-type:x proximity`, mép phải có gradient mờ báo còn chip), desktop vẫn xuống dòng; nhóm chip có `aria-label="Gợi ý lời chúc"`.
   - Danh sách bên dưới: thẻ trích dẫn (dấu ngoặc kép lớn màu accent, nội dung, "— Tên · 2 tuần trước"), mới nhất ở trên, hiện 6, "Xem thêm lời chúc (24)". **Không cuộn lồng.**
 - **Desktop:** 2 cột 5/7, form trái (sticky), danh sách phải.
 - **Trạng thái:**
@@ -605,7 +663,8 @@ Tổng cộng **17 kiểu** (5 cũ + 12 mới) và giá trị `"theme"` (theo th
 
 ### 4.12 Thank you
 - **Config:** `thankYou.heading`, `message`, `signature`, `photo` (tùy chọn).
-- **Bố cục:** ảnh nền (hoặc nền giấy) + overlay, chữ căn giữa cột 32ch: heading script, message, chữ ký "Minh Anh & Thuỳ Linh" script 40px.
+- **Bố cục:** ảnh nền (hoặc nền giấy) + overlay, chữ căn giữa cột 32ch: heading script, message, chữ ký "Minh Anh & Thuỳ Linh" script 40px (44px với Imperial Script, 2.2).
+- **(v4, R02) Lớp phủ riêng, không dùng lại `.hero-shade`:** hero tối ở đáy còn khối chữ Cảm ơn nằm giữa, nên dùng chung lớp phủ làm chữ trắng nằm trên vùng ảnh sáng (< 3:1). Dùng `.ty-shade { background: linear-gradient(var(--c-overlay), var(--c-overlay)), radial-gradient(60% 45% at 50% 50%, rgba(0,0,0,.28), transparent 70%); }`, tức là phủ đều cộng vùng tối nhẹ ngay sau khối chữ; theme tối dùng `rgba(bg,.55)` (1.6.3). Đo ≥ 4.5:1 trên vùng sáng nhất của ảnh thật.
 - **Animation chữ ký "viết tay":** mặc định dùng **clip-path wipe** trái sang phải trên text script (`clip-path: inset(-0.3em 100% -0.3em 0)` chuyển thành `inset(-0.3em 0 -0.3em 0)`, 1.8s, `steps` không dùng mà dùng `cubic-bezier(.55,.1,.35,1)`). Chừa ±0.3em để không cắt dấu tiếng Việt. Nếu admin upload **SVG chữ ký nét đơn** thì dùng `stroke-dasharray/dashoffset` vẽ nét thật (2.2s).
 - Hoa rơi đậm hơn một chút ở section này (mức ≥ vừa), kiểu "đoạn kết".
 
@@ -692,7 +751,7 @@ Admin còn có toggle riêng cho từng hiệu ứng (petals: loại hạt `peta
 **Hạt nền (`effects.particles.type`, chọn tối đa 2 loại trộn nhau):**
 | Mã | Tên trong admin | Mô tả | Chuyển động | Hệ số mật độ | Ghi chú |
 |---|---|---|---|---|---|
-| `petal-rose` | Cánh hồng | Cánh hồng cong, 2 tông accent | fall, lật giả | 1.0 | mặc định Trầm Vàng |
+| `petal-rose` | Cánh hồng | **(v4, R13)** Cánh hồng hình **giọt nước ngược**: đầu tròn rộng, gốc nhọn hẹp, mép trên có 1 khía nhẹ (không đối xứng hai đầu như hạt hạnh nhân). Tô 2 lớp: accent 100% + lớp sáng `mix(accent,#fff,35%)` ở 40% diện tích phía trên. Path (viewBox 0 0 20 24): `M10 23C4 18 1 12 2 7 3 2.5 7 1 10 3.5 13 1 17 2.5 18 7 19 12 16 18 10 23Z` | fall, lật giả | 1.0 | mặc định Trầm Vàng |
 | `petal-sakura` | Hoa anh đào | Cánh 5 thuỳ có khía nhỏ, hồng nhạt | fall chậm, lắc rộng | 1.0 | |
 | `petal-peach` | Hoa đào Tết | Cánh đào hồng đậm + nhụy | fall | 1.0 | hợp `son-do`, cưới gần Tết |
 | `petal-lotus` | Cánh sen | Cánh sen lớn (24 đến 36px), rơi rất chậm, xoay chậm | fall chậm | 0.5 | |
@@ -707,16 +766,16 @@ Admin còn có toggle riêng cho từng hiệu ứng (petals: loại hạt `peta
 | `pampas` | Cỏ lau | Sợi lông nhẹ bay ngang | drift chậm | 0.6 | |
 | `snow` | Tuyết | Chấm tròn mờ 2 đến 6px, nhiều lớp độ sâu | fall chậm | 1.5 | cưới tháng 12 |
 | `bubble` | Bong bóng | Vòng tròn viền mảnh + điểm sáng | float-up, lắc | 0.7 | |
-| `firefly` | Đom đóm | Chấm sáng vàng có quầng (sprite đã vẽ glow sẵn, không dùng `shadowBlur` mỗi frame) | twinkle + trôi chậm | 1.5 | hợp theme tối |
+| `firefly` | Đom đóm | Chấm sáng vàng có quầng (sprite đã vẽ glow sẵn, không dùng `shadowBlur` mỗi frame). **(v4, R24)** Lõi `#FFE7A8` + quầng alpha .25, không có lớp nâu đục | twinkle + trôi chậm | 1.5 | hợp theme tối |
 | `sparkle` | Lấp lánh | Ngôi sao 4 cánh nhỏ | twinkle | 1.2 | |
-| `gold-dust` | Bụi vàng | Hạt 1 đến 3px màu primary/accent | fall rất chậm + twinkle | 1.5 | |
+| `gold-dust` | Bụi vàng | Hạt 1 đến 3px màu primary/accent (**(v4, R24)** trần cứng ≤ 4px, không có hạt nâu đục to) | fall rất chậm + twinkle | 1.5 | |
 | `ink-dot` | Chấm mực | Chấm tròn đen mờ .15 | fall rất chậm | 0.6 | `muc-giay` |
 | `dust-mote` | Bụi nắng | Hạt sáng mờ trôi lờ đờ | drift | 1.0 | `hoai-co` |
 | `red-paper` | Xác pháo giấy | Mảnh giấy đỏ nhỏ chữ nhật, lật giả | fall nhanh | 1.0 | `son-do` |
 
 Số hạt = `số theo cấp (8/16/28) × hệ số mật độ`, làm tròn, không quá 40. Màu hạt: `"theme"` (accent/primary của theme) · `"multi"` (accent + accent phụ) · hoặc hex tuỳ chọn.
 
-**(v3) Phạm vi `effects.particles.scope`: mặc định `all` (cả trang)**, theo quyết định vòng 2. `hero-thankyou` (chỉ khi hero hoặc thank-you trong viewport) vẫn là lựa chọn cho admin muốn trang "sạch". Để hạt cả trang không hại đọc chữ và hiệu năng, engine áp 4 lớp bảo vệ:
+**(v3) Phạm vi `effects.particles.scope`: mặc định `all` (cả trang)**, theo quyết định vòng 2. `hero-thankyou` (chỉ khi hero hoặc thank-you trong viewport) vẫn là lựa chọn cho admin muốn trang "sạch". Để hạt cả trang không hại đọc chữ và hiệu năng, engine áp 5 lớp bảo vệ (lớp 5 thêm ở v4):
 
 1. **Mật độ theo section đang chiếm viewport.** Mỗi section có hệ số mật độ; engine lấy trung bình có trọng số theo phần diện tích section đang hiện (IntersectionObserver, `threshold [0, .25, .5, .75, 1]`) rồi nhân với số hạt mục tiêu. Hạt thừa không bị xoá đột ngột: cho rơi hết khỏi màn rồi không sinh lại; hạt mới sinh dần (tối đa 2 hạt/giây) để không "bùng" khi cuộn.
    | Nhóm section | Hệ số mật độ | Opacity hạt tối đa |
@@ -728,6 +787,8 @@ Số hạt = `số theo cấp (8/16/28) × hệ số mật độ`, làm tròn, k
 2. **Né vùng form và khối chữ dày.** Canvas vẫn ở `z-petals` (trên nội dung, dưới thành phần nổi; không đặt dưới nội dung vì nền section xen kẽ là nền đặc sẽ che mất hạt), nên các **vùng loại trừ** gồm: thẻ form RSVP, form lời chúc, danh sách lời chúc, thẻ sự kiện (khối giờ + địa chỉ). Engine lấy `getBoundingClientRect()` của các vùng này (cập nhật bằng ResizeObserver và khi cuộn, tối đa 6 vùng, chỉ vùng đang trong viewport). Hạt đi vào vùng loại trừ + biên 16px thì **mờ dần về opacity 0 trong 200ms** và hiện lại khi ra khỏi vùng; hạt không bao giờ vẽ đè lên ô nhập, nút hay chữ địa chỉ. Chi phí: ≤ 40 hạt × ≤ 6 hình chữ nhật mỗi frame, không đáng kể.
 3. **Tạm dừng** (dừng rAF, giữ nguyên vị trí hạt, không xoá canvas) khi: tab ẩn (`visibilitychange`) hoặc `pagehide`; lightbox, sheet mừng cưới hoặc menu nhanh đang mở; **focus đang ở input/textarea/select** (đang nhập form) và thêm 1.5s sau khi rời focus; cover chưa mở. Tiếp tục bằng fade-in 300ms.
 4. **Trần theo cấp và máy:** Nhẹ 8, Vừa 16, Nhiều 28 (trước khi nhân hệ số loại hạt và hệ số section; trần cứng 40). Máy bị đánh giá yếu (5.5) thì hạ 1 bậc **và** trần cứng 12 hạt, DPR canvas = 1, tắt gió theo cuộn. FPS < 45 thì giảm theo thứ tự ở 5.10. `prefers-reduced-motion` hoặc cấp "Tắt" thì **không tạo canvas**.
+
+5. **(v4, R03, đã chốt) Vùng dịu ở chữ quan trọng.** Khác vùng loại trừ ở lớp 2: hạt **vẫn bay qua** nhưng mờ đi, để giữ cảm giác "hoa bay qua" mà không che chữ. Vùng dịu gồm `.hero-names`, `.ann-names`, `.ann-invite` (dòng "Trân trọng kính mời {khách}") và `.sec-head` của section đang hiện, tối đa 4 vùng trong viewport. Hạt đi vào vùng + biên 8px thì opacity kẹp về **≤ 0.3** (fade 200ms), ra khỏi vùng thì trở lại opacity theo section. Tên khách trên mặt phong bì không cần vì canvas chưa chạy khi cover hiện. Chi phí: thêm ≤ 4 hình chữ nhật mỗi frame.
 
 Hạt nền luôn `aria-hidden`, `pointer-events:none`, không bao giờ nhận click (không chặn nút).
 
@@ -752,7 +813,8 @@ Hạt nền luôn `aria-hidden`, `pointer-events:none`, không bao giờ nhận 
 | Số chùm | Nhẹ: 1 chùm × 24 hạt · Vừa: 3 chùm × 40 · Nhiều: 5 chùm × 40. Cộng dồn với hạt nền vẫn trong trần burst 120 hạt (5.6) |
 | Máy yếu (5.5) | Luôn dùng bản Nhẹ (1 chùm × 24 hạt), DPR 1 |
 | Không bắn khi | cấp "Tắt" · `prefers-reduced-motion` (chỉ hiện chip chữ tĩnh, ví dụ "Chỉ còn 66 ngày!" hoặc "Hôm nay là ngày cưới!") · tab ẩn · lightbox/sheet đang mở · focus đang trong ô nhập |
-| Vị trí | Gốc nổ nằm trong vùng 2 bên và phía trên 4 ô số, không đè lên chữ số; hạt mờ dần trước khi chạm mép section |
+| Vị trí **(v4, R04)** | **Không bao giờ nổ trên tiêu đề**: loại vùng `.sec-head` ("COUNTDOWN / Đếm ngược ngày cưới") khỏi vùng đặt gốc nổ. Gốc nổ nằm ở 2 dải bên cạnh 4 ô số (x < 18% hoặc > 82% bề rộng section) hoặc ở dải giữa tiêu đề và ô số; không đè lên chữ số; bán kính chùm ≤ 60px ở mobile; hạt mờ dần trước khi chạm mép section |
+| Màu **(v4, R04)** | Theo `mode` của theme. **Theme sáng:** `accent` + `mix(accent, #fff, 45%)` + `primary` (primary chỉ chiếm 1/3 số hạt), sprite **sao 4 cánh 6px có lõi sáng** (không dùng chấm tròn, vì chấm primary nâu trên nền sáng trông như bụi bẩn). **Theme tối:** giữ bụi vàng như v1 |
 Lựa chọn khác cho admin: `wedding-day` (chỉ bắn vào ngày cưới hoặc khi đồng hồ về 0 trong lúc xem, một lần mỗi phiên) và `off`.
 
 ### 5.8 Reveal khi cuộn (mới)
@@ -836,8 +898,34 @@ Trong "Tuỳ chỉnh nâng cao", admin có thể ghi đè từng vai trò: `effe
 | `rsvp-success` | tick tĩnh | tick vẽ | tick + confetti nhỏ | tick + confetti | tick tĩnh |
 | `countdown-odometer`/`flip` | đổi số tức thì | fade | đầy đủ | đầy đủ | đổi số tức thì |
 | `scroll-progress` | không | không | không (admin bật được) | có | có (không phải chuyển động trang trí, chỉ là chỉ báo) |
+| **(v4)** Tự động cuộn (5.11) | không tự chạy (khách bật được trong menu nhanh) | tự chạy | tự chạy | tự chạy | không tự chạy; khách bấm nút thì chạy `steady` 32px/s |
 
-Thứ tự **tự hạ cấp** khi FPS < 45 (bổ sung cho 5.5): tắt gió theo cuộn, rồi giảm hạt nền 50%, rồi tắt `parallax-layers`, rồi tắt hạt nền, rồi Ken Burns, rồi `photo-tilt`. Burst và kiểu mở thiệp không bị tắt giữa chừng (chỉ dùng bản Nhẹ ở lần sau).
+Thứ tự **tự hạ cấp** khi FPS < 45 (bổ sung cho 5.5): tắt gió theo cuộn, rồi giảm hạt nền 50%, rồi tắt `parallax-layers`, rồi tắt hạt nền, rồi Ken Burns, rồi `photo-tilt`. Burst và kiểu mở thiệp không bị tắt giữa chừng (chỉ dùng bản Nhẹ ở lần sau). Tự động cuộn không bị hạ cấp (chi phí < 0.3ms/frame).
+
+### 5.11 Tự động cuộn sau khi mở thiệp (v4)
+**Đã chốt 2026-10-08:** bật mặc định, 45px/s, bắt đầu sau 2.5s, `flow` dừng 1.2s ở đầu mỗi section (countdown 2s); khách tác động thì **dừng hẳn** và có nút Tiếp tục (không tự tiếp tục); reduced-motion không tự chạy nhưng khách tự bấm được; import config cũ thì kẹp `startDelayMs` tối thiểu 1500.
+
+**Lập trường.** Tự cuộn giành quyền điều khiển của người dùng (heuristic "User control and freedom" của NN/g). Vì tính năng bật mặc định, spec giữ 3 nguyên tắc: (1) **mọi tác động của khách dừng ngay**, (2) **không tự tiếp tục sau khi khách đã chạm**, (3) **luôn có nút Dừng/Tiếp tục hiện rõ**. Nút này cũng đáp ứng WCAG 2.2.2 (Pause, Stop, Hide) cho chuyển động tự chạy dài hơn 5s.
+
+| Hạng mục | Spec |
+|---|---|
+| Khi nào bắt đầu | Sau khi cover gỡ xong (`opened` resolve) + `startDelayMs` (mặc định **2500ms**, để chuỗi vào của hero 1.2s và burst sau mở chạy xong). Tăng tốc từ 0 tới tốc độ đích trong **800ms** (ease-in), không giật |
+| Không bắt đầu nếu | khách đã cuộn/chạm/bấm phím trong lúc chờ · đang khôi phục vị trí cuộn cũ (reload giữa trang, 3.5 bước 4) · URL có hash (`#rsvp`…) · trang cao < 1.5 màn hình · `prefers-reduced-motion` · cấp "Tắt" · `enabled=false` · đang ở preview admin mà không bấm "Phát lại" |
+| Tốc độ | `speed` px/s (CSS px), mặc định **45**, nhân hệ số màn hình `clamp(innerHeight/800, .8, 1.2)` (màn 740px chạy ~42px/s, khoảng 1 dòng body mỗi 0.65s). Admin: Chậm 32 · Vừa 45 · Nhanh 64, "Tuỳ chỉnh" 20–120 trong phần nâng cao |
+| Kiểu chạy (`mode`) | `flow` ★: chạy đều, **dừng `dwellMs` (1200ms) mỗi khi đầu một section chạm 18% chiều cao viewport**, như ngắt chương; reveal chạy trọn trong lúc dừng. Section đếm ngược dừng `max(dwellMs, 2000)` để pháo hoa đủ điều kiện (≥ 50% + giữ 400ms, 5.7). Hero và footer không dừng. `steady`: chạy đều, không dừng |
+| Dừng hẳn (stop) khi | `wheel` · `touchstart` (bất kỳ đâu, kể cả nút nổi) · `pointerdown` chuột · `keydown` bất kỳ (trừ chỉ bấm phím bổ trợ Shift/Ctrl/Alt/Meta) · **kéo thanh cuộn hoặc tìm trong trang**: mỗi frame so `scrollY` thực với vị trí đã đặt, lệch > 3px mà không có resize trong 300ms trước đó thì dừng · `focusin` vào input/textarea/select/button/a · mở lightbox / sheet / menu nhanh (`.has-overlay`) · chọn văn bản (`selectionchange` không rỗng) |
+| Tạm dừng rồi tự chạy lại (pause) | Chỉ với nguyên nhân **do hệ thống**: tab ẩn (`visibilitychange`), chạy lại 1s sau khi hiện lại · xoay màn/resize (kể cả thanh địa chỉ iOS co giãn), chạy lại sau 500ms. Không tính là "khách tác động" |
+| Tự tiếp tục sau khi khách tác động | **Không.** Khách đã chạm nghĩa là đang tự đọc hoặc tự tương tác. Nút chuyển sang "Tiếp tục tự cuộn" để khách tự bật lại |
+| Nút điều khiển | Nút tròn 44px ở **cột phải, trên nút nhạc** (7.1). Đang chạy: icon ‖ + `aria-label="Dừng tự cuộn"` `aria-pressed="true"`, có thể có vòng tiến độ mảnh quanh nút (stroke-dashoffset). Đã dừng: icon ▶ có mũi tên xuống + `aria-label="Tiếp tục tự cuộn"`. **Lần dừng đầu tiên** hiện toast 3s "Đã dừng tự cuộn · bấm ▶ để tiếp tục" (`role="status"`). Tới cuối trang thì ẩn nút. Menu nhanh của pill có mục "Tự cuộn: Bật/Tắt". Nút nằm trong thứ tự Tab sau nút nhạc |
+| Khi bấm "Tiếp tục" | Chạy lại từ vị trí hiện tại, tăng tốc 800ms, **không** áp `startDelayMs` |
+| Cuối trang | `scrollY ≥ maxScroll − 2`: dừng hẳn, không quay về đầu. Có section Cảm ơn thì giảm tốc dần trong 1 màn cuối (ease-out) để "hạ cánh" êm vào chữ ký |
+| Tương tác với hiệu ứng | **Reveal**: chạy bình thường (IntersectionObserver), `rootMargin` đáy `0px 0px -10%`, **prefetch ảnh lazy trong 1.5 màn phía trước** để không cuộn vào ô trống. **Hạt nền**: tốc độ tự cuộn **không** tính vào "gió theo cuộn" (chỉ tính cuộn của khách). **Pháo hoa**: đủ điều kiện nhờ dừng 2s ở countdown. **Pill**: giữ dạng thu nhỏ (`is-mini`) suốt lúc tự cuộn, giãn ra khi dừng. **Scroll-top**: ẩn khi đang tự cuộn. **Nhạc**: không liên quan |
+| Kỹ thuật | Vòng rAF với `dt`. Cộng dồn vị trí dạng số thực, chỉ gọi `window.scrollTo(0, y)` khi lệch ≥ 1 device pixel. Trong lúc chạy đặt `html{scroll-behavior:auto}`. Không dùng CSS smooth-scroll hay `scrollBy({behavior:'smooth'})`. Dừng rAF khi stop/pause. Chi phí < 0.3ms/frame |
+| Screen reader / bàn phím | Bất kỳ phím nào cũng dừng, nên người dùng bàn phím không bị kéo đi. Tự cuộn không di chuyển focus |
+| `prefers-reduced-motion` | **Không tự chạy.** Nút "Tự cuộn" vẫn hiện ở trạng thái dừng; khách bấm (chủ động đồng ý) thì chạy chế độ `steady`, tốc độ cố định 32px/s, không dừng ở section |
+| Cấp cường độ | Tắt: không tự chạy (khách bật được trong menu nhanh). Nhẹ/Vừa/Nhiều/máy yếu: tự chạy (tự cuộn là hỗ trợ đọc, không phải hiệu ứng trang trí) |
+
+Hằng số trong code (không đưa vào config): ramp 800ms, ngưỡng lệch 3px, chạy lại sau tab ẩn 1s / resize 500ms, prefetch 1.5 màn, dừng countdown 2000ms, không tự tiếp tục sau khi khách tác động. Field: Phụ lục B (`effects.autoScroll.*`). Admin: 8.13 khối "Tự động cuộn".
 
 ---
 
@@ -872,7 +960,10 @@ Thứ tự **tự hạ cấp** khi FPS < 45 (bổ sung cho 5.5): tắt gió theo
 ### 7.1 Bố cục
 ```
                                    ┌──┐
-                                   │ ↑│  scroll-to-top 44px (hiện khi cuộn > 1.5 màn hình)
+                                   │ ↑│  scroll-to-top 44px (v4: chỉ khi ĐANG cuộn lên, xem dưới)
+                                   └──┘
+                                   ┌──┐
+                                   │‖ │  (v4) nút tự cuộn 44px: ‖ đang chạy / ▶ đã dừng (5.11)
                                    └──┘
 ┌───────────────────────┐          ┌──┐
 │ ♡ Gửi lời chúc   ▴    │          │◎ │  nút nhạc 48px
@@ -880,10 +971,13 @@ Thứ tự **tự hạ cấp** khi FPS < 45 (bổ sung cho 5.5): tắt gió theo
  bottom-left: Quick-action pill     bottom-right: cột nút tròn
  ─────────── safe-area-inset-bottom ───────────
 ```
-- **Quick-action pill** (trái dưới, cao 44px, nền primary, chữ on-primary): mặc định hiển thị hành động hữu ích nhất theo ngữ cảnh: trước khi khách RSVP là "Xác nhận tham dự"; sau khi RSVP xong là "Gửi lời chúc". Chạm mũi tên ▴ (hoặc nhấn giữ) mở **menu nhanh** dạng sheet nhỏ: Sự kiện & chỉ đường · Album · Gửi lời chúc · Xác nhận tham dự · Mừng cưới · (Bật/Tắt hiệu ứng). Mục nào trỏ tới section đang tắt thì không hiện.
+- **(v4)** Thứ tự cột phải từ dưới lên: nhạc, tự cuộn, scroll-top. Khi tự cuộn đang chạy thì ẩn scroll-top; tới cuối trang thì ẩn nút tự cuộn.
+- **(v4, R12)** Scroll-top chỉ hiện khi **đang cuộn lên** và đã qua 1.5 màn, tự ẩn sau 2s đứng yên (bản v1 hiện suốt và che chữ căn giữa ở mép phải).
+- **(v4, R19)** Ở theme tối, nút tròn nổi dùng viền `--c-line-strong` + nền `--c-surface` + `box-shadow: 0 0 0 1px color-mix(in srgb, var(--c-primary) 25%, transparent)` để ranh giới nút đạt ≥ 3:1 (WCAG 1.4.11).
+- **Quick-action pill** (trái dưới, cao 44px, nền primary, chữ on-primary): mặc định hiển thị hành động hữu ích nhất theo ngữ cảnh: trước khi khách RSVP là "Xác nhận tham dự"; sau khi RSVP xong là "Gửi lời chúc". Chạm mũi tên ▴ (hoặc nhấn giữ) mở **menu nhanh** dạng sheet nhỏ: Sự kiện & chỉ đường · Album · Gửi lời chúc · Xác nhận tham dự · Mừng cưới · (Bật/Tắt hiệu ứng) · **(v4)** Tự cuộn: Bật/Tắt. Mục nào trỏ tới section đang tắt thì không hiện.
 - Ẩn pill khi section mà nó trỏ tới đang trong viewport (tránh thừa), khi cover hiện, khi lightbox/sheet mở, khi bàn phím đang mở (focus trong input/textarea, vì Android đẩy fixed element lên che form).
 - Pill **thu nhỏ thành nút tròn 48px** (chỉ còn icon) khi đang cuộn xuống, và giãn lại khi cuộn lên hoặc dừng 800ms, để không che nội dung khi đọc.
-- Desktop (≥ 1024px): pill thành thanh điều hướng ngang nhỏ ở trên, căn trái (logo monogram + 5 link anchor), sticky sau khi qua hero; nút nhạc và scroll-top vẫn ở góc dưới phải.
+- Desktop (≥ 1024px): pill thành thanh điều hướng ngang nhỏ ở trên, căn trái (logo monogram + 5 link anchor), sticky sau khi qua hero; nút nhạc, tự cuộn và scroll-top vẫn ở góc dưới phải. **(v4, R23)** Bản v1/v2 tạm giữ pill trên desktop; thanh điều hướng ngang làm ở v4, không chặn phát hành.
 
 ### 7.2 Safe-area và chồng lấn
 - `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`.
@@ -997,7 +1091,7 @@ Thanh bên trái gồm các nhóm có icon, nhóm "Nội dung" mở ra danh sác
 ⚙ Chung              (tiêu đề trang, mô tả SEO, ảnh chia sẻ OG, favicon, ngày cưới chính, tên tham số link khách)
 🎨 Theme & Màu        ((mới) gallery 12 theme, xem 8.12; màu chủ đạo; nâng cao: từng token + badge tương phản, họa tiết, texture, khung ảnh, divider)
 Aa Font               (font preset; 3 dropdown heading/script/body có preview bằng tên thật; cỡ chữ ±1 bậc)
-✦ Hiệu ứng           ((mới) xem 8.13: cường độ, gallery 17 kiểu mở thiệp, hạt nền, burst, gói reveal, micro-interaction; preview + "Phát lại")
+✦ Hiệu ứng           ((mới) xem 8.13: cường độ, gallery 17 kiểu mở thiệp, (v4) mẫu phong bì, hạt nền, burst, gói reveal, (v4) tự động cuộn, micro-interaction; preview + "Phát lại")
 ♪ Nhạc                (upload mp3, tên bài, điểm bắt đầu, tự phát sau mở thiệp, nghe thử)
 ☰ Sections           (bật/tắt + sắp xếp, hiện số thứ tự, divider)
 ✎ Nội dung           ▸ Thiệp mời (cover) ▸ Hero ▸ Cô dâu chú rể ▸ Gia đình ▸ Lời mời ▸ Sự kiện
@@ -1256,6 +1350,37 @@ Chỉ báo ở top bar (chấm + chữ, không chỉ dùng màu):
 - Khi admin bản thân bật `prefers-reduced-motion` trên máy: preview vẫn phát (vì admin chủ động bấm), nhưng thẻ hoạt ảnh thu nhỏ không tự chạy và có ghi chú "Máy bạn đang giảm chuyển động; xem trước vẫn phát khi bấm".
 - Dưới lựa chọn "Hiện ở" có trợ giúp: "Cả trang: hạt thưa dần ở phần nhiều chữ và tránh ô nhập, tự dừng khi khách đang gõ" (5.7). Dropdown pháo hoa: "Mỗi lần cuộn tới (cách nhau ít nhất 15 giây)" ★ · "Chỉ ngày cưới" · "Tắt".
 - Cảnh báo kết hợp: chọn đồng thời kiểu mở Cao + cường độ "Nhiều" + gói "Điện ảnh" thì hiện ghi chú vàng "Khá nặng cho điện thoại cũ; máy yếu sẽ tự giảm". Không chặn.
+- **(v4) Nhãn "Theo theme (…)" phải là tên tiếng Việt** của giá trị đã resolve, không lộ mã (`scroll`, `red-paper`, `envelope`). Nếu theme gợi ý một kiểu chưa có trong bản hiện tại (capability fallback), nhãn ghi đúng cái khách sẽ thấy: "Theo theme (Phong bì · Cuộn thư sẽ có ở bản sau)".
+
+**(v4) Khối "Mẫu phong bì"** (ngay dưới gallery kiểu mở, chỉ hiện khi kiểu mở resolve ra "Phong bì", progressive disclosure):
+```
+─ Mẫu phong bì ─────────────────────────────
+┌────────┐┌────────┐┌────────┐
+│ poster ││ poster ││ poster │   3 cột desktop / 2 cột mobile, thẻ 120×150
+│Theo    ││Giấy    ││Song Hỷ │
+│theme ✓ ││kraft   ││Màu cố  │   badge: Đang dùng ✓ · Gợi ý cho theme · Màu cố định
+│(Cổ điển)│        ││định    │
+└────────┘└────────┘└────────┘ … (Ren & hoa, Tối giản, Nhung đêm)
+Màu phong bì: (● Theo mẫu)( Theo theme )( Tự chọn ▢ ) [AA ✓ 7.1:1]
+[●] Ghi tên khách trên phong bì     [●] Lót hoa văn trong nắp
+```
+- Poster là SVG skin thu nhỏ (tĩnh), nhuộm theo theme đang chọn, có tên khách mẫu. Hover/focus thì phát mini-animation của skin (CSS, 1.2s, 1 lần; tắt khi máy admin giảm chuyển động). Thẻ đầu là "Theo theme (Cổ điển)".
+- **Chọn = phát ngay** trong preview: `fx:replay` với `target:"cover"`, `envelopeStyle`; dùng chung "↻ Phát lại" và "0.5x".
+- `role="radiogroup"`, phím mũi tên để duyệt, Space/Enter để chọn. Nhãn đọc ví dụ: "Phong bì đỏ Song Hỷ, màu cố định, gợi ý cho Son Đỏ". Badge luôn có chữ, không chỉ dùng màu.
+- "Tự chọn" mở ô màu + badge tương phản của mực trên giấy (4.5:1).
+
+**(v4) Khối "Tự động cuộn"** (sau "Hiện nội dung khi cuộn"):
+```
+─ Tự động cuộn ────────────────────────────
+[●] Tự cuộn sau khi mở thiệp
+Tốc độ: ( Chậm )(● Vừa )( Nhanh )
+[●] Dừng ngắn ở mỗi phần            (bật = flow, tắt = steady)
+Bắt đầu sau: [━━━●━━━━━] 2.5 giây   (1.5–8s)
+ⓘ Khách chạm, cuộn hoặc bấm phím là dừng ngay; khách bấm ▶ để tiếp tục.
+▸ Nâng cao: tốc độ tuỳ chỉnh (20–120 px/giây), thời gian dừng mỗi phần (0–4 giây)
+```
+- Nút "↻ Phát lại" phát 8 giây tự cuộn trong preview (`target:"autoscroll"`), bỏ qua `startDelayMs`.
+- Tắt công tắc chính thì ẩn các điều khiển con (giữ giá trị). Cường độ "Tắt" thì hiện ghi chú "Cường độ Tắt: tự cuộn không tự chạy, khách vẫn bật được trong menu".
 
 ---
 
@@ -1267,6 +1392,7 @@ Chỉ báo ở top bar (chấm + chữ, không chỉ dùng màu):
 - **Focus:** `:focus-visible` vòng 2px `--c-primary` + offset 3px (trên ảnh/nền tối thì dùng vòng trắng + bóng tối). Không xóa outline. Thứ tự Tab theo thứ tự trực quan. Cover thì focus vào nút mở; sheet, lightbox, dialog có focus trap, Esc đóng và trả focus về nút đã mở.
 - **Semantic:** `<main>`, mỗi section là `<section aria-labelledby>`, đúng 1 `<h1>` (tên cặp đôi ở hero), h2 cho tiêu đề section. Ngày giờ dùng `<time datetime>`. Form có `<label for>`, nhóm radio dùng `<fieldset><legend>`.
 - **Nhạc:** không tự phát trước tương tác; nút nhạc có `aria-pressed` + label; có thể dừng bất cứ lúc nào (WCAG 1.4.2).
+- **(v4) Tự động cuộn (5.11):** có nút Dừng/Tiếp tục 44px luôn hiện khi đang chạy (WCAG 2.2.2), mọi phím/chạm dừng ngay, không di chuyển focus, không tự chạy khi reduced-motion.
 - **Chuyển động:** tôn trọng `prefers-reduced-motion`; có nút tắt hiệu ứng cho khách; không nhấp nháy > 3 lần/giây; hiệu ứng lặp vô hạn (scroll cue, heartbeat) dừng sau tối đa 5s trừ đĩa nhạc (đĩa nhạc là chỉ báo trạng thái, dừng khi tắt nhạc).
 - **Kéo thả:** luôn có nút thay thế (lightbox ‹ ›, sắp xếp ↑↓, crop có slider).
 - **Ngôn ngữ:** `<html lang="vi">`; eyebrow tiếng Anh bọc `<span lang="en">` để screen reader đọc đúng.
@@ -1292,7 +1418,12 @@ Toàn bộ câu hỏi Q1 đến Q20 của các bản trước **đã chốt** (C
 | Cover | Hiện mỗi lần mở link | 3.5 |
 | Mừng cưới | Có QR VietQR sinh client-side, chỉ hiện khi bấm | 4.9 |
 | Love story | Có, mặc định tắt | 4.7 |
-| Tự cuộn / lời chúc bay / vendor | Tắt | 3.5, 4.10, 4.13 |
+| **(v4)** Tự động cuộn | **Bật** mặc định, 45px/s, bắt đầu sau 2.5s, `flow` dừng 1.2s (countdown 2s); khách tác động thì dừng hẳn + nút Tiếp tục, không tự tiếp tục; reduced-motion không tự chạy; import cũ kẹp `startDelayMs` ≥ 1500 | 3.5, 5.11 |
+| Lời chúc bay / vendor | Tắt | 4.10, 4.13 |
+| **(v4)** Phong bì | Tên cặp đôi trên, ngoài phong bì; "Kính gửi + tên khách" trên mặt phong bì; phong bì ngang 10:7 | 3.2, 3.4 |
+| **(v4)** Mẫu phong thư | 6 mẫu `classic` ★ · `kraft` · `song-hy` · `lace` · `minimal` · `velvet`; kraft/song-hy/velvet màu cố định (vẫn chọn được "Theo theme") | 3.4c, 8.13 |
+| **(v4)** Hạt nền ở chữ quan trọng | Mờ xuống 0.3 (vùng dịu), không ẩn hẳn | 5.7 |
+| **(v4)** 24 điểm `design-review-v1.md` | Áp dụng toàn bộ theo đề xuất | 2.1, 2.4, 3.x, 4.x, 5.7, 7.1 |
 | Hero/footer | Ghim đầu/cuối | 8.6 |
 | Bản đồ | Bấm mới tải | 4.5 |
 | Nhạc | 1 bài, lặp, upload ≤ 8MB | 6 |
@@ -1321,7 +1452,7 @@ ThemePreset {
   tokens { primary, onPrimary, accent, accent2?, bg, surface, text, muted, line }   // lineStrong = muted
   fonts { heading, script, body }
   ornamentSet, texture, photoFrame, divider
-  suggest { openStyle, burstOnOpen, particles: { types[], color }, revealStyle }
+  suggest { openStyle, burstOnOpen, particles: { types[], color }, revealStyle, envelopeStyle }   // envelopeStyle (v4): map ở 3.4c
   hidden?: boolean           // ẩn khỏi gallery mà không sửa schema (bản đầu: không theme nào ẩn, kể cả dem-nhung)
 }
 ```
@@ -1340,6 +1471,15 @@ ThemePreset {
 | `fonts.heading/script/body` | tên font trong danh sách 2.3 + 2.3b, hoặc `"theme"` | `"theme"` |
 | `cover.openStyle` | `"theme"` · `envelope` · `card-flip` · `curtain` · `fade-zoom` · `none` · `wax-seal` · `origami` · `double-door` · `flower-gate` · `scroll` · `card-3d` · `light-gather` · `gift-box` · `moon-gate` · `book` · `ink-spread` · `polaroid` | `"theme"` (= `envelope` với Trầm Vàng) |
 | `cover.showOpenedGreeting` | boolean | `true` |
+| `cover.envelope.style` **(v4)** | `"theme"` · `classic` · `kraft` · `song-hy` · `lace` · `minimal` · `velvet` | `"theme"` (→ `ThemePreset.suggest.envelopeStyle`; Trầm Vàng = `classic`) |
+| `cover.envelope.color` **(v4)** | `"auto"` · `"theme"` · hex | `"auto"` (theo mẫu: cố định với kraft/song-hy/velvet, theo theme với 3 mẫu còn lại) |
+| `cover.envelope.guestOnFront` **(v4)** | boolean | `true` (`false`: "Kính gửi …" vào thẻ bên trong như v1) |
+| `cover.envelope.liner` **(v4)** | boolean | `true` (lót hoa văn mặt trong nắp) |
+| `effects.autoScroll.enabled` **(v4)** | boolean | **`true`** (đổi từ `false`) |
+| `effects.autoScroll.speed` **(v4)** | number px/s, kẹp 20–120 | **45** (cũ 55; config cũ có 55 thì giữ nguyên) |
+| `effects.autoScroll.startDelayMs` **(v4)** | number, kẹp **1500**–8000 | **2500** (cũ 650; tính từ lúc cover gỡ xong; giá trị import < 1500 bị kẹp lên 1500) |
+| `effects.autoScroll.mode` **(v4, mới)** | `"flow"` · `"steady"` | `"flow"` |
+| `effects.autoScroll.dwellMs` **(v4, mới)** | number, 0–4000 | `1200` (dừng ở countdown = `max(dwellMs, 2000)`, hằng số trong code) |
 | `effects.intensity` | `off` · `low` · `medium` · `high` | `medium` |
 | `effects.burst.onOpen` (mới) | `"theme"` · `none` · `confetti` · `petals` · `gold` · `red-paper` | `"theme"` |
 | `effects.burst.onRsvp` (mới) | boolean (confetti khi "Tôi sẽ đến") | `true` |
@@ -1361,4 +1501,4 @@ ThemePreset {
 | `countdown.style` | `flip` · `slide` · `odometer` · `simple` | `flip` |
 | `countdown.milestones` (mới) | boolean | `true` |
 
-Tương thích ngược: config cũ có `theme: "xanh-navy"` thì map sang `luc-bao` (như 1.3); `effects.petals.type` cũ (`petal|heart|leaf|snow-dot`) map sang `particles.types` = `petal-rose` · `heart` · `leaf-green` · `snow`.
+Tương thích ngược: config cũ có `theme: "xanh-navy"` thì map sang `luc-bao` (như 1.3); `effects.petals.type` cũ (`petal|heart|leaf|snow-dot`) map sang `particles.types` = `petal-rose` · `heart` · `leaf-green` · `snow`. **(v4)** Config không có `cover.envelope` thì merge mặc định (không cần bump version; nếu solution muốn bump thì để v2). `effects.autoScroll` từ `wedding-site` (`enabled:true, speed:55, startDelayMs:650`): giữ `enabled` và `speed`, kẹp `startDelayMs` lên 1500, thêm `mode:"flow"`, `dwellMs:1200`. Config mới tạo (không import) lấy mặc định mới ở bảng trên; config v1 đã lưu với mặc định cũ `enabled:false` (do v1 sinh, không phải do người dùng chọn) thì solution quyết định có chuyển sang `true` hay không (design khuyên: chuyển, vì người dùng chưa từng có công tắc này trong admin).

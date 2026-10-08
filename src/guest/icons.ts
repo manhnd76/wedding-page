@@ -27,6 +27,8 @@ const P: Record<string, string> = {
   minus: 'M5 12h14',
   plus: 'M12 5v14M5 12h14',
   zoom: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-5-5M8 11h6M11 8v6',
+  pause: 'M9 6v12M15 6v12',
+  playDown: 'M6 5l8 5-8 5zM18 6v11M15.5 14.5 18 17l2.5-2.5',
 };
 
 export type IconName = keyof typeof P;
@@ -37,7 +39,7 @@ export function icon(name: IconName | string, size = 20): SVGElement {
 }
 
 /** <svg><use href="sprite#id"></svg> cho ornament (sprite tô bằng currentColor). */
-export function ornament(spriteUrl: string, id: string, cls = 'orn', w = 120, h = 24): SVGElement | null {
+export function ornament(spriteUrl: string, id: string, cls = 'orn', w = 160, h = 24): SVGElement | null {
   if (!spriteUrl) return null;
   const s = svg('svg', { class: cls, viewBox: `0 0 ${w} ${h}`, 'aria-hidden': 'true', focusable: 'false' });
   const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');

@@ -51,7 +51,7 @@ export function guestbook(p: PlannedSection): HTMLElement {
     h('label', { for: 'gb-msg', class: 'label' }, 'Lời chúc'), msg,
     h('div', { class: 'gb-meta' }, count),
     errMsg,
-    chips.length ? h('div', { class: 'chips', 'aria-label': 'Gợi ý lời chúc' }, ...chips) : null,
+    chips.length ? h('div', { class: 'chips chips--scroll', role: 'group', 'aria-label': 'Gợi ý lời chúc' }, ...chips) : null,
     hp, submit, status);
   const list = h('ul', { class: 'gb-list', 'data-fx-exclude': '', 'aria-live': 'polite' });
   const more = h('button', { type: 'button', class: 'btn btn-outline gb-more', hidden: true });

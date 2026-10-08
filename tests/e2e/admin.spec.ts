@@ -103,6 +103,39 @@ test('chọn kiểu mở thiệp -> preview phát cover và báo xong (fx:replay
   await expect(preview(page).locator('.cover')).toHaveCount(0);
 });
 
+test('mẫu phong thư: gallery chọn mẫu -> preview phát cover với mẫu mới; phím mũi tên + Enter; Phát lại', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await fresh(page);
+  await page.getByTestId('mode-download').click();
+  await waitPreviewReady(page);
+  await page.getByRole('link', { name: 'Hiệu ứng' }).click();
+  // gallery chỉ hiện khi kiểu mở resolve ra phong bì (không phụ thuộc theme mẫu)
+  await page.getByTestId('open-envelope').click();
+  const gal = page.getByRole('radiogroup', { name: 'Mẫu phong bì' });
+  await expect(gal).toBeVisible();
+  await expect(gal.getByRole('radio')).toHaveCount(7);
+  await page.getByTestId('env-song-hy').click();
+  await expect(page.getByTestId('env-song-hy')).toHaveAttribute('aria-checked', 'true');
+  await expect(page.locator('.pv-now')).toContainText('Đang phát');
+  await expect(preview(page).locator('.cover[data-env="song-hy"]')).toBeAttached({ timeout: 15_000 });
+  await expect(page.locator('.pv-now')).toContainText('Đang xem', { timeout: 20_000 });
+  // bàn phím: mũi tên duyệt, Enter chọn
+  await page.getByTestId('env-song-hy').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByTestId('env-lace')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('env-lace')).toHaveAttribute('aria-checked', 'true');
+  await expect(preview(page).locator('.cover[data-env="lace"]')).toBeAttached({ timeout: 15_000 });
+  await expect(page.locator('.pv-now')).toContainText('Đang xem', { timeout: 20_000 });
+  await page.getByTestId('pv-replay').click();
+  await expect(preview(page).locator('.cover[data-env="lace"]')).toBeAttached({ timeout: 15_000 });
+  // khối tự cuộn: phát lại trong preview -> khung preview cuộn xuống
+  await page.getByTestId('as-replay').click();
+  await expect.poll(async () => preview(page).locator('html').evaluate(() => window.scrollY), { timeout: 15_000 }).toBeGreaterThan(20);
+  expect(errors).toEqual([]);
+});
+
 test('máy chủ dev: xuất bản ghi vào thư mục (tạm), khôi phục = hoán đổi, bấm lại = làm lại', async ({ page }) => {
   await fresh(page, DEV);
   await page.getByTestId('mode-dev').click();

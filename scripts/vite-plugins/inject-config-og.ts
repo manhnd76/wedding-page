@@ -180,6 +180,7 @@ export function injectConfigOg(): Plugin {
     if (bundle) {
       const want = [
         `/cover/styles/${r.openStyle}.ts`,
+        ...(r.openStyle === 'envelope' ? [`/cover/skins/${r.envelope.style}.ts`] : []),
         ...r.particles.types.map((t) => `/particles/types/${t}.ts`),
       ];
       for (const ch of Object.values(bundle)) {
@@ -252,6 +253,7 @@ export function injectConfigOg(): Plugin {
       const initialJs = new Set<string>();
       const initialCss = new Set<string>();
       const open: string[] = [];
+      const skins: string[] = [];
       const particle: string[] = [];
       const lazy: string[] = [];
       const chunks = Object.values(bundle).filter((c) => c.type === 'chunk');
@@ -294,7 +296,11 @@ export function injectConfigOg(): Plugin {
       for (const ch of chunks) {
         if (ch.type !== 'chunk' || ch.isEntry || !guestAll.has(ch.fileName)) continue;
         const id = (ch.facadeModuleId ?? '').replace(/\\/g, '/');
-        if (id.includes('/cover/styles/')) {
+        if (id.includes('/cover/skins/') && !id.endsWith('/kit.ts')) {
+          // mẫu phong bì (skin): ≤ 1.5 KB/mẫu; mẫu đang dùng nằm trong JS ban đầu (vẽ trước khi khách chạm)
+          skins.push(ch.fileName);
+          if (r.openStyle === 'envelope' && id.endsWith(`/cover/skins/${r.envelope.style}.ts`)) visit(ch.fileName);
+        } else if (id.includes('/cover/styles/')) {
           open.push(ch.fileName);
           if (id.endsWith(`/cover/styles/${r.openStyle}.ts`)) visit(ch.fileName);
         } else if (id.includes('/particles/types/')) {
@@ -311,7 +317,7 @@ export function injectConfigOg(): Plugin {
         meta?.importedCss?.forEach((css) => adminCss.add(css));
       }
       budget = {
-        initialJs: [...initialJs], initialCss: [...initialCss], openStyle: open, particle, lazy: lazy.filter((x) => !initialJs.has(x)),
+        initialJs: [...initialJs], initialCss: [...initialCss], openStyle: open, envelopeSkin: skins, particle, lazy: lazy.filter((x) => !initialJs.has(x)),
         adminInitialJs: [...adminInitial], adminInitialCss: [...adminCss],
         adminLazy: [...adminAll].filter((x) => !adminInitial.has(x) && !guestAll.has(x)),
       };

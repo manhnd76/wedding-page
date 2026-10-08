@@ -147,13 +147,14 @@ export async function bootstrap(): Promise<void> {
   for (const p of plan) {
     const el = renderSection(p, visible);
     if (!el) continue;
-    if (p.dividerBefore && main.lastElementChild && !main.lastElementChild.classList.contains('sec-hero')) main.append(divider(ctx.resolved.divider));
+    if (p.dividerBefore && main.lastElementChild && !main.lastElementChild.classList.contains('sec-hero')) main.append(divider(ctx.resolved.divider, el, main.lastElementChild));
     main.append(el);
     visibleIds.add(p.item.id);
   }
   const app = document.getElementById('app') ?? document.body;
   app.replaceChildren(main);
   document.documentElement.dataset.texture = ctx.resolved.texture;
+  document.documentElement.dataset.script = ctx.resolved.fonts.script;
   // nút cuộn ở hero -> section kế tiếp
   const cue = main.querySelector<HTMLAnchorElement>('.hero-cue');
   const nextSec = main.querySelectorAll<HTMLElement>('.sec')[1];
@@ -178,6 +179,10 @@ export async function bootstrap(): Promise<void> {
     else document.getElementById('hero-title')?.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
     emit('pause-change');
     void afterOpen();
+    // tự cuộn (design-review-v1 mục 5): không chạy trong preview admin trừ khi phát lại "autoscroll"
+    if (ctx.config.effects.autoScroll.enabled && !boot) {
+      void import('./autoscroll/autoscroll').then((m) => m.mountAutoScroll({ restored: saved > 0, hasHash: location.hash.length > 1 }));
+    }
     let t: ReturnType<typeof setTimeout> | null = null;
     if (!boot) window.addEventListener('scroll', () => {
       if (t) return;
@@ -220,6 +225,13 @@ function previewAfterOpen(boot: PreviewBoot, target: string | null, bridge: type
     return;
   }
   if (target === 'cover') { done(1600); return; }
+  if (target === 'autoscroll') {
+    window.scrollTo(0, 0);
+    void import('./autoscroll/autoscroll').then((m) => {
+      if (!m.mountAutoScroll({ restored: false, hasHash: false, previewMs: 8000, onPreviewDone: () => bridge.post({ type: 'fx:done', target }) })) done(300);
+    });
+    return;
+  }
   if (target === 'burst' || target === 'particles') { window.scrollTo(0, 0); done(target === 'burst' ? 2600 : 1200); return; }
   if (target === 'reveal') {
     const secs = Array.from(document.querySelectorAll<HTMLElement>('main .sec'));

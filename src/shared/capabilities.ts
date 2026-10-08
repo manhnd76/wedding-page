@@ -4,11 +4,11 @@
  * Thêm theme/hiệu ứng ở giai đoạn sau: chỉ cần bổ sung vào danh sách, KHÔNG đổi schema.
  */
 import type {
-  BurstOnOpen, CountdownStyle, Divider, FontId, OpenStyle, OrnamentSet, ParticleType, PhotoFrame,
+  BurstOnOpen, CountdownStyle, Divider, EnvelopeStyle, FontId, OpenStyle, OrnamentSet, ParticleType, PhotoFrame,
   RevealAtom, RevealStyle, Texture, ThemeId,
 } from './config/enums.ts';
 
-export const STAGE = 'v1';
+export const STAGE = 'v2.1';
 
 export interface Capability<T extends string> { supported: readonly T[]; fallback: T }
 
@@ -16,6 +16,8 @@ export const CAPABILITIES = {
   theme: { supported: ['tram-vang', 'son-do', 'dem-nhung'], fallback: 'tram-vang' } as Capability<ThemeId>,
   openStyle: { supported: ['envelope', 'card-flip', 'fade-zoom', 'none'], fallback: 'envelope' } as Capability<OpenStyle>,
   particle: { supported: ['petal-rose', 'heart', 'petal-peach', 'gold-dust', 'firefly'], fallback: 'petal-rose' } as Capability<ParticleType>,
+  /** mẫu phong bì (skin của `envelope`, v2.1) */
+  envelopeStyle: { supported: ['classic', 'kraft', 'song-hy', 'lace', 'minimal', 'velvet'], fallback: 'classic' } as Capability<EnvelopeStyle>,
   burstOnOpen: { supported: ['none', 'petals'], fallback: 'petals' } as Capability<BurstOnOpen>,
   revealStyle: { supported: ['soft', 'gentle'], fallback: 'soft' } as Capability<RevealStyle>,
   /** kiểu reveal nguyên tử dùng được khi admin ghi đè vai trò (không có -> theo gói) */

@@ -1,7 +1,6 @@
 /** Section tĩnh: hero, couple, families, announcement, timeline, loveStory, thankyou, footer (design 4.1-4.4, 4.7, 4.12, 4.13). */
 import type { PlannedSection } from '@shared/sections/meta';
 import { mainEvent } from '@shared/sections/meta';
-import { fillGuest } from '@shared/guest-name';
 import { assetUrl, telHref } from '@shared/assets';
 import type { Person } from '@shared/config/types';
 import { ctx } from '../context';
@@ -47,7 +46,11 @@ export function couple(p: PlannedSection): HTMLElement {
   const a = c.order === 'bride-first' ? person(c.bride, 'bride') : person(c.groom, 'groom');
   const b = c.order === 'bride-first' ? person(c.groom, 'groom') : person(c.bride, 'bride');
   return shell(p, { eyebrow: c.eyebrow, heading: c.heading },
-    h('div', { class: 'couple-grid' }, a, h('p', { class: 'couple-amp', 'aria-hidden': 'true', 'data-rv': 'ornament' }, '&'), b));
+    h('div', { class: 'couple-grid' }, a,
+      h('div', { class: 'couple-amp-wrap', 'aria-hidden': 'true' },
+        ornament(ctx.resolved.ornamentUrl ?? '', 'amp', 'orn couple-amp-orn', 120, 24),
+        h('p', { class: 'couple-amp', 'data-rv': 'ornament' }, '&')),
+      b));
 }
 
 export function families(p: PlannedSection): HTMLElement {
@@ -70,11 +73,14 @@ export function announcement(p: PlannedSection): HTMLElement {
   const parts = ev ? vnParts(ev.startAt) : null;
   const [n1, n2] = cp.order === 'bride-first' ? [cp.bride.fullName, cp.groom.fullName] : [cp.groom.fullName, cp.bride.fullName];
   const lunar = ev?.lunarText || ctx.config.content.hero.lunarText;
-  const invite = nonEmpty(a.inviteLine) ? fillGuest(a.inviteLine, ctx.guest.display) : '';
+  // R15: tên khách in đậm (design 4.4) - tách template quanh {guest}, không innerHTML
+  const invite = nonEmpty(a.inviteLine)
+    ? a.inviteLine.split('{guest}').flatMap((part, i) => (i ? [h('strong', { class: 'ann-guest' }, ctx.guest.display), part] : [part]))
+    : null;
   return shell(p, { eyebrow: a.eyebrow, heading: a.heading, cls: 'sec-print' },
     nonEmpty(a.subheading) ? h('p', { class: 'ann-sub', 'data-rv': 'block' }, a.subheading) : null,
     h('p', { class: 'ann-names', 'data-rv': 'block' }, h('span', null, n1), h('span', { class: 'ann-amp', 'aria-hidden': 'true' }, '&'), h('span', { class: 'sr-only' }, ' và '), h('span', null, n2)),
-    invite ? h('p', { class: 'ann-invite', 'data-rv': 'block' }, invite) : null,
+    invite ? h('p', { class: 'ann-invite', 'data-rv': 'block' }, ...invite) : null,
     nonEmpty(a.inviteLine2) ? h('p', { class: 'ann-invite', 'data-rv': 'block' }, a.inviteLine2) : null,
     parts ? h('div', { class: 'ann-date', 'data-rv': 'block' },
       h('span', { class: 'ann-date-side' }, cap1(parts.weekday)),
@@ -113,7 +119,7 @@ export function thankyou(p: PlannedSection): HTMLElement {
     ? h('img', { class: 'ty-sig-svg', src: assetUrl(t.signatureSvg, ctx.base), alt: t.signature || 'Chữ ký', 'data-rv': 'ornament' })
     : nonEmpty(t.signature) ? h('p', { class: 'ty-sig', 'data-rv': 'ornament', 'data-sig': '' }, t.signature) : null;
   return h('section', { id: p.item.id, class: `sec sec-thankyou ${im ? 'has-img' : 'no-img'}`, 'data-type': 'thankyou', 'data-pd': p.meta.particle.density, 'data-po': p.meta.particle.maxOpacity, 'aria-labelledby': 'h-thankyou' },
-    im ? h('div', { class: 'ty-media' }, img(im, { cls: 'ty-img' }), h('div', { class: 'hero-shade', 'aria-hidden': 'true' })) : null,
+    im ? h('div', { class: 'ty-media' }, img(im, { cls: 'ty-img' }), h('div', { class: 'ty-shade', 'aria-hidden': 'true' })) : null,
     h('div', { class: 'ty-content' },
       h('h2', { id: 'h-thankyou', class: 'h2 h2-script', 'data-rv': 'heading' }, t.heading),
       nonEmpty(t.message) ? h('p', { class: 'ty-msg', 'data-rv': 'block' }, ...multiline(t.message)) : null,
@@ -128,7 +134,9 @@ export function footer(p: PlannedSection): HTMLElement {
   const tel = telHref(v.phone);
   return h('footer', { id: p.item.id, class: 'sec sec-footer', 'data-type': 'footer', 'data-pd': p.meta.particle.density, 'data-po': p.meta.particle.maxOpacity },
     h('div', { class: 'sec-in' },
-      nonEmpty(mono) ? h('p', { class: 'ft-mono' }, mono) : null,
+      nonEmpty(mono) ? h('div', { class: 'ft-mono-wrap' },
+        ornament(ctx.resolved.ornamentUrl ?? '', 'monogram', 'orn ft-mono-orn', 120, 120),
+        h('p', { class: 'ft-mono' }, mono)) : null,
       ornament(ctx.resolved.ornamentUrl ?? '', 'divider', 'orn ft-orn'),
       nonEmpty(date) ? h('p', { class: 'ft-date' }, date) : null,
       nonEmpty(f.madeWithText) ? h('p', { class: 'small muted' }, f.madeWithText.replace('♡', '').trim(), ' ', icon('heart', 14)) : null,

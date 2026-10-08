@@ -50,7 +50,6 @@ export function countdown(p: PlannedSection): HTMLElement | null {
   let lastMinute = -1;
   let timer: ReturnType<typeof setInterval> | null = null;
   let trigger: FireworksTrigger | null = null;
-  const reduced = ctx.fx.state === 'reduced' || ctx.fx.state === 'off';
 
   const render = () => {
     const now = new Date();
@@ -84,10 +83,10 @@ export function countdown(p: PlannedSection): HTMLElement | null {
       lastMinute = now.getMinutes();
       live.textContent = `Còn ${r.d} ngày đến ngày cưới`;
       const ms = c.milestones ? MILESTONES.find((m) => r.d === m) : undefined;
-      // reduced/off: chip chữ tĩnh thay pháo hoa (design 5.7)
-      const show = ms !== undefined || (reduced && r.d > 0);
-      chip.hidden = !show;
-      if (show) chip.textContent = `Chỉ còn ${ms ?? r.d} ngày!`;
+      // R18: luôn có chip tĩnh (không để khoảng trống dưới 4 ô số); mốc milestone -> nhấn mạnh
+      chip.hidden = r.d <= 0;
+      chip.textContent = ms !== undefined ? `Chỉ còn ${ms} ngày!` : `Còn ${r.d} ngày`;
+      chip.classList.toggle('is-ms', ms !== undefined);
     }
   };
   const start = () => { if (!timer) { render(); timer = setInterval(render, 1000); } };
@@ -120,8 +119,7 @@ export function countdown(p: PlannedSection): HTMLElement | null {
         const f = await getField();
         const m = mod ?? (await import('../effects/burst/fireworks'));
         if (!f) return;
-        const t = ctx.resolved.tokens;
-        await m.playFireworks(f, sec, grid.hidden ? msg : grid, spec, [t.primaryDecor, t.accent]);
+        await m.playFireworks(f, sec, grid.hidden ? msg : grid, spec, m.fireworksPalette(ctx.resolved.tokens, ctx.resolved.mode), sec.querySelector<HTMLElement>('.sec-head'));
       },
     });
     const io = new IntersectionObserver((es) => {

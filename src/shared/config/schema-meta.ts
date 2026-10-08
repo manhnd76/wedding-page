@@ -270,7 +270,10 @@ const EXTRA_LABELS: Record<string, string> = {
   effects: 'Hiệu ứng', 'effects.intensity': 'Cường độ hiệu ứng', 'effects.particles': 'Hạt nền', 'effects.burst': 'Hiệu ứng sau khi mở',
   'effects.reveal': 'Hiện nội dung khi cuộn', music: 'Nhạc', 'music.src': 'Bài nhạc', 'music.title': 'Tên bài nhạc',
   sections: 'Sections', 'sections.items': 'Thứ tự / bật tắt section', 'sections.showNumbers': 'Hiện số thứ tự', 'sections.divider': 'Divider',
-  'cover.openStyle': 'Kiểu mở thiệp', 'content.album.images': 'Ảnh album', publish: 'Xuất bản',
+  'cover.openStyle': 'Kiểu mở thiệp', 'cover.envelope': 'Mẫu phong bì', 'cover.envelope.style': 'Mẫu phong bì',
+  'cover.envelope.color': 'Màu phong bì', 'cover.envelope.guestOnFront': 'Ghi tên khách trên phong bì', 'cover.envelope.liner': 'Lót hoa văn trong nắp',
+  'effects.autoScroll': 'Tự động cuộn', 'effects.autoScroll.enabled': 'Tự cuộn sau khi mở thiệp', 'effects.autoScroll.speed': 'Tốc độ tự cuộn',
+  'effects.autoScroll.startDelayMs': 'Tự cuộn bắt đầu sau', 'effects.autoScroll.mode': 'Dừng ngắn ở mỗi phần', 'effects.autoScroll.dwellMs': 'Thời gian dừng ở mỗi phần', 'content.album.images': 'Ảnh album', publish: 'Xuất bản',
 };
 
 /** Nhãn dễ đọc cho 1 đường dẫn config (diff). Vd `content.thankyou.heading` -> "Lời cảm ơn › Tiêu đề". */

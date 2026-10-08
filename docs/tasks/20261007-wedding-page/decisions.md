@@ -60,3 +60,8 @@
 - Tự cuộn: bật mặc định, 45px/s, bắt đầu sau 2.5s, `flow` dừng 1.2s đầu mỗi section; khách tác động -> dừng hẳn, có nút Tiếp tục (không tự tiếp tục). Reduced-motion: không tự chạy, khách tự bấm được. Import config cũ: kẹp `startDelayMs` tối thiểu 1500.
 - Hạt nền bay qua chữ quan trọng (tên khách, tên cặp đôi, lời mời): mờ xuống 0.3 (không ẩn hẳn).
 - Áp dụng toàn bộ 24 điểm trong design-review-v1.md theo đề xuất của designer (trừ khi người duyệt nói khác).
+
+## Quyết định sau v2.1 + review admin (2026-10-08)
+- Tự cuộn với config cũ: chuyển sang BẬT 45px/s. Thực tế chưa có config nào được publish, nên chỉ cần: defaults + config mẫu + import config v0 đều ra `enabled: true` (v0 có `speed` thì giữ, `startDelayMs` kẹp ≥ 1500). Không thêm migration cho config v1.
+- Giả định admin được chấp nhận: Undo mobile đặt ở top bar; mini preview sticky mobile để v4 (v2.x dùng toast "[Xem ↗]"); admin dùng font hệ thống; đổi tên "Sections" -> "Các phần & thứ tự".
+- v2.1 commit trên `feat/20261007-wedding-page-v2.1`; v2.2 (sửa 23 điểm admin còn lại) trên `feat/20261007-wedding-page-v2.2`.

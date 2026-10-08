@@ -71,9 +71,15 @@ export function framed(ref: ImageRef, o: { ratio: string; fallbackText?: string;
   return fig;
 }
 
-/** Dải phân cách giữa 2 section (container chèn, section không tự vẽ). */
-export function divider(kind: string): HTMLElement {
+/**
+ * Dải phân cách giữa 2 section (container chèn, section không tự vẽ). R07: cao 0, nằm trên đường ranh giới;
+ * ornament có nền = nền của section phía sau (`--div-bg`) để "khâu" 2 section thay vì thành dải sọc thứ ba.
+ */
+export function divider(kind: string, next?: HTMLElement | null, prev?: Element | null): HTMLElement {
   const d = h('div', { class: `divider divider--${kind}`, 'aria-hidden': 'true' });
+  const toneOf = (el: Element | null | undefined) =>
+    el?.classList.contains('tone-surface') ? 'var(--c-surface)' : el?.classList.contains('tone-bg') || el?.classList.contains('sec-footer') ? 'var(--c-bg)' : null;
+  css(d, { '--div-bg': toneOf(next) ?? toneOf(prev) ?? 'var(--c-bg)' });
   if (kind === 'ornament' || kind === 'cloud' || kind === 'deco-fan') {
     const o = ornament(ctx.resolved.ornamentUrl ?? '', 'divider', 'orn div-orn');
     if (o) { o.setAttribute('data-rv', 'ornament'); d.appendChild(o); }

@@ -5,12 +5,12 @@
 import { graphemes } from '@shared/guest-name';
 import { assetUrl } from '@shared/assets';
 import { ctx } from '../context';
-import { h, multiline, nonEmpty } from '../dom';
+import { css, h, multiline, nonEmpty } from '../dom';
 import { icon, ornament } from '../icons';
 import { fx } from '../effects/intensity';
 import { EffectRegistry } from '../effects/registry';
 import type { MusicPlayer } from '../music/player';
-import { fade200, fadeZoom, loadOpenStyle, type PlayFn } from './open-registry';
+import { fade200, fadeZoom, loadOpenModule, type PlayFn } from './open-registry';
 import type { OpenRun } from './anim';
 
 const PREP_DELAY_MS = 300;
@@ -34,36 +34,62 @@ export function namesBlock(cls: string, tag: 'p' | 'h1' = 'p'): HTMLElement {
     h('span', { class: 'nm-b' }, b ?? ''));
 }
 
-function cardBody(): HTMLElement {
-  const c = ctx.config.cover;
+/** Font script khó đọc ở cỡ nhỏ (design-review-v1 R06/R09): lời chào dùng heading italic thay vì script. */
+export const CAUTION_SCRIPTS = new Set(['imperial-script', 'moon-dance', 'birthstone']);
+
+function guestLines(cls: 'cv' | 'env'): HTMLElement[] {
   const g = ctx.guest.display;
   const long = graphemes(g).length > 22;
+  const pre = (ctx.config.cover.guestPrefix ?? '').trim();
+  const out: HTMLElement[] = [];
+  // trên mặt phong bì ghi như địa chỉ: "Kính gửi" (bỏ dấu ":")
+  if (nonEmpty(pre)) out.push(h('p', { class: `${cls}-prefix` }, cls === 'env' ? pre.replace(/[:：]\s*$/, '') : pre));
+  out.push(h('p', { class: `${cls}-guest${long ? ' is-long' : ''}` }, g));
+  return out;
+}
+
+function cardBody(): HTMLElement {
   return h('div', { class: 'cv-card-body' },
     namesBlock('cv-names'),
-    ornament(ctx.resolved.ornamentUrl ?? '', 'divider', 'orn cv-orn'),
-    nonEmpty(c.guestPrefix) ? h('p', { class: 'cv-prefix' }, c.guestPrefix) : null,
-    h('p', { class: `cv-guest${long ? ' is-long' : ''}` }, g));
+    ornament(ctx.resolved.ornamentUrl ?? '', 'divider', 'orn cv-orn', 160, 24),
+    ...guestLines('cv'));
 }
 
 function greeting(): HTMLElement | null {
   const c = ctx.config.cover;
   if (!c.showOpenedGreeting || !nonEmpty(c.openedGreeting)) return null;
-  return h('div', { class: 'cv-greet', 'aria-hidden': 'true' },
+  const plain = CAUTION_SCRIPTS.has(ctx.resolved.fonts.script);
+  return h('div', { class: `cv-greet${plain ? ' is-plain' : ''}`, 'aria-hidden': 'true' },
     h('p', { class: 'cv-greet-h' }, c.openedGreeting),
     nonEmpty(c.openedSubline) ? h('p', { class: 'cv-greet-s' }, ...multiline(c.openedSubline)) : null);
 }
 
+/**
+ * Phong bì ngang 10:7 (design-review-v1 3.2): lớp back < card < front (túi + "Kính gửi …") < flap < seal.
+ * Phần hình (SVG) do skin của mẫu đang chọn vẽ vào các lớp (lazy: `styles/envelope.ts` prepare()).
+ */
+function envelopeStage(): HTMLElement {
+  const env = ctx.resolved.envelope;
+  const mono = ctx.config.cover.monogram;
+  const onFront = env?.guestOnFront !== false;
+  // thẻ bên trong: ornament + monogram; khi rút ra đổi sang lời chào. Tên khách vào thẻ nếu không in trên phong bì
+  const inner = h('div', { class: 'cv-card-body' },
+    ornament(ctx.resolved.ornamentUrl ?? '', 'title', 'orn cv-orn-s', 80, 16),
+    nonEmpty(mono) ? h('p', { class: 'cv-card-mono' }, mono) : null,
+    ...(onFront ? [] : guestLines('cv')));
+  return h('div', { class: 'cv-stage cv-env-wrap' },
+    h('div', { class: 'cv-env' },
+      h('div', { class: 'env-back' }),
+      h('div', { class: 'cv-card' }, inner, greeting()),
+      h('div', { class: 'env-front' }, onFront ? h('div', { class: 'env-addr' }, ...guestLines('env')) : null),
+      h('div', { class: 'env-flap' }, h('div', { class: 'env-flap-f' }), h('div', { class: 'env-flap-b' })),
+      h('div', { class: 'env-deco' }),
+      h('div', { class: 'env-seal' })));
+}
+
 function stage(style: string): HTMLElement {
   const mono = ctx.config.cover.monogram;
-  if (style === 'envelope') {
-    return h('div', { class: 'cv-stage cv-env-wrap' },
-      h('div', { class: 'cv-env' },
-        h('div', { class: 'cv-env-back' }),
-        h('div', { class: 'cv-card' }, cardBody(), greeting()),
-        h('div', { class: 'cv-env-pocket' }),
-        h('div', { class: 'cv-flap' }, h('div', { class: 'cv-flap-face' })),
-        h('div', { class: 'cv-seal' }, h('span', null, mono || '♡'))));
-  }
+  if (style === 'envelope') return envelopeStage();
   if (style === 'card-flip') {
     return h('div', { class: 'cv-stage cv-flip' },
       h('div', { class: 'cv-flip-inner' },
@@ -72,6 +98,22 @@ function stage(style: string): HTMLElement {
           greeting() ?? h('div', { class: 'cv-greet' }, h('p', { class: 'cv-greet-h' }, mono)))));
   }
   return h('div', { class: 'cv-stage cv-plain' }, h('div', { class: 'cv-card' }, cardBody()));
+}
+
+/** Mẫu + màu phong bì -> data-* (CSS chọn bảng màu); màu tự chọn (hex) -> biến CSS qua CSSOM (CSP). */
+function applyEnvelopeColors(el: HTMLElement): void {
+  const env = ctx.resolved.envelope;
+  if (!env) return;
+  el.dataset.env = env.style;
+  if (env.themed) el.dataset.envThemed = '';
+  if (!env.liner) el.dataset.envNoLiner = '';
+  if (env.paper && env.ink) {
+    const light = env.ink === '#FFFFFF';
+    css(el, {
+      '--env-paper': env.paper, '--env-paper-2': env.paper, '--env-ink': env.ink, '--env-ink-2': env.ink,
+      '--env-edge': light ? 'rgba(255,255,255,.45)' : 'rgba(0,0,0,.25)',
+    });
+  }
 }
 
 export interface CoverHandle { el: HTMLElement; opened: Promise<void> }
@@ -96,27 +138,38 @@ export function mountCover(music: MusicPlayer): CoverHandle {
   st.setAttribute('role', 'button');
   st.setAttribute('tabindex', '0');
   st.setAttribute('aria-label', c.tapToOpenLabel || 'Mở thiệp');
+  const isEnv = domStyle === 'envelope';
+  const actions = h('div', { class: 'cv-actions' }, cta, hint);
+  // phong bì: tên cặp đôi NGOÀI phong bì, phía trên (LCP, đọc được trước khi skin tải xong)
   const el = h('div', { class: `cover cover--${domStyle}`, 'data-open': styleId, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Thiệp mời' },
     bgImg ? h('div', { class: 'cv-bg' }, bgImg) : null,
-    ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--tl', 80, 80),
-    ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--br', 80, 80),
+    ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--tl', 96, 96),
+    ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--br', 96, 96),
     h('div', { class: 'cv-inner' },
-      nonEmpty(c.eyebrow) ? h('p', { class: 'cv-eyebrow' }, c.eyebrow) : null,
-      nonEmpty(c.dateText) ? h('p', { class: 'cv-date' }, c.dateText) : null,
+      h('div', { class: 'cv-head' },
+        nonEmpty(c.eyebrow) ? h('p', { class: 'cv-eyebrow' }, c.eyebrow) : null,
+        nonEmpty(c.dateText) ? h('p', { class: 'cv-date' }, c.dateText) : null,
+        isEnv ? namesBlock('cv-names') : null),
       st,
-      h('div', { class: 'cv-actions' }, cta, hint)));
+      actions));
+  if (isEnv) applyEnvelopeColors(el);
   document.body.appendChild(el);
   document.documentElement.classList.add('cover-on');
   if (music.available && ctx.config.music.enabled) music.preload();
 
-  // ---- chuẩn bị: font tên (≤1.5s) + module kiểu mở; >300ms hiện "Đang chuẩn bị…", >4s vẫn cho mở
+  // ---- chuẩn bị: font tên (≤1.5s) + module kiểu mở (+ skin phong bì); >300ms hiện "Đang chuẩn bị…", >4s vẫn cho mở
   let play: PlayFn | null = mode === 'fade200' ? fade200 : null;
   const fontsReady = waitNameFont().then(() => el.classList.add('is-fonts'));
-  const modReady = play ? Promise.resolve() : loadOpenStyle(styleId).then((p) => { play = p ?? fadeZoom; });
+  // phong bì cần skin cả khi reduced/Tắt (hình tĩnh) -> luôn tải module envelope
+  const modReady = loadOpenModule(isEnv ? 'envelope' : styleId).then(async (m) => {
+    if (m?.prepare) { try { await m.prepare(el); } catch { /* skin lỗi: vẫn mở được bằng hình CSS */ } }
+    if (!play) play = m?.play ?? fadeZoom;
+  }).finally(() => el.classList.add('is-skin'));
   let ready = false;
   const setReady = () => {
     if (ready) return;
     ready = true;
+    el.classList.add('is-skin');
     cta.disabled = false;
     cta.querySelector('.cv-cta-label')!.textContent = c.tapToOpenLabel || 'Chạm để mở thiệp';
     el.classList.add('is-ready');
@@ -140,7 +193,13 @@ export function mountCover(music: MusicPlayer): CoverHandle {
     // 2) hiện landing bên dưới (đang display:none để chỉ tải font cover) rồi chạy kiểu mở
     document.documentElement.classList.remove('landing-wait');
     el.setAttribute('aria-busy', 'true');
+    el.classList.add('is-opening');
     cta.classList.remove('is-breathe');
+    // R05: nút + dòng nhạc rút đi ngay để mắt khách theo phong bì
+    if (typeof actions.animate === 'function') {
+      actions.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(8px)' }],
+        { duration: mode === 'fade200' ? 1 : 200, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
+    }
     const fn = play ?? fadeZoom;
     run = fn(el, { level: mode === 'full+' ? 'full+' : mode === 'light' ? 'light' : 'full', greeting: c.showOpenedGreeting, timeScale: EffectRegistry.timeScale });
     void run.finished.then(() => {
@@ -149,8 +208,8 @@ export function mountCover(music: MusicPlayer): CoverHandle {
       resolveOpened();
     });
   };
-  cta.addEventListener('click', open);
-  st.addEventListener('click', open);
+  // R05: chạm vào nút/phong bì = mở; khi đang mở, chạm BẤT KỲ đâu trên cover = tua nhanh
+  el.addEventListener('click', (e) => { if (run || cta.contains(e.target as Node) || st.contains(e.target as Node)) open(e); });
   st.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') open(e); });
   return { el, opened };
 }

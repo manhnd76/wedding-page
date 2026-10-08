@@ -14,7 +14,7 @@
     "noindex": true
   },
   "theme": {
-    "preset": "son-do",
+    "preset": "tram-vang",
     "primaryColor": null,
     "overrides": {},
     "ornamentSet": "theme",
@@ -62,9 +62,11 @@
       "coupleHeartTap": false
     },
     "autoScroll": {
-      "enabled": false,
-      "speed": 55,
-      "startDelayMs": 650
+      "enabled": true,
+      "speed": 45,
+      "startDelayMs": 2500,
+      "mode": "flow",
+      "dwellMs": 1200
     }
   },
   "music": {
@@ -96,7 +98,13 @@
     "musicHint": "Thiệp có nhạc, bật loa",
     "showOpenedGreeting": true,
     "openedGreeting": "Chúng mình sắp cưới!",
-    "openedSubline": "Hai con người, một câu chuyện —\nvà một lời hẹn trọn đời."
+    "openedSubline": "Hai con người, một câu chuyện —\nvà một lời hẹn trọn đời.",
+    "envelope": {
+      "style": "theme",
+      "color": "auto",
+      "guestOnFront": true,
+      "liner": true
+    }
   },
   "sections": {
     "items": [

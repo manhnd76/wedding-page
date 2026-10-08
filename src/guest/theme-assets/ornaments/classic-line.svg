@@ -1,8 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-<!-- Bộ họa tiết classic-line (Trầm Vàng): cành lá line-art + hình thoi. Placeholder v1, chờ ui-ux-designer thay bản cuối. -->
-<symbol id="divider" viewBox="0 0 120 24"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M4 12H50M70 12h46"/><path pathLength="100" d="M60 5l7 7-7 7-7-7z"/><path pathLength="100" d="M44 12c-4-5-10-6-14-4M76 12c4-5 10-6 14-4M44 12c-4 5-10 6-14 4M76 12c4 5 10 6 14 4"/></g></symbol>
-<symbol id="title" viewBox="0 0 80 16"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M2 8h30M48 8h30"/><path pathLength="100" d="M40 3l5 5-5 5-5-5z"/></g></symbol>
-<symbol id="corner" viewBox="0 0 80 80"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M6 74V20C6 12 12 6 20 6h54"/><path pathLength="100" d="M14 60c4-14 14-24 30-28M22 24c6 2 10 6 12 12M30 18c-2 6-1 11 3 15M40 30c6-2 12-1 16 3"/><circle pathLength="100" cx="14" cy="14" r="3"/></g></symbol>
-<symbol id="gift" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path pathLength="100" d="M12 28h40v28H12zM8 20h48v8H8zM32 20v36"/><path pathLength="100" d="M32 20c-4-8-14-10-14-4s10 4 14 4zm0 0c4-8 14-10 14-4s-10 4-14 4z"/></g></symbol>
-<symbol id="monogram" viewBox="0 0 120 120"><g fill="none" stroke="currentColor" stroke-width="1"><circle pathLength="100" cx="60" cy="60" r="54"/><circle pathLength="100" cx="60" cy="60" r="48" stroke-dasharray="2 4"/></g></symbol>
+<!-- Bộ họa tiết classic-line (Trầm Vàng): cành lá thanh mảnh hai bên hình thoi. Nguồn: design-review-v1.md mục 3.1 (ui-ux-designer). -->
+<symbol id="divider" viewBox="0 0 160 24"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+<path pathLength="100" d="M4 12H53M107 12h49"/><path pathLength="100" d="M80 4.5 87.5 12 80 19.5 72.5 12Z"/>
+<path pathLength="100" d="M53 12C59 12 64 10.8 69.5 7.6"/>
+<path pathLength="100" transform="translate(57 11.9) rotate(-42)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(60.5 11.4) rotate(22)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(65 9.6) rotate(-62)" d="M0 0C2.4-2.4 5.6-2.7 8-1.3C5.6 1.1 2.4 1.6 0 0Z"/>
+<g transform="matrix(-1 0 0 1 160 0)"><path pathLength="100" d="M53 12C59 12 64 10.8 69.5 7.6"/>
+<path pathLength="100" transform="translate(57 11.9) rotate(-42)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(60.5 11.4) rotate(22)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(65 9.6) rotate(-62)" d="M0 0C2.4-2.4 5.6-2.7 8-1.3C5.6 1.1 2.4 1.6 0 0Z"/></g>
+</g><g fill="currentColor"><circle pathLength="100" cx="80" cy="12" r="1.5"/><circle pathLength="100" cx="4" cy="12" r="1.1"/><circle pathLength="100" cx="156" cy="12" r="1.1"/></g></symbol>
+<symbol id="title" viewBox="0 0 80 16"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"><path pathLength="100" d="M4 8h28M48 8h28"/><path pathLength="100" d="M40 3.5 44.5 8 40 12.5 35.5 8Z"/></g><circle pathLength="100" cx="40" cy="8" r="1.1" fill="currentColor"/></symbol>
+<symbol id="corner" viewBox="0 0 96 96"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+<path pathLength="100" d="M5 91V21Q5 5 21 5h70"/><path pathLength="100" d="M11 91V25Q11 11 25 11h66" opacity=".45"/><path pathLength="100" d="M20 14 26 20 20 26 14 20Z"/>
+<path pathLength="100" d="M22 80C23 58 35 40 64 27"/>
+<path pathLength="100" transform="translate(22.5 70) rotate(-120)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(23.5 64) rotate(-15)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(27.5 53) rotate(-110)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(30 48) rotate(-5)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(37 40) rotate(-95)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(41 36.5) rotate(8)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(50 31.5) rotate(-75)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(54 30) rotate(15)" d="M0 0C2.4-2.4 5.6-2.7 8-1.3C5.6 1.1 2.4 1.6 0 0Z"/>
+</g><g fill="currentColor"><circle pathLength="100" cx="66.5" cy="25.8" r="1.3"/><circle pathLength="100" cx="70" cy="22" r="1"/><circle pathLength="100" cx="16" cy="88" r="1"/></g></symbol>
+<symbol id="amp" viewBox="0 0 120 24"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+<path pathLength="100" d="M6 12H38"/><path pathLength="100" transform="translate(30 12) rotate(-30)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/><path pathLength="100" transform="translate(26 12) rotate(30)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<g transform="matrix(-1 0 0 1 120 0)"><path pathLength="100" d="M6 12H38"/><path pathLength="100" transform="translate(30 12) rotate(-30)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/><path pathLength="100" transform="translate(26 12) rotate(30)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/></g></g></symbol>
+<symbol id="gift" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+<rect pathLength="100" x="12" y="30" width="40" height="26" rx="1.5"/><rect pathLength="100" x="8" y="22" width="48" height="8" rx="1.5"/><path pathLength="100" d="M29 22v34M35 22v34"/>
+<path pathLength="100" d="M32 22C27 12 17 10 17.5 16S27 21 32 22Z"/><path pathLength="100" d="M32 22C37 12 47 10 46.5 16S37 21 32 22Z"/><path pathLength="100" d="M30 23 25 31M34 23 39 31"/></g></symbol>
+<symbol id="monogram" viewBox="0 0 120 120"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round">
+<circle pathLength="100" cx="60" cy="60" r="52"/><circle pathLength="100" cx="60" cy="60" r="47" opacity=".45"/>
+<path pathLength="100" d="M60 113C40 113 22 100 16 80"/><path pathLength="100" d="M60 113C80 113 98 100 104 80"/>
+<path pathLength="100" transform="translate(22 92) rotate(-150)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(30 101) rotate(-170)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(41 108) rotate(170)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<g transform="matrix(-1 0 0 1 120 0)"><path pathLength="100" transform="translate(22 92) rotate(-150)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(30 101) rotate(-170)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/>
+<path pathLength="100" transform="translate(41 108) rotate(170)" d="M0 0C3-3 7-3.4 10-1.6C7 1.4 3 2 0 0Z"/></g>
+<path pathLength="100" d="M60 3.5 64 8 60 12.5 56 8Z"/></g></symbol>
 </svg>

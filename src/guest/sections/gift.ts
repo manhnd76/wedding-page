@@ -20,10 +20,15 @@ export function gift(p: PlannedSection): HTMLElement {
     const { openGiftSheet } = await import('./gift-sheet');
     openGiftSheet(accounts, btn);
   });
-  const box = ornament(ctx.resolved.ornamentUrl ?? '', 'gift', 'orn gift-art', 64, 64);
+  const songhy = ctx.resolved.ornamentSet === 'traditional';
+  const box = songhy
+    ? ornament(ctx.resolved.ornamentUrl ?? '', 'songhy', 'orn gift-art gift-songhy', 84, 64)
+    : ornament(ctx.resolved.ornamentUrl ?? '', 'gift', 'orn gift-art', 64, 64);
+  // R21: căn giữa tối đa ~3 dòng (34ch); dài hơn thì căn trái
+  const longMsg = nonEmpty(g.message) && (g.message.split(/\r?\n/).length > 3 || g.message.length > 34 * 3);
   box?.setAttribute('data-rv', 'ornament');
   return shell(p, { eyebrow: g.eyebrow, heading: g.heading },
     box,
-    nonEmpty(g.message) ? h('p', { class: 'gift-msg', 'data-rv': 'block' }, ...multiline(g.message)) : null,
+    nonEmpty(g.message) ? h('p', { class: `gift-msg${longMsg ? ' is-long' : ''}`, 'data-rv': 'block' }, ...multiline(g.message)) : null,
     btn);
 }

@@ -1,6 +1,6 @@
 import { capOr } from '../capabilities.ts';
 import type {
-  BurstOnOpen, Divider, FontId, OpenStyle, OrnamentSet, ParticleType, PhotoFrame, RevealAtom, RevealStyle, Texture, ThemeId,
+  BurstOnOpen, Divider, EnvelopeStyle, FontId, OpenStyle, OrnamentSet, ParticleType, PhotoFrame, RevealAtom, RevealStyle, Texture, ThemeId,
 } from '../config/enums.ts';
 import type { WeddingConfig } from '../config/types.ts';
 import { FONT_PRESET_MAP } from '../fonts/registry.ts';
@@ -12,6 +12,28 @@ export interface ResolvedTokens {
   primary: string; onPrimary: string; accent: string; accent2: string; primaryDecor: string;
   bg: string; surface: string; text: string; muted: string; line: string; lineStrong: string;
   overlay: string; success: string; danger: string;
+}
+
+/** Phong bì đã resolve (design-review-v1 4.3). */
+export interface ResolvedEnvelope {
+  style: EnvelopeStyle;
+  /** true = nhuộm theo token theme; false = bảng màu cố định của mẫu (kraft/song-hy/velvet trên theme sáng) */
+  themed: boolean;
+  /** màu giấy tự chọn (hex) + mực tự chọn theo tương phản; null = theo mẫu/theme */
+  paper: string | null;
+  ink: string | null;
+  guestOnFront: boolean;
+  liner: boolean;
+}
+
+/** Mẫu giữ màu cố định khi `color = "auto"` (velvet chỉ cố định khi theme sáng). */
+export function envelopeFixed(style: EnvelopeStyle, mode: 'light' | 'dark'): boolean {
+  return style === 'kraft' || style === 'song-hy' || (style === 'velvet' && mode === 'light');
+}
+
+/** Mực trên giấy tự chọn: đen ấm hoặc trắng, cái nào tương phản cao hơn (≥ 4.5:1 khi có thể). */
+export function inkOn(paper: string): string {
+  return contrast('#1F1A17', paper) >= contrast('#FFFFFF', paper) ? '#1F1A17' : '#FFFFFF';
 }
 
 export interface RevealPack { heading: RevealAtom; block: RevealAtom; image: RevealAtom; ornament: RevealAtom; stagger: number }
@@ -28,6 +50,7 @@ export interface ResolvedTheme {
   divider: Divider;
   openStyle: OpenStyle;
   burstOnOpen: BurstOnOpen;
+  envelope: ResolvedEnvelope;
   particles: { types: ParticleType[]; color: string; densityFactor: number };
   reveal: RevealPack & { style: RevealStyle };
   /** cảnh báo fallback (giá trị do config chọn mà bản hiện tại chưa có) */
@@ -100,6 +123,15 @@ export function resolveTheme(config: WeddingConfig, opts: ResolveOptions = {}): 
   const divider = pick('divider', config.sections.divider, preset.divider);
   const openStyle = pick('openStyle', config.cover.openStyle, preset.suggest.openStyle);
   const burstOnOpen = pick('burstOnOpen', config.effects.burst.onOpen, preset.suggest.burstOnOpen);
+  const ev = config.cover.envelope;
+  const envStyle = pick('envelopeStyle', ev.style, preset.suggest.envelopeStyle);
+  const paper = /^#[0-9a-f]{6}$/i.test(ev.color) ? ev.color.toUpperCase() : null;
+  const envelope: ResolvedEnvelope = {
+    style: envStyle,
+    themed: paper ? false : ev.color === 'theme' || !envelopeFixed(envStyle, mode),
+    paper, ink: paper ? inkOn(paper) : null,
+    guestOnFront: ev.guestOnFront, liner: ev.liner,
+  };
 
   // ---- hạt
   const pt = config.effects.particles;
@@ -123,7 +155,7 @@ export function resolveTheme(config: WeddingConfig, opts: ResolveOptions = {}): 
     tokens,
     fonts,
     fontScale: config.fonts.scaleStep === -1 ? 0.92 : config.fonts.scaleStep === 1 ? 1.08 : 1,
-    ornamentSet, texture, photoFrame, divider, openStyle, burstOnOpen,
+    ornamentSet, texture, photoFrame, divider, openStyle, burstOnOpen, envelope,
     particles: { types, color, densityFactor: preset.densityFactor ?? 1 },
     reveal: { style, heading: role('heading'), block: role('block'), image: role('image'), ornament: role('ornament'), stagger: pack.stagger },
     warnings,

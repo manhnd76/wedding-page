@@ -17,12 +17,15 @@ async function openCard(page: Page, url = '/?to=gia-%C4%91%C3%ACnh-anh-M%E1%BA%A
 }
 
 /** Theme đã resolve lúc build (config mẫu trong public/ là file người dùng sửa được - không ghim cứng theme). */
-async function builtTheme(): Promise<{ preset: string; tokens: { primary: string } }> {
+async function builtTheme(): Promise<{ preset: string; openStyle: string; envelope?: { style: string }; tokens: { primary: string } }> {
   const { readFileSync } = await import('node:fs');
   const html = readFileSync('dist/index.html', 'utf8');
   const m = /<script type="application\/json" id="wp-resolved">([\s\S]*?)<\/script>/.exec(html)!;
-  return JSON.parse(m[1]!) as { preset: string; tokens: { primary: string } };
+  return JSON.parse(m[1]!) as { preset: string; openStyle: string; envelope?: { style: string }; tokens: { primary: string } };
 }
+
+/** tên khách trên cover: mặt phong bì (`.env-guest`) hoặc thẻ (`.cv-guest`, kiểu mở khác) */
+const GUEST = '.env-guest, .cv-guest';
 
 type Snap = { bg: { x: number; y: number; a: number }[]; bursts: { x: number; y: number; a: number }[]; zones: unknown[]; running: boolean; frames: number };
 const snap = (page: Page) => page.evaluate(() => (window as unknown as { __wpFx?: { snapshot: () => Snap } }).__wpFx?.snapshot() ?? null);
@@ -30,7 +33,7 @@ const snap = (page: Page) => page.evaluate(() => (window as unknown as { __wpFx?
 test('cover: tên khách từ ?to=, chạm mở, landing hiện, không lỗi console', async ({ page }) => {
   const errors = watchConsole(page);
   await page.goto('/?to=gia-%C4%91%C3%ACnh-anh-M%E1%BA%A1nh');
-  await expect(page.locator('.cv-guest')).toHaveText('Gia đình anh Mạnh');
+  await expect(page.locator(GUEST)).toHaveText('Gia đình anh Mạnh');
   await expect(page.locator('#main')).toHaveAttribute('aria-hidden', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-theme', (await builtTheme()).preset);
   await page.locator('.cv-cta').click();
@@ -49,11 +52,11 @@ test('cover: tên khách từ ?to=, chạm mở, landing hiện, không lỗi co
 
 test('link /invite/<slug> và link mã hoá cho cùng kết quả', async ({ page }) => {
   await page.goto('/invite/c%C3%B4-ch%C3%BA--T%C6%B0');
-  await expect(page.locator('.cv-guest')).toHaveText('Cô chú-Tư');
+  await expect(page.locator(GUEST)).toHaveText('Cô chú-Tư');
   await page.goto('/?to=<script>alert(1)</script>');
-  await expect(page.locator('.cv-guest')).toHaveText('Scriptalert(1)/script');
+  await expect(page.locator(GUEST)).toHaveText('Scriptalert(1)/script');
   await page.goto('/?to=');
-  await expect(page.locator('.cv-guest')).toHaveText('Quý khách');
+  await expect(page.locator(GUEST)).toHaveText('Quý khách');
 });
 
 test('hạt nền cả trang: 0 hạt vẽ trong vùng form RSVP / lời chúc; dừng khi focus ô nhập', async ({ page }) => {
@@ -66,13 +69,24 @@ test('hạt nền cả trang: 0 hạt vẽ trong vùng form RSVP / lời chúc; 
       const r = e.getBoundingClientRect();
       return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
     }));
+  // vị trí hạt + vùng form đo trong CÙNG 1 lần evaluate (trang có thể còn đang cuộn mượt / tự cuộn vừa dừng)
+  const snapWithRects = () => page.evaluate(() => ({
+    s: (window as unknown as { __wpFx?: { snapshot: () => Snap } }).__wpFx?.snapshot() ?? null,
+    rects: Array.from(document.querySelectorAll('.gb-form, .gb-list, .rsvp-card, .ev-card')).map((e) => {
+      const r = e.getBoundingClientRect();
+      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    }),
+  }));
+  void zoneRects;
   let checked = 0;
   for (const target of ['#guestbook', '#rsvp', '#events']) {
     await page.locator(target).scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
+    // chờ cuộn đứng yên
+    let prevY = -1;
+    await expect.poll(async () => { const yy = await page.evaluate(() => window.scrollY); const same = yy === prevY; prevY = yy; return same; }, { intervals: [120] }).toBe(true);
+    await page.waitForTimeout(300);
     for (let i = 0; i < 25; i++) {
-      const s = await snap(page);
-      const rects = await zoneRects();
+      const { s, rects } = await snapWithRects();
       expect(s).not.toBeNull();
       for (const p of [...s!.bg, ...s!.bursts]) {
         if (p.a <= 0.01) continue; // không vẽ
@@ -140,6 +154,10 @@ test('reduced-motion: không tạo canvas, cover mở bằng fade', async ({ bro
   await page.waitForTimeout(800);
   await expect(page.locator('canvas.fx-canvas')).toHaveCount(0);
   await expect(page.locator('html')).toHaveAttribute('data-fx', 'reduced');
+  // tự cuộn: không tự chạy, nút ở trạng thái dừng (khách tự bấm được)
+  await expect(page.getByTestId('autoscroll-btn')).toHaveAttribute('aria-label', 'Tiếp tục tự cuộn');
+  await page.waitForTimeout(3200);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
   expect(errors).toEqual([]);
   await ctx.close();
 });
@@ -179,5 +197,89 @@ test('CSP production (dist/_headers): không vi phạm, theme inline áp dụng 
   await page.locator('.gift-btn').click();
   await expect(page.locator('.qr-box canvas')).toHaveCount(1);
   await page.keyboard.press('Escape');
+  expect(errors).toEqual([]);
+});
+
+test.describe('360×740', () => {
+  test.use({ viewport: { width: 360, height: 740 } });
+
+  test('phong bì ngang: tên cặp đôi ở trên, "Kính gửi + tên khách" trên mặt phong bì; ~2s, không khung nào bị cắt', async ({ page }) => {
+    const built = await builtTheme();
+    test.skip(built.openStyle !== 'envelope', `config mẫu đang dùng kiểu mở ${built.openStyle}`);
+    const errors = watchConsole(page);
+    await page.goto('/?to=gia-%C4%91%C3%ACnh-anh-M%E1%BA%A1nh');
+    await expect(page.locator('.cv-cta')).toBeEnabled({ timeout: 6000 });
+    await expect(page.locator('.cover')).toHaveAttribute('data-env', built.envelope!.style);
+    await expect(page.locator('.env-prefix')).toHaveText('Kính gửi');
+    await expect(page.locator('.env-guest')).toHaveText('Gia đình anh Mạnh');
+    const box = async (sel: string) => (await page.locator(sel).first().boundingBox())!;
+    const names = await box('.cv-head .cv-names');
+    const env = await box('.cv-env');
+    expect(names.y + names.height).toBeLessThanOrEqual(env.y + 1); // tên cặp đôi NGOÀI, phía trên phong bì
+    expect(env.width / env.height).toBeGreaterThan(1.35); // phong bì ngang 10:7
+    const inner = await box('.cv-inner');
+    expect(inner.y).toBeGreaterThanOrEqual(0);
+    expect(inner.y + inner.height).toBeLessThanOrEqual(740);
+
+    // chạm mở rồi dừng mọi animation, tua từng 50ms để đo (không phụ thuộc tốc độ máy)
+    const total = await page.evaluate(() => {
+      (document.querySelector('.cv-cta') as HTMLElement).click();
+      const all = document.getAnimations().filter((a) => ((a.effect as KeyframeEffect | null)?.target as Element | null)?.closest('.cover'));
+      all.forEach((a) => a.pause());
+      return Math.max(...all.map((a) => Number(a.effect?.getComputedTiming().endTime ?? 0)));
+    });
+    expect(total).toBeGreaterThan(1600);
+    expect(total).toBeLessThanOrEqual(2400);
+    const frames = await page.evaluate((end) => {
+      const out: { t: number; top: number; bottom: number; left: number; right: number }[] = [];
+      for (let t = 0; t <= end; t += 50) {
+        document.getAnimations().filter((a) => ((a.effect as KeyframeEffect | null)?.target as Element | null)?.closest('.cover')).forEach((a) => { a.currentTime = t; });
+        const r = document.querySelector('.cv-card')!.getBoundingClientRect();
+        out.push({ t, top: r.top, bottom: r.bottom, left: r.left, right: r.right });
+      }
+      return out;
+    }, total);
+    for (const f of frames) {
+      expect(f.top, `t=${f.t}`).toBeGreaterThanOrEqual(-0.5);
+      expect(f.bottom, `t=${f.t}`).toBeLessThanOrEqual(740.5);
+      expect(f.left, `t=${f.t}`).toBeGreaterThanOrEqual(-0.5);
+      expect(f.right, `t=${f.t}`).toBeLessThanOrEqual(360.5);
+    }
+    // thẻ kết thúc ở giữa màn
+    const last = frames[frames.length - 1]!;
+    expect(Math.abs((last.top + last.bottom) / 2 - 370)).toBeLessThan(12);
+    await page.evaluate(() => document.getAnimations().forEach((a) => a.play()));
+    await expect(page.locator('.cover')).toHaveCount(0, { timeout: 4000 });
+    expect(errors).toEqual([]);
+  });
+});
+
+test('tự cuộn: chạy sau khi mở, dừng hẳn khi wheel / chạm, nút Tiếp tục chạy lại', async ({ page }) => {
+  const errors = watchConsole(page);
+  await openCard(page);
+  const btn = page.getByTestId('autoscroll-btn');
+  await expect(btn).toHaveAttribute('aria-label', 'Dừng tự cuộn', { timeout: 5000 });
+  const y = () => page.evaluate(() => Math.round(window.scrollY));
+  await expect.poll(y, { timeout: 10_000 }).toBeGreaterThan(30);
+  // wheel -> dừng hẳn + toast lần đầu
+  await page.mouse.move(180, 400);
+  await page.mouse.wheel(0, 40);
+  await expect(btn).toHaveAttribute('aria-label', 'Tiếp tục tự cuộn');
+  await expect(page.locator('.toast')).toContainText('Đã dừng tự cuộn');
+  await page.waitForTimeout(400);
+  const y1 = await y();
+  await page.waitForTimeout(2500);
+  expect(await y()).toBe(y1); // không tự tiếp tục
+  // bấm Tiếp tục -> chạy lại ngay (không chờ startDelayMs)
+  await btn.click();
+  await expect(btn).toHaveAttribute('aria-label', 'Dừng tự cuộn');
+  await expect.poll(y, { timeout: 6000 }).toBeGreaterThan(y1 + 20);
+  // chạm (touchstart) ở lề trang -> dừng
+  await page.touchscreen.tap(6, 420);
+  await expect(btn).toHaveAttribute('aria-label', 'Tiếp tục tự cuộn');
+  await page.waitForTimeout(300);
+  const y2 = await y();
+  await page.waitForTimeout(2000);
+  expect(await y()).toBe(y2);
   expect(errors).toEqual([]);
 });

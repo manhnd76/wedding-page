@@ -62,6 +62,14 @@ export const OPEN_STYLES = [
 ] as const;
 export type OpenStyle = (typeof OPEN_STYLES)[number];
 
+/** Mẫu phong bì (skin của kiểu mở `envelope`) - design-review-v1 mục 4 (v2.1). */
+export const ENVELOPE_STYLES = ['classic', 'kraft', 'song-hy', 'lace', 'minimal', 'velvet'] as const;
+export type EnvelopeStyle = (typeof ENVELOPE_STYLES)[number];
+
+/** Tự động cuộn: flow = dừng ngắn đầu mỗi section; steady = chạy đều (design-review-v1 mục 5). */
+export const AUTO_SCROLL_MODES = ['flow', 'steady'] as const;
+export type AutoScrollMode = (typeof AUTO_SCROLL_MODES)[number];
+
 export const COVER_BACKGROUNDS = ['paper', 'image'] as const;
 export type CoverBackground = (typeof COVER_BACKGROUNDS)[number];
 

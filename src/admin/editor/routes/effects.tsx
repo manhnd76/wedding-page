@@ -5,12 +5,16 @@
  */
 import { CAPABILITIES } from '@shared/capabilities';
 import type { OpenStyle, ParticleType } from '@shared/config/enums';
+import type { WeddingConfig } from '@shared/config/types';
 import { PRESETS } from '@shared/theme/presets';
 import { resolveTheme } from '@shared/theme/resolve';
 import type { RouteProps } from '../editor';
 import { useStore } from '../../state/store';
-import { Details, Segmented, Select, Toggle } from '../../ui/ui';
+import { Details, NumberField, Segmented, Select, Toggle } from '../../ui/ui';
+import { AUTO_SCROLL_LIMITS } from '@shared/config/merge';
+import { EnvelopeGallery } from '../envelope-gallery';
 
+const SPEEDS = [{ value: '32', label: 'Chậm' }, { value: '45', label: 'Vừa' }, { value: '64', label: 'Nhanh' }, { value: 'custom', label: 'Tuỳ chỉnh' }];
 const OPEN_LABEL: Record<string, string> = { envelope: 'Phong bì', 'card-flip': 'Lật thiệp', 'fade-zoom': 'Mờ dần', none: 'Không hiệu ứng' };
 const OPEN_COST: Record<string, 'Thấp' | 'Vừa' | 'Cao'> = { envelope: 'Vừa', 'card-flip': 'Vừa', 'fade-zoom': 'Thấp', none: 'Thấp', 'light-gather': 'Cao' };
 const PARTICLE_LABEL: Record<string, string> = { 'petal-rose': 'Cánh hồng', heart: 'Tim', 'petal-peach': 'Hoa đào', 'gold-dust': 'Bụi vàng', firefly: 'Đom đóm' };
@@ -64,6 +68,16 @@ export default function EffectsRoute({ store, preview }: RouteProps) {
         })}
       </div>
 
+      {r.openStyle === 'envelope' && (
+        <EnvelopeGallery draft={draft} r={r}
+          pick={(style, label, color) => {
+            store.setPath('cover.envelope.style', style);
+            if (color !== undefined) store.setPath('cover.envelope.color', color);
+            setTimeout(() => preview.replay('cover', `Mở thiệp · ${label}`), 0);
+          }}
+          setPath={(path, v) => set(path, v, 'cover', 'Mở thiệp')} />
+      )}
+
       <Select label="Sau khi mở" value={e.burst.onOpen}
         options={[{ value: 'theme', label: `Theo theme (${BURST_LABEL[r.burstOnOpen] ?? r.burstOnOpen})` }, ...(CAPABILITIES.burstOnOpen.supported as readonly string[]).map((v) => ({ value: v, label: BURST_LABEL[v] ?? v }))]}
         onChange={(v) => set('effects.burst.onOpen', v, 'cover', 'Mở thiệp + hiệu ứng sau khi mở')} />
@@ -98,6 +112,8 @@ export default function EffectsRoute({ store, preview }: RouteProps) {
         ))}
       </div>
 
+      <AutoScrollBlock e={e} set={(path, v) => store.setPath(path, v)} replay={() => preview.replay('autoscroll', 'Tự cuộn')} />
+
       <h2>Chi tiết nhỏ</h2>
       <Select label="Kiểu số đếm ngược" value={draft.content.countdown.style}
         options={(CAPABILITIES.countdownStyle.supported as readonly string[]).map((v) => ({ value: v, label: v === 'flip' ? 'Lật số' : 'Đơn giản' }))}
@@ -114,6 +130,38 @@ export default function EffectsRoute({ store, preview }: RouteProps) {
         <Toggle label="Cho khách nút Bật/Tắt hiệu ứng" checked={e.guestToggle} onChange={(v) => store.setPath('effects.guestToggle', v)} />
       </Details>
       <p class="note">Bản hiện tại có {CAPABILITIES.openStyle.supported.length}/17 kiểu mở, {CAPABILITIES.particle.supported.length}/21 loại hạt, {CAPABILITIES.revealStyle.supported.length}/6 gói hiện nội dung; phần còn lại sẽ có ở bản sau.</p>
+    </section>
+  );
+}
+
+/** Khối "Tự động cuộn" (design-review-v1 5.4). */
+function AutoScrollBlock({ e, set, replay }: { e: WeddingConfig['effects']; set: (path: string, v: unknown) => void; replay: () => void }) {
+  const a = e.autoScroll;
+  const speedMode = ['32', '45', '64'].includes(String(a.speed)) ? String(a.speed) : 'custom';
+  const [lo, hi] = AUTO_SCROLL_LIMITS.startDelayMs;
+  return (
+    <section class="ablock" aria-labelledby="h-autoscroll">
+      <h2 id="h-autoscroll">Tự động cuộn</h2>
+      <Toggle label="Tự cuộn sau khi mở thiệp" checked={a.enabled} testId="as-enabled"
+        help="Khách chạm, cuộn hoặc bấm phím là dừng ngay; khách bấm ▶ để tiếp tục." onChange={(v) => set('effects.autoScroll.enabled', v)} />
+      {a.enabled && (
+        <>
+          <Segmented legend="Tốc độ" name="asspeed" value={speedMode} options={SPEEDS}
+            onChange={(v) => { if (v !== 'custom') set('effects.autoScroll.speed', Number(v)); else set('effects.autoScroll.speed', a.speed === 45 ? 50 : a.speed); }} />
+          {speedMode === 'custom' && (
+            <NumberField label="Tốc độ (px/giây)" value={a.speed} min={AUTO_SCROLL_LIMITS.speed[0]} max={AUTO_SCROLL_LIMITS.speed[1]}
+              onChange={(v) => set('effects.autoScroll.speed', Math.min(AUTO_SCROLL_LIMITS.speed[1], Math.max(AUTO_SCROLL_LIMITS.speed[0], Math.round(v))))} />
+          )}
+          <Toggle label="Dừng ngắn ở mỗi phần" checked={a.mode === 'flow'} help="Dừng khoảng 1,2 giây ở đầu mỗi phần như ngắt chương (đếm ngược dừng 2 giây)."
+            onChange={(v) => set('effects.autoScroll.mode', v ? 'flow' : 'steady')} />
+          <div class="field">
+            <label for="as-delay">Bắt đầu sau: {(a.startDelayMs / 1000).toLocaleString('vi-VN')} giây</label>
+            <input id="as-delay" class="range" type="range" min={lo} max={hi} step={500} value={a.startDelayMs}
+              onInput={(ev) => set('effects.autoScroll.startDelayMs', Number((ev.currentTarget as HTMLInputElement).value))} />
+          </div>
+          <button type="button" class="btn btn-secondary" data-testid="as-replay" onClick={replay}>↻ Phát lại tự cuộn</button>
+        </>
+      )}
     </section>
   );
 }

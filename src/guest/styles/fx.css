@@ -29,8 +29,8 @@
 .fam-rule[data-rva="svg-draw"]:not(.is-in), .tl-axis[data-rva="svg-draw"]:not(.is-in) { transform: scaleY(0); opacity: 1; }
 .fam-rule[data-rva="svg-draw"], .tl-axis[data-rva="svg-draw"] { transition: transform 900ms var(--ease-inout); }
 /* chữ ký viết tay: clip-path wipe, chừa ±0.3em cho dấu (design 4.12) */
-.ty-sig[data-rva="svg-draw"] { transition: clip-path 1800ms cubic-bezier(.55, .1, .35, 1), opacity 300ms; clip-path: inset(-.3em 0 -.3em 0); }
-.ty-sig[data-rva="svg-draw"]:not(.is-in) { clip-path: inset(-.3em 100% -.3em 0); opacity: 1; }
+.ty-sig[data-rva="svg-draw"] { transition: clip-path 1800ms cubic-bezier(.55, .1, .35, 1), opacity 300ms; clip-path: inset(-.3em -.2em -.3em -.2em); }
+.ty-sig[data-rva="svg-draw"]:not(.is-in) { clip-path: inset(-.3em 100% -.3em -.2em); opacity: 1; }
 .hero-names[data-rva] > span { display: inline-block; }
 /* stagger con trong hero/announcement */
 .hero-content > :nth-child(2) { --i: 1; } .hero-content > :nth-child(3) { --i: 2; } .hero-content > :nth-child(4) { --i: 3; }

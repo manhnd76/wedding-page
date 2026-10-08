@@ -1,22 +1,30 @@
 import type { ParticleKind } from '../kind';
 
-/** Cánh hồng cong 2 tông (design 5.7). */
+/** Trộn màu hex với trắng (t = tỉ lệ trắng). */
+const lighten = (hex: string, t: number) =>
+  /^#[0-9a-f]{6}$/i.test(hex)
+    ? `#${[1, 3, 5].map((i) => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - t) + 255 * t).toString(16).padStart(2, '0')).join('')}`
+    : hex;
+
+/** Cánh hồng (design-review-v1 R13): giọt nước ngược, đầu tròn rộng, gốc nhọn, mép trên có 1 khía; 2 lớp. */
+const PETAL = 'M10 23C4 18 1 12 2 7 3 2.5 7 1 10 3.5 13 1 17 2.5 18 7 19 12 16 18 10 23Z';
+
 export const kind: ParticleKind = {
   id: 'petal-rose', motion: 'fall', density: 1, size: [12, 22], speed: [28, 60], flip: true, spin: 1.2, natural: null,
-  draw(g, s, color, alt) {
-    const r = s / 2;
-    g.beginPath();
-    g.moveTo(0, -r);
-    g.bezierCurveTo(r * 0.95, -r * 0.7, r * 0.8, r * 0.55, 0, r);
-    g.bezierCurveTo(-r * 0.8, r * 0.55, -r * 0.95, -r * 0.7, 0, -r);
+  draw(g, s, color) {
+    const k = s / 24;
+    g.scale(k, k);
+    g.translate(-10, -12);
+    const p = new Path2D(PETAL);
     g.fillStyle = color;
-    g.fill();
+    g.fill(p);
+    // lớp sáng mix(accent, #fff, 35%) phủ ~40% diện tích phía trên
+    g.save();
     g.beginPath();
-    g.moveTo(0, -r * 0.8);
-    g.bezierCurveTo(r * 0.45, -r * 0.4, r * 0.35, r * 0.4, 0, r * 0.8);
-    g.fillStyle = alt;
-    g.globalAlpha = 0.45;
-    g.fill();
-    g.globalAlpha = 1;
+    g.rect(0, 0, 20, 10);
+    g.clip();
+    g.fillStyle = lighten(color, 0.35);
+    g.fill(p);
+    g.restore();
   },
 };

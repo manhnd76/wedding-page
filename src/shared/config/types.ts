@@ -1,6 +1,6 @@
 import type {
-  AlbumLayout, BodyFontId, BurstOnOpen, CountdownFireworks, CountdownStyle, CoupleOrder,
-  CoverBackground, Divider, FontPresetId, HeadingFontId, Intensity, OpenStyle, OrnamentSet,
+  AlbumLayout, AutoScrollMode, BodyFontId, BurstOnOpen, CountdownFireworks, CountdownStyle, CoupleOrder,
+  CoverBackground, Divider, EnvelopeStyle, FontPresetId, HeadingFontId, Intensity, OpenStyle, OrnamentSet,
   ParticleScope, ParticleType, PhotoFrame, RevealAtom, RevealStyle, ScriptFontId, SectionType,
   Texture, ThemeId, WishFly,
 } from './enums.ts';
@@ -85,7 +85,8 @@ export interface WeddingConfig {
     parallax: boolean;
     kenBurns: boolean;
     micro: { buttonShine: boolean; photoTilt: boolean; wishFly: WishFly; scrollProgress: boolean; coupleHeartTap: boolean };
-    autoScroll: { enabled: boolean; speed: number; startDelayMs: number };
+    /** v2.1: + mode, dwellMs (field mới có mặc định, không bump schemaVersion) */
+    autoScroll: { enabled: boolean; speed: number; startDelayMs: number; mode: AutoScrollMode; dwellMs: number };
   };
   music: { enabled: boolean; src: string | null; title: string; autoplayAfterOpen: boolean; loop: boolean; startAt: number };
   guest: { fromUrl: boolean; queryParam: string; pathPrefix: string; fallbackName: string; template: string; maxLength: number };
@@ -93,6 +94,14 @@ export interface WeddingConfig {
     enabled: boolean; openStyle: ThemeOr<OpenStyle>; background: CoverBackground; backgroundImage: ImageRef;
     eyebrow: string; dateText: string; monogram: string; guestPrefix: string; tapToOpenLabel: string;
     musicHint: string; showOpenedGreeting: boolean; openedGreeting: string; openedSubline: string;
+    /** v2.1: mẫu phong bì (chỉ dùng khi kiểu mở resolve ra `envelope`) */
+    envelope: {
+      style: ThemeOr<EnvelopeStyle>;
+      /** 'auto' = theo mẫu (cố định với kraft/song-hy/velvet); 'theme' = nhuộm theo theme; hex = màu giấy */
+      color: string;
+      guestOnFront: boolean;
+      liner: boolean;
+    };
   };
   sections: { items: SectionItem[]; showNumbers: boolean; divider: ThemeOr<Divider> };
   content: {

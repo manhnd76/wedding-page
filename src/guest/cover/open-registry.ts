@@ -6,7 +6,10 @@ import { runSteps, type OpenLevelCtx, type OpenRun } from './anim';
 
 export type PlayFn = (cover: HTMLElement, c: OpenLevelCtx) => OpenRun;
 
-export const OPEN_LOADERS: Record<string, () => Promise<{ play: PlayFn }>> = {
+/** Module kiểu mở: `prepare` (tuỳ chọn) dựng phần hình trước khi khách chạm (vd skin phong bì). */
+export interface OpenModule { play: PlayFn; prepare?: (cover: HTMLElement) => Promise<void> }
+
+export const OPEN_LOADERS: Record<string, () => Promise<OpenModule>> = {
   envelope: () => import('./styles/envelope'),
   'card-flip': () => import('./styles/card-flip'),
 };
@@ -18,13 +21,13 @@ export const fadeZoom: PlayFn = (cover, c) =>
 /** none / Tắt / reduced-motion: fade 200ms. */
 export const fade200: PlayFn = (cover) => runSteps([{ el: cover, frames: [{ opacity: 1 }, { opacity: 0 }], start: 0, dur: 200 }]);
 
-export async function loadOpenStyle(id: string): Promise<PlayFn | null> {
-  if (id === 'fade-zoom') return fadeZoom;
-  if (id === 'none') return fade200;
+export async function loadOpenModule(id: string): Promise<OpenModule | null> {
+  if (id === 'fade-zoom') return { play: fadeZoom };
+  if (id === 'none') return { play: fade200 };
   const l = OPEN_LOADERS[id];
   if (!l) return null;
   try {
-    return (await l()).play;
+    return await l();
   } catch {
     return null; // lỗi mạng -> caller dùng fade-zoom
   }

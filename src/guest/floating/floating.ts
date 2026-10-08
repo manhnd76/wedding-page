@@ -2,7 +2,7 @@
  * Thành phần nổi (design 6.1, 7): nút nhạc (đĩa than) + scroll-top (cột phải),
  * pill hành động nhanh (trái dưới) + menu nhanh có "Bật/Tắt hiệu ứng".
  */
-import { closeOverlay, ctx, on, openOverlay } from '../context';
+import { closeOverlay, ctx, emit, on, openOverlay } from '../context';
 import { h, trapFocus } from '../dom';
 import { icon, type IconName } from '../icons';
 import type { MusicPlayer, MusicState } from '../music/player';
@@ -50,7 +50,19 @@ export function mountFloating(music: MusicPlayer, visibleIds: Set<string>): void
       window.scrollTo({ top: 0, behavior: ctx.fx.state === 'reduced' ? 'auto' : 'smooth' });
       document.getElementById('hero-title')?.focus({ preventScroll: true });
     });
-    window.addEventListener('scroll', () => { top.hidden = window.scrollY < window.innerHeight * 1.5; }, { passive: true });
+    // R12: chỉ hiện khi khách ĐANG cuộn lên và đã qua 1.5 màn; đứng yên 2s thì ẩn; ẩn khi tự cuộn đang chạy (CSS)
+    let lastY = window.scrollY;
+    let idleT: ReturnType<typeof setTimeout> | null = null;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      const up = y < lastY - 2;
+      if (Math.abs(y - lastY) > 2) lastY = y;
+      if (y < window.innerHeight * 1.5) { top.hidden = true; return; }
+      if (!up) return;
+      top.hidden = false;
+      if (idleT) clearTimeout(idleT);
+      idleT = setTimeout(() => { top.hidden = true; }, 2000);
+    }, { passive: true });
     right.prepend(top);
   }
 
@@ -83,9 +95,13 @@ export function mountFloating(music: MusicPlayer, visibleIds: Set<string>): void
       ? h('button', { type: 'button', class: 'menu-it' }, icon('wand', 18), h('span', null, '')) : null;
     const syncFx = () => { if (fxBtn) fxBtn.querySelector('span')!.textContent = fxEnabled() ? 'Tắt hiệu ứng' : 'Bật hiệu ứng'; };
     syncFx();
+    // menu nhanh: "Tự cuộn: Bật/Tắt" (design-review-v1 5.2)
+    const autoBtn = ctx.config.effects.autoScroll.enabled
+      ? h('button', { type: 'button', class: 'menu-it', 'data-testid': 'menu-autoscroll' }, icon('playDown', 18), h('span', null, 'Tự cuộn: Bật')) : null;
+    on('autoscroll-change', (running) => { if (autoBtn) autoBtn.querySelector('span')!.textContent = running ? 'Tự cuộn: Tắt' : 'Tự cuộn: Bật'; });
     const menu = h('div', { class: 'menu', role: 'menu', hidden: true },
       ...items.map((m) => h('a', { class: 'menu-it', role: 'menuitem', href: `#${m.id}` }, icon(m.ic, 18), h('span', null, m.label))),
-      fxBtn);
+      autoBtn, fxBtn);
     let untrap: (() => void) | null = null;
     const closeMenu = (focusBack = true) => {
       if (menu.hidden) return;
@@ -107,6 +123,7 @@ export function mountFloating(music: MusicPlayer, visibleIds: Set<string>): void
     menu.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
     document.addEventListener('click', (e) => { if (!menu.hidden && !root.contains(e.target as Node)) closeMenu(false); });
     fxBtn?.addEventListener('click', () => { setGuestFx(!fxEnabled()); syncFx(); closeMenu(); });
+    autoBtn?.addEventListener('click', () => { closeMenu(); setTimeout(() => emit('autoscroll-toggle'), 0); });
     root.prepend(h('div', { class: 'fl-left' }, menu, pill));
 
     // ẩn pill khi section đích đang trong viewport; thu nhỏ khi cuộn xuống

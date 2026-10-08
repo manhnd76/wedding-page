@@ -54,7 +54,7 @@ textarea.input { min-height: 88px; resize: vertical; }
 .input-row { display: flex; gap: .4rem; align-items: center; }
 .dt-row { display: flex; gap: .5rem; flex-wrap: wrap; }
 .dt-row .input { width: auto; flex: 1 1 9rem; }
-.toggle { position: relative; display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; min-height: 44px; font-weight: 500; }
+.toggle, .field > label.toggle { position: relative; display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; min-height: 44px; font-weight: 500; }
 /* input thật phủ cả nhãn: vùng chạm lớn, trình đọc màn hình đọc role=switch */
 .toggle input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
 .toggle-track { width: 44px; height: 26px; border-radius: 13px; background: #b9bdbb; position: relative; flex: none; transition: background .15s; }
@@ -262,6 +262,18 @@ textarea.input { min-height: 88px; resize: vertical; }
 @keyframes o-fade { to { transform: scale(1.08); opacity: .1; } }
 @media (prefers-reduced-motion: reduce) { .ocard .omini * { animation: none !important; } }
 .ocard-name { font-size: .88rem; font-weight: 600; text-align: center; }
+/* mẫu phong bì (design-review-v1 4.5): 3 cột desktop, 2 cột mobile */
+.egrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 767px) { .egrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ecard { align-content: start; min-height: 150px; }
+.eposter { width: 100%; max-width: 132px; height: auto; aspect-ratio: 10 / 7; overflow: visible; }
+.ep-flap { transform-box: fill-box; transform-origin: 50% 0; }
+.ecard:hover .ep-flap, .ecard:focus-visible .ep-flap { animation: ep-open 1.2s ease-in-out 1 both; }
+@keyframes ep-open { 45%, 100% { transform: scaleY(-1); } }
+.ecard-badges { display: flex; flex-wrap: wrap; gap: .2rem; justify-content: center; }
+.ecard[aria-checked='true'] { background: var(--a-primary-soft); }
+.range { width: 100%; min-height: 44px; accent-color: var(--a-primary); }
+@media (prefers-reduced-motion: reduce) { .ecard .ep-flap { animation: none !important; } }
 
 /* ---------- links / backup / json */
 .table-wrap { overflow-x: auto; }

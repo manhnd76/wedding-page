@@ -87,7 +87,7 @@ export function watchTyping(): void {
 /** Toast (role=status) phía trên cụm nút nổi. */
 let toastEl: HTMLElement | null = null;
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
-export function toast(msg: string): void {
+export function toast(msg: string, ms = 2500): void {
   if (!toastEl) {
     toastEl = document.createElement('div');
     toastEl.className = 'toast';
@@ -98,5 +98,5 @@ export function toast(msg: string): void {
   toastEl.textContent = msg;
   toastEl.classList.add('is-on');
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl?.classList.remove('is-on'), 2500);
+  toastTimer = setTimeout(() => toastEl?.classList.remove('is-on'), ms);
 }
