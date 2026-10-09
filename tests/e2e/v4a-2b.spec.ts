@@ -50,7 +50,8 @@ async function tapAndWatch(page: Page): Promise<Watch> {
         const snap = w.__wpFx?.snapshot();
         if (snap) maxBursts = Math.max(maxBursts, snap.bursts.length);
         if (!c) { done(); return; }
-        for (const a of c.getAnimations({ subtree: true })) {
+        // chỉ animation của kiểu mở (WAAPI); bỏ CSS transition/animation (vd tên hiện dần khi font tải xong, nút "thở")
+        for (const a of c.getAnimations({ subtree: true }).filter((x) => !(x instanceof CSSTransition) && !(x instanceof CSSAnimation))) {
           total = Math.max(total, Number(a.effect?.getComputedTiming().endTime ?? 0) / Math.abs(a.playbackRate || 1));
           for (const k of (a.effect as KeyframeEffect).getKeyframes()) for (const p of Object.keys(k)) if (!['offset', 'computedOffset', 'easing', 'composite'].includes(p)) props.add(p);
         }
@@ -87,11 +88,21 @@ test.describe('13 kiểu mở - mức Vừa / tua nhanh / Nhẹ / Nhiều / Tắ
 
     test(`${id}: chạm lần 2 -> phần còn lại ≤ 300ms, cover gỡ ≤ 450ms`, async ({ page }) => {
       await open(page, { cover: { openStyle: id }, effects: { intensity: 'medium' } });
+      // mốc chạm lần 2 = click capture trên cover khi đang mở; cover gỡ = MutationObserver trên body
+      await page.evaluate(() => {
+        const w = window as unknown as { __ffGone: Promise<number> };
+        w.__ffGone = new Promise((res) => {
+          const cover = document.querySelector('.cover')!;
+          let t0 = 0;
+          cover.addEventListener('click', () => { if (cover.classList.contains('is-opening') && !t0) t0 = performance.now(); }, { capture: true });
+          new MutationObserver((_, mo) => { if (!cover.isConnected) { mo.disconnect(); res(performance.now() - t0); } }).observe(document.body, { childList: true });
+        });
+      });
       const rem = await remainingAfterFastForward(page, Math.round(DESIGN_MS[id]! * 0.3));
-      const t0 = Date.now();
-      await page.locator('.cover').waitFor({ state: 'detached', timeout: 2000 });
       expect(rem).toBeLessThanOrEqual(300);
-      expect(Date.now() - t0).toBeLessThanOrEqual(450);
+      // thời gian thật từ chạm lần 2 tới khi cover gỡ, đo TRONG trang (không cộng độ trễ vòng gọi của Playwright)
+      const gone = await page.evaluate(() => (window as unknown as { __ffGone: Promise<number> }).__ffGone);
+      expect(gone).toBeLessThanOrEqual(450);
     });
 
     test(`${id}: Nhẹ ngắn hơn Vừa, không hạt; Nhiều ≤ 2.4s (+ hạt nếu có)`, async ({ page }) => {
@@ -99,7 +110,8 @@ test.describe('13 kiểu mở - mức Vừa / tua nhanh / Nhẹ / Nhiều / Tắ
       const lo = await tapAndWatch(page);
       expect(lo.level).toBe('light');
       expect(lo.total).toBeLessThan(DESIGN_MS[id]!);
-      expect(lo.maxBursts).toBe(0);
+      // light-gather Nhẹ = fade-zoom + 12 hạt lấp lánh (design §2.8); kiểu khác Nhẹ không có hạt
+      expect(lo.maxBursts).toBe(id === 'light-gather' ? 12 : 0);
       expect(lo.viol).toEqual([]);
       await open(page, { cover: { openStyle: id }, effects: { intensity: 'high' } });
       const hi = await tapAndWatch(page);
@@ -128,7 +140,8 @@ test.describe('giảm chuyển động / máy yếu / module lỗi', () => {
       await page.waitForFunction(() => document.querySelector('.cover')?.classList.contains('is-opening'), null, { timeout: 8000 });
       const r = await page.evaluate(() => {
         const c = document.querySelector('.cover');
-        const total = Math.max(0, ...(c?.getAnimations({ subtree: true }) ?? []).map((a) => Number(a.effect?.getComputedTiming().endTime ?? 0)));
+        const anims = (c?.getAnimations({ subtree: true }) ?? []).filter((x) => !(x instanceof CSSTransition) && !(x instanceof CSSAnimation));
+        const total = Math.max(0, ...anims.map((a) => Number(a.effect?.getComputedTiming().endTime ?? 0)));
         return { total, level: (window as unknown as { __wpCover: { level: string } }).__wpCover.level };
       });
       expect(r.level).toBe('fade200');
@@ -181,7 +194,7 @@ test.describe('admin - gallery 17 kiểu mở', () => {
     await offline(page);
     await expect(page.locator('iframe.pv-frame.is-active')).toHaveCount(1);
     await page.goto('/admin/#/effects');
-    const cards = page.locator('.ogrid [role="radio"]');
+    const cards = page.locator('.ogrid[aria-label="Kiểu mở thiệp"] [role="radio"]');
     await expect(cards).toHaveCount(18);
     await expect(page.getByTestId('open-light-gather')).toContainText('Nặng ⚠');
     await expect(page.getByTestId('open-heavy-note')).toHaveCount(0);

@@ -86,6 +86,7 @@ export async function coverSparks(r: SparkReq): Promise<number> {
   if (!f || r.count <= 0) return 0;
   if (r.at) await new Promise((res) => setTimeout(res, r.at));
   f.setOverCover(true);
+  f.refreshZones(); // vùng dịu `.env-addr` / `.cv-plaque` (SOFT_SELECTOR) có trên cover
   if (!hooked.has(f)) { hooked.add(f); on('cover-gone', () => f.setOverCover(false)); }
   const o = r.origin instanceof Element ? (() => { const b = r.origin.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })() : r.origin;
   if (r.burst) {

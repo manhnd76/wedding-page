@@ -16,22 +16,12 @@ export interface OpenModule {
   dispose?: () => void;
 }
 
+/** 2 kiểu có từ v1 nằm ngay trong entry; 13 kiểu v4a-2b ở bảng loader lazy `open-loaders.ts` (giữ JS ban đầu của
+ *  cấu hình mặc định: bảng tên file băm của 13 kiểu ~0.6 KB gz không vào entry). Module kiểu đang dùng vẫn được plugin
+ *  `modulepreload`, nên bước tải bảng loader chỉ thêm 1 request nhỏ chạy song song với chờ font tên. */
 export const OPEN_LOADERS: Record<string, () => Promise<OpenModule>> = {
   envelope: () => import('./styles/envelope'),
   'card-flip': () => import('./styles/card-flip'),
-  curtain: () => import('./styles/curtain'),
-  'wax-seal': () => import('./styles/wax-seal'),
-  origami: () => import('./styles/origami'),
-  'double-door': () => import('./styles/double-door'),
-  'flower-gate': () => import('./styles/flower-gate'),
-  scroll: () => import('./styles/scroll'),
-  'card-3d': () => import('./styles/card-3d'),
-  'light-gather': () => import('./styles/light-gather'),
-  'gift-box': () => import('./styles/gift-box'),
-  'moon-gate': () => import('./styles/moon-gate'),
-  book: () => import('./styles/book'),
-  'ink-spread': () => import('./styles/ink-spread'),
-  polaroid: () => import('./styles/polaroid'),
 };
 
 /** fade-zoom: scale(1.08) + opacity 0, 700ms (Nhẹ 500ms). */
@@ -44,9 +34,9 @@ export const fade200: PlayFn = (cover) => runSteps([{ el: cover, frames: [{ opac
 export async function loadOpenModule(id: string): Promise<OpenModule | null> {
   if (id === 'fade-zoom') return { play: fadeZoom };
   if (id === 'none') return { play: fade200 };
-  const l = OPEN_LOADERS[id];
-  if (!l) return null;
   try {
+    const l = OPEN_LOADERS[id] ?? (await import('./open-loaders')).NEW_LOADERS[id];
+    if (!l) return null;
     return await l();
   } catch {
     return null; // lỗi mạng -> caller dùng fade-zoom
