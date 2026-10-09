@@ -1,0 +1,21 @@
+/* curtain (design-v4a-2bc §2.1): nếp vải = gradient CSS tĩnh; diềm + viền = mask SVG tô theo token */
+.cover[data-open="curtain"] { --op-fabric: var(--c-primary); --op-fabric-deep: var(--c-primary); }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .cover[data-open="curtain"] { --op-fabric: color-mix(in srgb, var(--c-primary) 88%, #000); --op-fabric-deep: color-mix(in srgb, var(--c-primary) 62%, #000); }
+  [data-mode="dark"] .cover[data-open="curtain"] { --op-fabric: color-mix(in srgb, #5A1E2A 80%, var(--c-bg)); --op-fabric-deep: color-mix(in srgb, #5A1E2A 55%, #000); }
+}
+.ct-l, .ct-r {
+  position: absolute; top: 0; bottom: 0; width: 51%;
+  background: linear-gradient(90deg, rgba(0,0,0,.22), rgba(0,0,0,0) 28%, rgba(255,255,255,.1) 52%, rgba(0,0,0,.14) 78%, rgba(0,0,0,.24)) 0 0 / 34px 100%, linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18)), var(--op-fabric);
+}
+.ct-l { left: 0; transform-origin: 0 50%; }
+.ct-r { right: 0; transform-origin: 100% 50%; }
+.ct-trim { top: 0; bottom: 0; width: 12px; background: var(--c-accent); -webkit-mask: url(../theme-assets/curtain/trim.svg) 0 0 / 12px auto repeat-y; mask: url(../theme-assets/curtain/trim.svg) 0 0 / 12px auto repeat-y; }
+.ct-l .ct-trim { right: 3px; }
+.ct-r .ct-trim { left: 3px; }
+.ct-val { position: absolute; left: 0; right: 0; top: 0; height: 64px; z-index: 1; }
+.ct-vf, .ct-vt { inset: 0; -webkit-mask-size: auto 100%; mask-size: auto 100%; -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; -webkit-mask-position: 50% 0; mask-position: 50% 0; }
+.ct-vf { background: var(--op-fabric-deep); -webkit-mask-image: url(../theme-assets/curtain/valance-fill.svg); mask-image: url(../theme-assets/curtain/valance-fill.svg); }
+.ct-vt { background: var(--c-accent); transform-origin: 50% 0; -webkit-mask-image: url(../theme-assets/curtain/valance-trim.svg); mask-image: url(../theme-assets/curtain/valance-trim.svg); }
+.is-opening .ct-l, .is-opening .ct-r { will-change: transform; }
+@media (min-width: 1024px) { .ct-val { height: 88px; } }

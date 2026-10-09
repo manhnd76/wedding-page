@@ -1,0 +1,18 @@
+/* card-3d (design-v4a-2bc §2.7): khung mặt thẻ = mask tô accent; bóng = phần tử radial riêng (không box-shadow động) */
+.c3 { position: relative; width: min(74vw, 290px, calc((100svh - 190px) * .714)); aspect-ratio: 300 / 420; perspective: 1000px; }
+.c3-tilt, .c3-rot, .c3-face { position: absolute; inset: 0; }
+.c3-tilt, .c3-rot { transform-style: preserve-3d; }
+.c3-face { border-radius: 10px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.c3-front { background: var(--c-surface); box-shadow: 0 1px 0 var(--c-line); padding: 12% 10%; gap: 6px; }
+.c3-front .cv-names { font-size: calc(clamp(30px, 9vw, 40px) * var(--fs-k)); }
+.c3-front .cv-head { gap: 2px; }
+.c3-back { background: var(--c-primary); transform: rotateY(180deg); display: grid; place-items: center; padding: 14%; }
+.c3-back .op-greet { color: var(--c-on-primary); }
+.c3-frame { inset: 0; background: var(--c-accent); -webkit-mask-image: url(../theme-assets/card-3d/card-frame.svg); mask-image: url(../theme-assets/card-3d/card-frame.svg); }
+.c3-div { width: 48px; height: 1px; background: var(--c-accent); flex: none; }
+.c3-sh { position: absolute; left: 10%; right: 10%; bottom: -26px; height: 22px; background: radial-gradient(closest-side, rgba(0,0,0,.35), transparent); opacity: .35; }
+.c3-sheen { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, transparent 60%); opacity: 0; pointer-events: none; }
+.c3-sway { animation: c3-sway 3s var(--ease-inout) 1; }
+@keyframes c3-sway { 25% { transform: rotateY(3deg); } 75% { transform: rotateY(-3deg); } }
+@media (prefers-reduced-motion: reduce) { .c3-sway { animation: none; } }
+.is-opening .c3-rot { will-change: transform; }

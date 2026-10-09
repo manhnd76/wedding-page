@@ -18,7 +18,8 @@ export function insideAny(x: number, y: number, rects: readonly Rect[], margin =
  * "Vùng dịu" (design-review-v1 R03, decisions 2026-10-08): chữ trọng tâm (tên khách, tên cặp đôi, lời mời,
  * tiêu đề section đang hiện). Hạt đi vào vùng + 8px thì alpha kẹp về ≤ 0.3 (fade 200ms) - không ẩn hẳn.
  */
-export const SOFT_SELECTOR = '.hero-names, .ann-names, .ann-invite, .sec-head';
+// v4a-2b (orchestrator cho phép 1 hunk): `.env-addr` / `.cv-plaque` = tên khách / biển chữ trên cover khi hạt chạy trên cover (E12, kiểu mở mức Nhiều)
+export const SOFT_SELECTOR = '.hero-names, .ann-names, .ann-invite, .sec-head, .env-addr, .cv-plaque';
 export const SOFT_MARGIN = 8;
 export const SOFT_ALPHA = 0.3;
 export const MAX_SOFT_ZONES = 4;

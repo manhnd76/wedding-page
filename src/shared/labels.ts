@@ -10,6 +10,9 @@ import type {
 import { THEME_IDS } from './config/enums.ts';
 import { PRESETS } from './theme/presets.ts';
 import { isSupported, type CapabilityKey } from './capabilities.ts';
+// [v4a-1] imports >>>
+import type { MotifIntensity, MotifMotion, MotifPlacement, MotifSet } from './config/enums.ts';
+// [v4a-1] imports <<<
 
 /** Tên theme lấy từ preset (một nguồn). */
 export const THEME_LABEL = Object.fromEntries(THEME_IDS.map((id) => [id, PRESETS[id].name])) as Record<ThemeId, string>;
@@ -77,6 +80,22 @@ export const FONT_PRESET_LABEL: Record<FontPresetId | 'theme', string> = {
   theme: 'Theo theme', 'co-dien': 'Cổ điển', 'thanh-lich': 'Thanh lịch', 'am-ap': 'Ấm áp', 'bien-tap': 'Biên tập', 'truyen-thong': 'Truyền thống',
 };
 
+// [v4a-1] >>>
+/** B2 hoạ tiết nền (solution Rev 5 mục 10.6). */
+export const MOTIF_SET_LABEL: Record<MotifSet | 'none', string> = {
+  none: 'Không dùng', 'dong-son': 'Trống đồng', 'may-cat-tuong': 'Mây cát tường', 'song-nuoc': 'Sóng nước', 'hoa-sen': 'Hoa sen',
+  'chu-hy': 'Song Hỷ', 'art-deco': 'Art-deco', 'la-canh': 'Cành lá',
+};
+export const MOTIF_PLACEMENT_LABEL: Record<MotifPlacement, string> = {
+  pattern: 'Phủ nền', corners: 'Góc', title: 'Sau tiêu đề', band: 'Dải viền', hero: 'Nền Hero',
+};
+export const MOTIF_INTENSITY_LABEL: Record<MotifIntensity, string> = { light: 'Nhạt', medium: 'Vừa', strong: 'Đậm' };
+export const MOTIF_MOTION_LABEL: Record<MotifMotion, string> = { auto: 'Theo mức hiệu ứng', off: 'Tắt' };
+// [v4a-1] <<<
+
+// [v4a-2a] >>>
+// [v4a-2a] <<<
+
 /** Giá trị enum theo đường dẫn config (diff, nhãn chung). */
 const BY_PATH: Record<string, Record<string, string>> = {
   'theme.preset': THEME_LABEL,
@@ -105,6 +124,17 @@ const BY_PATH: Record<string, Record<string, string>> = {
   'content.couple.order': { 'groom-first': 'Chú rể trước', 'bride-first': 'Cô dâu trước' },
   'content.album.layout': { masonry: 'So le', grid: 'Lưới', carousel: 'Băng chuyền' },
   'fonts.preset': FONT_PRESET_LABEL,
+  // [v4a-1] >>>
+  'theme.motif.set': MOTIF_SET_LABEL,
+  'theme.motif.placements': MOTIF_PLACEMENT_LABEL,
+  'theme.motif.placements[0]': MOTIF_PLACEMENT_LABEL,
+  'theme.motif.placements[1]': MOTIF_PLACEMENT_LABEL,
+  'theme.motif.intensity': MOTIF_INTENSITY_LABEL,
+  'theme.motif.motion': MOTIF_MOTION_LABEL,
+  // [v4a-1] <<<
+
+  // [v4a-2a] >>>
+  // [v4a-2a] <<<
 };
 
 /** Nhãn của 1 giá trị enum tại `path`; "theme" -> "Theo theme". Không biết -> undefined. */

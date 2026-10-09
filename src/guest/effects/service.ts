@@ -4,7 +4,7 @@
  */
 import { ctx, emit, fxBlocked } from '../context';
 import { EffectRegistry } from './registry';
-import { MATRIX, burstCount, computeIntensity, type FxState } from './intensity';
+import { MATRIX, computeIntensity, type FxState } from './intensity';
 import { prepareReveal, revealAll, startReveal } from './reveal';
 import { startPerfProbe } from './perf-probe';
 import type { ParticleField } from './particles/field';
@@ -88,11 +88,9 @@ export async function afterOpen(): Promise<void> {
   const f = await getField();
   if (!f) return;
   const burst = ctx.resolved.burstOnOpen;
-  if (burst === 'petals' && (!ctx.preview || ctx.preview.burst)) {
-    const n = burstCount('petals', state);
-    const { playPetals } = await import('./burst/petals');
-    EffectRegistry.register('burst', { play: () => playPetals(f, n, kindCount) });
-    playPetals(f, n, kindCount);
+  // burst "Sau khi mở": registry theo id (burst/registry.ts, chunk lười), tải lúc rảnh, bỏ nếu về trễ
+  if (burst !== 'none' && (!ctx.preview || ctx.preview.burst)) {
+    void import('./burst/registry').then((m) => m.scheduleOnOpenBurst(f, burst, state, kindCount)).catch(() => undefined);
   }
   f.start();
   if (ctx.config.effects.autoDowngrade) {

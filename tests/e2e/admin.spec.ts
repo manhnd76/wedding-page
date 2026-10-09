@@ -6,7 +6,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { ADMIN_PASSWORD, fresh, login, offline, openConnect } from './helpers';
 
-const DEV = 'http://localhost:5175';
+const DEV = `http://localhost:${process.env.PW_DEV_PORT ?? 5175}`;
 
 test.use({ viewport: { width: 1360, height: 900 }, isMobile: false, hasTouch: false, deviceScaleFactor: 1 });
 

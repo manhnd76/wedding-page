@@ -14,7 +14,8 @@
 import type { EnvelopeStyle } from '@shared/config/enums';
 import { ctx } from '../../context';
 import { EASE_INOUT, EASE_OUT, runSteps, type OpenLevelCtx, type OpenRun, type Step } from '../anim';
-import type { EnvelopeSkin, EnvParts } from '../skins/kit';
+import type { OpenPrepareInfo } from '../open-registry';
+import { DEFAULT_RICH, type EnvelopeSkin, type EnvParts, type SparkPlan } from '../skins/kit';
 
 export const SKIN_LOADERS: Record<EnvelopeStyle, () => Promise<{ skin: EnvelopeSkin }>> = {
   classic: () => import('../skins/classic'),
@@ -26,6 +27,13 @@ export const SKIN_LOADERS: Record<EnvelopeStyle, () => Promise<{ skin: EnvelopeS
 };
 
 let current: EnvelopeSkin | null = null;
+let sparks: Promise<typeof import('../open-kit/sparks')> | null = null;
+
+/** Hạt E12 ở mức đang chạy: Nhiều = rich() của skin (mặc định 12 bụi vàng); lace có cả ở mức Vừa (6 cánh). */
+export function richPlan(skin: EnvelopeSkin | null, style: string, level: 'light' | 'full' | 'full+'): SparkPlan[] {
+  if (level === 'light' || (level === 'full' && style !== 'lace')) return [];
+  return skin?.rich ? skin.rich(level) : [DEFAULT_RICH];
+}
 
 function parts(cover: HTMLElement): EnvParts | null {
   const q = (s: string) => cover.querySelector<HTMLElement>(s);
@@ -38,10 +46,15 @@ function parts(cover: HTMLElement): EnvParts | null {
 }
 
 /** Tải skin của mẫu đang chọn và vẽ vào các lớp (trước khi khách chạm). */
-export async function prepare(cover: HTMLElement): Promise<void> {
+export async function prepare(cover: HTMLElement, info?: OpenPrepareInfo): Promise<void> {
   const p = parts(cover);
   if (!p) return;
   const style = (ctx.resolved.envelope?.style ?? 'classic') as EnvelopeStyle;
+  // E12: tải sẵn canvas hạt (field) để lúc chạm đã có - chỉ khi mức đang chạy có hạt
+  if (info && (info.mode === 'full+' || (info.mode === 'full' && style === 'lace'))) {
+    sparks = import('../open-kit/sparks');
+    void sparks.then((m) => m.prepareSparks()).catch(() => undefined);
+  }
   const load = SKIN_LOADERS[style] ?? SKIN_LOADERS.classic;
   const mod = await load().catch(() => SKIN_LOADERS.classic());
   current = mod.skin;
@@ -68,6 +81,11 @@ export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   const vh = window.innerHeight || document.documentElement.clientHeight;
   const { pull, center } = cardTravel({ top: r.top, height: r.height }, vh);
   const unlock = current?.unlock(p, light) ?? { steps: [{ el: p.seal, frames: [{ opacity: 1 }, { opacity: 0 }], start: 0, dur: 160 }], flapAt: light ? 0 : 180 };
+  // E12: hạt chạy song song trên canvas nâng lên trên cover, không đổi tổng thời lượng
+  const plan = richPlan(current, ctx.resolved.envelope?.style ?? 'classic', c.level);
+  if (plan.length && sparks) {
+    void sparks.then((m) => { for (const x of plan) void m.coverSparks({ colors: x.kind ? m.gold() : undefined, ...x, origin: p.seal, at: x.at / c.timeScale }); }).catch(() => undefined);
+  }
   const steps: Step[] = [...unlock.steps];
   const flapAt = unlock.flapAt;
   const flapDur = light ? 320 : unlock.flapDur ?? 540;

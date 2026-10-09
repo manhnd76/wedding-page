@@ -72,6 +72,8 @@ export class ParticleField {
   private zonesDirty = true;
   private io: IntersectionObserver | null = null;
   private ro: ResizeObserver | null = null;
+  /** hạt chạy TRÊN cover (kiểu mở có hạt, E12): bỏ điều kiện `!ctx.opened`, chỉ dừng khi tab ẩn */
+  private overCover = false;
   timeScale = 1;
   /** số frame đã vẽ (debug/test) */
   frames = 0;
@@ -191,6 +193,8 @@ export class ParticleField {
 
   // ---------- mục tiêu số hạt
   target(): number {
+    // hạt nền không chạy khi cover còn hiện (kể cả chế độ over-cover: chỉ burst)
+    if (!ctx.opened) return 0;
     if (!this.o.background || this.bgOff || !this.o.kinds.length) return 0;
     const typeFactor = this.o.kinds.reduce((s, k) => s + k.density, 0) / this.o.kinds.length;
     const t = targetParticleCount(this.o.state, this.o.lowEnd, typeFactor, this.o.themeDensity, this.density.density);
@@ -253,13 +257,29 @@ export class ParticleField {
     this.ensureRunning();
   }
 
+  /**
+   * Bật/tắt chế độ hạt TRÊN cover (solution-v4a-2bc.md 0.4): canvas thêm class `is-over-cover`
+   * (CSS đưa lên trên `--z-cover`), vòng lặp chỉ dừng khi tab ẩn. Tắt khi cover đã gỡ.
+   */
+  setOverCover(on: boolean): void {
+    if (this.overCover === on) return;
+    this.overCover = on;
+    this.canvas.classList.toggle('is-over-cover', on);
+    if (this.blocked()) this.stop();
+    else this.ensureRunning();
+  }
+
+  private blocked(): boolean {
+    return this.overCover ? document.hidden : fxBlocked();
+  }
+
   private syncPause() {
-    if (fxBlocked()) this.stop();
+    if (this.blocked()) this.stop();
     else { this.ramp = 0; this.ensureRunning(); }
   }
 
   private ensureRunning() {
-    if (this.running || fxBlocked()) return;
+    if (this.running || this.blocked()) return;
     if (!this.bursts.length && this.target() === 0 && !this.bg.length) return;
     this.running = true;
     this.canvas.classList.remove('is-paused');

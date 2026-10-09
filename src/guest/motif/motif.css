@@ -1,0 +1,109 @@
+/*
+ * Hoạ tiết nền B2 (design 1.7, solution Rev 5 mục 10.5f) - chunk CSS lười đi kèm motif.ts (bản designer
+ * assets/v4a-1/motifs/motifs.css, url trỏ src/guest/theme-assets/motifs). Phần tử rỗng tô --c-accent + mask-image.
+ * Ảnh chỉ tải khi rule [data-motif=<bộ>] khớp và phần tử tồn tại -> chỉ mảnh của kiểu đặt đang dùng.
+ * Lớp trong section (.sec isolation, textures.css): nền -> texture ::before (z 0) -> .mtf (z 0) -> .sec-in (z 1).
+ * --motif-cap do theme inline (themeCssVars) - KHÔNG đặt mặc định ở đây (stylesheet nạp sau sẽ đè giá trị theme).
+ */
+[data-mtf-level="light"] { --mtf-level: .10; }
+[data-mtf-level="medium"] { --mtf-level: .18; }
+[data-mtf-level="strong"] { --mtf-level: .28; }
+
+.mtf { position: absolute; z-index: 0; pointer-events: none; background: var(--c-accent);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: 50% 50%; mask-position: 50% 50%;
+  -webkit-mask-size: contain; mask-size: contain; }
+
+/* 1. pattern: tile lặp phủ cả section - nằm sau chữ -> chịu cap */
+.mtf--pattern { inset: 0; opacity: min(var(--mtf-level, .18), var(--motif-cap, 0));
+  -webkit-mask-repeat: repeat; mask-repeat: repeat; -webkit-mask-position: 50% 0; mask-position: 50% 0;
+  -webkit-mask-size: var(--mtf-tile, 160px) auto; mask-size: var(--mtf-tile, 160px) auto; }
+@media (min-width: 1024px) { .mtf--pattern { -webkit-mask-size: calc(var(--mtf-tile, 160px) * 1.25) auto; mask-size: calc(var(--mtf-tile, 160px) * 1.25) auto; } }
+
+/* 2. corners: 2 góc chéo clamp(72px, 24vw, 180px) - có thể chạm mép tiêu đề -> chịu cap; hiện dần khi section vào viewport */
+.mtf--corner { --s: clamp(72px, 24vw, 180px); width: var(--s); height: var(--s); opacity: min(calc(var(--mtf-level, .18) * 3), var(--motif-cap, 0), .8);
+  transition: opacity 700ms var(--ease-out, ease-out); }
+.mtf--corner:not(.is-in) { opacity: 0; }
+.mtf--corner.tl { top: 0; left: 0; }
+.mtf--corner.br { bottom: 0; right: 0; transform: scale(-1, -1); }
+.mtf--corner.tr { top: 0; right: 0; transform: scaleX(-1); }
+.mtf--corner.bl { bottom: 0; left: 0; transform: scaleY(-1); }
+
+/* 3. title: medallion sau tiêu đề. z -1 trong ngữ cảnh xếp lớp của .sec-in (z 1): nằm dưới MỌI nội dung của section
+   (tiêu đề, ảnh, chữ phía dưới tiêu đề) nhưng trên nền + texture. */
+.sec-head { position: relative; }
+.mtf--title { z-index: -1; left: 50%; top: 50%; width: clamp(200px, 58vw, 300px); aspect-ratio: 1; translate: -50% -50%; opacity: min(var(--mtf-level, .18), var(--motif-cap, 0)); }
+
+/* 4. band: dải viền mép trên section tone-surface + footer - trong padding -> không chịu cap */
+.mtf--band { --band-period: 144px; left: 0; right: 0; top: 10px; height: 24px; opacity: min(calc(var(--mtf-level, .18) * 2.5), .7);
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; -webkit-mask-size: auto 100%; mask-size: auto 100%; -webkit-mask-position: 0 0; mask-position: 0 0; }
+@media (min-width: 1024px) { .mtf--band { --band-period: 192px; height: 32px; top: 14px; } }
+
+/* 5. hero: medallion lớn sau tên ở Hero/Cảm ơn KHÔNG ảnh - sau chữ -> chịu cap (cả 2 section đã overflow: hidden) */
+.mtf--hero { left: 50%; top: 50%; width: min(118vw, 760px); aspect-ratio: 1; translate: -50% -50%; opacity: min(var(--mtf-level, .18), var(--motif-cap, 0)); }
+
+/* ---------- ảnh theo bộ (chỉ rule khớp mới tải) ---------- */
+[data-motif="dong-son"] { --mtf-tile: 160px; }
+[data-motif="dong-son"] :is(.mtf--title, .mtf--hero) { -webkit-mask-image: url("../theme-assets/motifs/dong-son/medallion.svg"); mask-image: url("../theme-assets/motifs/dong-son/medallion.svg"); }
+/* dong-son không có corner.svg: góc = 1/4 mặt trống, tâm trống đúng đỉnh góc; 3 góc kia XOAY (không lật) để chim Lạc giữ chiều bay */
+[data-motif="dong-son"] .mtf--corner { -webkit-mask-image: url("../theme-assets/motifs/dong-son/medallion.svg"); mask-image: url("../theme-assets/motifs/dong-son/medallion.svg");
+  -webkit-mask-size: 200% 200%; mask-size: 200% 200%; -webkit-mask-position: 100% 100%; mask-position: 100% 100%; }
+[data-motif="dong-son"] .mtf--corner.tr { transform: rotate(90deg); }
+[data-motif="dong-son"] .mtf--corner.bl { transform: rotate(-90deg); }
+[data-motif="dong-son"] .mtf--band { -webkit-mask-image: url("../theme-assets/motifs/dong-son/band.svg"); mask-image: url("../theme-assets/motifs/dong-son/band.svg"); }
+[data-motif="dong-son"] .mtf--pattern { -webkit-mask-image: url("../theme-assets/motifs/dong-son/tile.svg"); mask-image: url("../theme-assets/motifs/dong-son/tile.svg"); }
+[data-motif="may-cat-tuong"] { --mtf-tile: 200px; }
+[data-motif="may-cat-tuong"] :is(.mtf--title, .mtf--hero) { -webkit-mask-image: url("../theme-assets/motifs/may-cat-tuong/medallion.svg"); mask-image: url("../theme-assets/motifs/may-cat-tuong/medallion.svg"); }
+[data-motif="may-cat-tuong"] .mtf--corner { -webkit-mask-image: url("../theme-assets/motifs/may-cat-tuong/corner.svg"); mask-image: url("../theme-assets/motifs/may-cat-tuong/corner.svg"); -webkit-mask-position: 0 0; mask-position: 0 0; }
+[data-motif="may-cat-tuong"] .mtf--band { -webkit-mask-image: url("../theme-assets/motifs/may-cat-tuong/band.svg"); mask-image: url("../theme-assets/motifs/may-cat-tuong/band.svg"); }
+[data-motif="may-cat-tuong"] .mtf--pattern { -webkit-mask-image: url("../theme-assets/motifs/may-cat-tuong/tile.svg"); mask-image: url("../theme-assets/motifs/may-cat-tuong/tile.svg"); }
+[data-motif="song-nuoc"] { --mtf-tile: 120px; }
+[data-motif="song-nuoc"] :is(.mtf--title, .mtf--hero) { -webkit-mask-image: url("../theme-assets/motifs/song-nuoc/medallion.svg"); mask-image: url("../theme-assets/motifs/song-nuoc/medallion.svg"); }
+[data-motif="song-nuoc"] .mtf--corner { -webkit-mask-image: url("../theme-assets/motifs/song-nuoc/corner.svg"); mask-image: url("../theme-assets/motifs/song-nuoc/corner.svg"); -webkit-mask-position: 0 0; mask-position: 0 0; }
+[data-motif="song-nuoc"] .mtf--band { -webkit-mask-image: url("../theme-assets/motifs/song-nuoc/band.svg"); mask-image: url("../theme-assets/motifs/song-nuoc/band.svg"); }
+[data-motif="song-nuoc"] .mtf--pattern { -webkit-mask-image: url("../theme-assets/motifs/song-nuoc/tile.svg"); mask-image: url("../theme-assets/motifs/song-nuoc/tile.svg"); }
+[data-motif="hoa-sen"] { --mtf-tile: 140px; }
+[data-motif="hoa-sen"] :is(.mtf--title, .mtf--hero) { -webkit-mask-image: url("../theme-assets/motifs/hoa-sen/medallion.svg"); mask-image: url("../theme-assets/motifs/hoa-sen/medallion.svg"); }
+[data-motif="hoa-sen"] .mtf--corner { -webkit-mask-image: url("../theme-assets/motifs/hoa-sen/corner.svg"); mask-image: url("../theme-assets/motifs/hoa-sen/corner.svg"); -webkit-mask-position: 0 0; mask-position: 0 0; }
+[data-motif="hoa-sen"] .mtf--band { -webkit-mask-image: url("../theme-assets/motifs/hoa-sen/band.svg"); mask-image: url("../theme-assets/motifs/hoa-sen/band.svg"); }
+[data-motif="hoa-sen"] .mtf--pattern { -webkit-mask-image: url("../theme-assets/motifs/hoa-sen/tile.svg"); mask-image: url("../theme-assets/motifs/hoa-sen/tile.svg"); }
+[data-motif="chu-hy"] { --mtf-tile: 64px; }
+[data-motif="chu-hy"] :is(.mtf--title, .mtf--hero) { -webkit-mask-image: url("../theme-assets/motifs/chu-hy/medallion.svg"); mask-image: url("../theme-assets/motifs/chu-hy/medallion.svg"); }
+[data-motif="chu-hy"] .mtf--corner { -webkit-mask-image: url("../theme-assets/motifs/chu-hy/corner.svg"); mask-image: url("../theme-assets/motifs/chu-hy/corner.svg"); -webkit-mask-position: 0 0; mask-position: 0 0; }
+[data-motif="chu-hy"] .mtf--band { -webkit-mask-image: url("../theme-assets/motifs/chu-hy/band.svg"); mask-image: url("../theme-assets/motifs/chu-hy/band.svg"); }
+[data-motif="chu-hy"] .mtf--pattern { -webkit-mask-image: url("../theme-assets/motifs/chu-hy/tile.svg"); mask-image: url("../theme-assets/motifs/chu-hy/tile.svg"); }
+[data-motif="art-deco"] { --mtf-tile: 60px; }
+[data-motif="art-deco"] :is(.mtf--title, .mtf--hero) { -webkit-mask-image: url("../theme-assets/motifs/art-deco/medallion.svg"); mask-image: url("../theme-assets/motifs/art-deco/medallion.svg"); }
+[data-motif="art-deco"] .mtf--corner { -webkit-mask-image: url("../theme-assets/motifs/art-deco/corner.svg"); mask-image: url("../theme-assets/motifs/art-deco/corner.svg"); -webkit-mask-position: 0 0; mask-position: 0 0; }
+[data-motif="art-deco"] .mtf--band { -webkit-mask-image: url("../theme-assets/motifs/art-deco/band.svg"); mask-image: url("../theme-assets/motifs/art-deco/band.svg"); }
+[data-motif="art-deco"] .mtf--pattern { -webkit-mask-image: url("../theme-assets/motifs/art-deco/tile.svg"); mask-image: url("../theme-assets/motifs/art-deco/tile.svg"); }
+[data-motif="la-canh"] { --mtf-tile: 160px; }
+[data-motif="la-canh"] :is(.mtf--title, .mtf--hero) { -webkit-mask-image: url("../theme-assets/motifs/la-canh/medallion.svg"); mask-image: url("../theme-assets/motifs/la-canh/medallion.svg"); }
+[data-motif="la-canh"] .mtf--corner { -webkit-mask-image: url("../theme-assets/motifs/la-canh/corner.svg"); mask-image: url("../theme-assets/motifs/la-canh/corner.svg"); -webkit-mask-position: 0 0; mask-position: 0 0; }
+[data-motif="la-canh"] .mtf--band { -webkit-mask-image: url("../theme-assets/motifs/la-canh/band.svg"); mask-image: url("../theme-assets/motifs/la-canh/band.svg"); }
+[data-motif="la-canh"] .mtf--pattern { -webkit-mask-image: url("../theme-assets/motifs/la-canh/tile.svg"); mask-image: url("../theme-assets/motifs/la-canh/tile.svg"); }
+
+/* ---------- chuyển động (motion auto -> theo html[data-fx]) ---------- */
+@keyframes mtf-spin { to { rotate: 1turn; } }
+@keyframes mtf-drift { to { transform: translateX(calc(-1 * var(--band-period, 144px))); } }
+/* chỉ medallion của bộ đối xứng tròn được xoay; chu-hy KHÔNG có .mtf--rot (chữ Hỷ luôn đứng thẳng) */
+[data-motif]:not([data-motif="chu-hy"]) .mtf--rot { animation: mtf-spin var(--spin, 240s) linear infinite; animation-play-state: paused; }
+[data-motif] .mtf--rot.is-playing { animation-play-state: running; will-change: rotate; }
+[data-fx="low"] { --spin: 360s; }
+[data-fx="medium"] { --spin: 240s; }
+[data-fx="high"] { --spin: 150s; }
+/* band trôi ngang: chỉ song-nuoc + may-cat-tuong; phần tử rộng hơn 1 chu kỳ, dịch bằng transform (compositor) */
+:is([data-motif="song-nuoc"], [data-motif="may-cat-tuong"]) .mtf--band { right: calc(-1 * var(--band-period, 144px)); }
+[data-fx="medium"]:is([data-motif="song-nuoc"], [data-motif="may-cat-tuong"]) .mtf--band.is-playing { animation: mtf-drift 40s linear infinite; }
+[data-fx="high"]:is([data-motif="song-nuoc"], [data-motif="may-cat-tuong"]) .mtf--band.is-playing { animation: mtf-drift 24s linear infinite; }
+/* parallax nhẹ cho pattern: CSS scroll-driven (không JS); trình duyệt chưa hỗ trợ -> đứng yên */
+@supports (animation-timeline: view()) {
+  @keyframes mtf-par { from { translate: 0 calc(-1 * var(--par, 16px)); } to { translate: 0 var(--par, 16px); } }
+  :is([data-fx="medium"], [data-fx="high"]) .mtf--pattern { inset: calc(-1 * var(--par, 16px)) 0; animation: mtf-par linear both; animation-timeline: view(); }
+  [data-fx="high"] { --par: 28px; }
+}
+/* tắt chuyển động / reduced-motion / fx off / máy yếu (perf-probe gắn .fx-no-parallax) -> đứng yên hoàn toàn */
+[data-mtf-motion="off"] .mtf, [data-fx="off"] .mtf, [data-fx="reduced"] .mtf, .fx-no-parallax .mtf { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .mtf { animation: none !important; } }
+
+@supports not ((mask-image: none) or (-webkit-mask-image: none)) { .mtf { display: none; } }
+@media print { .mtf { display: none; } }

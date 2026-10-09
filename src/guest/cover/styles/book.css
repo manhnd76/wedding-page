@@ -1,0 +1,15 @@
+/* book (design-v4a-2bc §2.11): bìa 2 mặt quay quanh gáy; --op-cover / --op-cover-ink do module tính theo token */
+.bk { position: relative; width: min(60vw, 240px, calc((100svh - 440px) * .714)); min-width: 140px; aspect-ratio: 5 / 7; }
+.bk-page { position: absolute; inset: 0; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 2px 6px 6px 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 14%; text-align: center; box-shadow: 0 10px 22px -12px rgba(0,0,0,.5); }
+.bk-s { font: italic 400 13px/1.3 var(--ff-heading); color: var(--c-muted); }
+.bk-g { font: italic 400 calc(19px * var(--fs-k))/1.3 var(--ff-heading); overflow-wrap: anywhere; padding-block: .08em; }
+.bk-cover, .bk-vel { position: absolute; inset: 0; transform-origin: 0 50%; transform-style: preserve-3d; }
+.bk-vel { background: var(--c-surface); opacity: .55; border-radius: 2px 6px 6px 2px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.bk-front, .bk-back { position: absolute; inset: 0; border-radius: 2px 6px 6px 2px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.bk-front { background: linear-gradient(90deg, rgba(0,0,0,.25), rgba(0,0,0,0) 7%), var(--op-cover); color: var(--op-cover-ink); }
+.bk-frame { inset: 0; background: var(--op-cover-ink); -webkit-mask-image: url(../theme-assets/book/cover-frame.svg); mask-image: url(../theme-assets/book/cover-frame.svg); }
+.bk-mono { position: absolute; left: 0; right: 0; top: 45.2%; transform: translateY(-50%); text-align: center; font: 400 calc(clamp(18px, 5.6vw, 24px) * var(--fs-k))/1.2 var(--ff-heading); white-space: nowrap; }
+.bk-title { position: absolute; left: 0; right: 0; top: 79.5%; transform: translateY(-50%); text-align: center; font: italic 400 13px/1.3 var(--ff-heading); letter-spacing: .08em; }
+.bk-back { transform: rotateY(180deg); background: var(--c-surface); }
+.bk-end { inset: 0; background: var(--c-accent); opacity: .22; -webkit-mask: url(../theme-assets/book/endpaper.svg) 0 0 / 26px 26px repeat; mask: url(../theme-assets/book/endpaper.svg) 0 0 / 26px 26px repeat; }
+.is-opening .bk-cover { will-change: transform; }

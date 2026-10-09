@@ -2,6 +2,7 @@
 
 > Phase: giải pháp đã qua Cổng 1 và Vòng 2, CHƯA code. **Revision 3 (2026-10-07)**: đồng bộ với [`decisions.md`](./decisions.md) (Cổng 1, Bổ sung, Vòng 2, Stack FE) và [`design.md`](./design.md) **v3** (12 theme 1.6, 17 kiểu mở 3.4/3.4b, hạt nền/burst 5.7, reveal 5.8, micro 5.9, ma trận 5.10, admin 8.2/8.2b/8.7-8.13, Phụ lục B).
 > **Revision 4 (2026-10-08)**: đồng bộ với decisions **"Đổi luồng đăng nhập admin (2026-10-08)"**: cổng mật khẩu khi vào `/admin`, token GitHub chỉ hỏi khi cần, vault mã hoá bằng mật khẩu đăng nhập, đọc bản xuất bản từ site cùng origin khi chưa có token, đánh giá bảo mật (2.0, 2.7-2.9), giai đoạn **v2.3** (login mới + E01–E11 của [`design-review-envelopes.md`](./design-review-envelopes.md)). Mọi chỗ sửa ghi **(Rev 4)**.
+> **Revision 5 (2026-10-09)**: đợt **v4a-1** (9 theme còn lại + asset + **B2** hoạ tiết nền vector) theo [`design.md`](./design.md) Bản sửa 5 (1.6.7, 1.7, Phụ lục C), [`design-report-v4a-1.md`](./design-report-v4a-1.md) và decisions **"Review toàn bộ plan + chạy song song (2026-10-09)"**: chốt schema `theme.motif.*` (không tăng `schemaVersion`), `motifCap`, 14 gói font, kiến trúc divider/texture/motif, điều khiển B2 trong admin (chunk lười), tiêu chí + test, danh sách file khớp **bản đồ sở hữu** của [`solution-v4a-2bc.md`](./solution-v4a-2bc.md) (mục **10**); kế hoạch tách v4a thành v4a-1/2a/2b/2c. Mọi chỗ sửa ghi **(Rev 5)**.
 > Thứ tự ưu tiên khi lệch nhau: `decisions.md` > `solution.md` (kiến trúc, schema, contract) > `design.md` (visual/UX). Điểm chưa chốt nằm ở mục **Còn mở** cuối file.
 > **Stack Angular/Spring/Oracle trong CLAUDE.md global KHÔNG áp dụng** (decisions, "Quyết định stack FE"). Đây là webapp tĩnh, không backend, không DB.
 > Tham khảo (chỉ đọc, không sửa): dự án cũ `E:\claudecode\wedding-site\` (`data/config.js`, `assets/js/main.js`, `assets/js/effects.js`, `assets/css/style.css`, `_redirects`, `404.html`, `docs/google-apps-script.gs`). Theme/animation cũ chỉ để tham khảo (decisions, "Bổ sung").
@@ -52,12 +53,23 @@ Toàn bộ nội dung điều khiển bởi **một file `config.json`** có `sc
 - `src/admin/state/store.ts` - `onAuthLost`, `reloadSnapshot`, publish/restore. Thêm `requireGitHub(intent)` và nguồn "site" khi chưa có token.
 - `src/admin/storage/adapter.ts`, `github.ts`, `github-errors.ts`, `local-adapters.ts` - giữ nguyên contract, thêm nguồn đọc cùng origin (4.2).
 
+### (Rev 5) Tái sử dụng trong codebase hiện tại cho v4a-1
+- `src/shared/theme/presets.ts` - đã có đủ dữ liệu 12 preset (token, font, ornament/texture/frame/divider, gợi ý hiệu ứng); chỉ thêm `motif` + `motifSuggest`.
+- `src/shared/fonts/registry.ts` - đã có đủ 28 family + face + `minPx`; thiếu là 14 gói `@fontsource` trong `package.json` và danh sách font trong capability.
+- `src/shared/config/enums.ts` - đủ enum theme/ornament/texture/frame/divider; `merge.ts` (`deepMerge` đã nhận `"theme"` -> mảng), `capabilities.ts` (`capOr` + fallback).
+- `src/shared/theme/resolve.ts` + `contrast.ts` - resolver dùng chung và hàm `contrast()` cho `motifCap`.
+- `scripts/vite-plugins/inject-config-og.ts` - cơ chế băm/emit ornament sprite, `preview-assets.json`, phân loại chunk cho `size-limit`: mở rộng cho divider sprite và chunk motif.
+- `src/guest/icons.ts` `ornament()` (sprite `<use>`), `src/guest/dom.ts` `h()`/`css()`, `sections/common.ts` `divider()`/`framed()`.
+- `src/admin/editor/routes/theme.tsx` (gallery 8.12, bảng "Thành phần của theme"), `src/admin/draft/ops.ts` (Q17), `@guest/preview-bridge` `ensureFonts`.
+- Test: `tests/derive.test.ts` đã kiểm tương phản 12 preset theo bảng 1.6.3; helper `bootPreview` của Bước 0 (`solution-v4a-2bc.md` 0.10).
+
 ### Cần tạo mới
 - Dự án Vite + TS; `src/shared` (types, defaults, migrations, merge, **theme registry 12 preset + resolver + derive OKLCH sáng/tối**, font registry 28 family, guest-name, VietQR, ics, capabilities).
 - Guest: section registry 14 section; cover + **17 module kiểu mở** (dynamic import); `EffectRegistry`; `ParticleField` (21 loại hạt, 6 burst); reveal engine (12 kiểu nguyên tử, 6 gói); micro-interaction (5.9); floating UI.
 - Admin: Kết nối lần đầu + vault, StorageAdapter (GitHub/Dev/Download), nháp IndexedDB, form editor, gallery theme (8.12), trình chọn hiệu ứng + Phát lại (8.13), sections, preview, ImageSlot + pipeline, audio, link generator, backup/restore, export/import, checklist. **(Rev 4)** Thêm cổng mật khẩu (`auth/gate.ts` + `auth/admin-password.ts` do script sinh), script `scripts/set-admin-password.mjs`, overlay Kết nối theo yêu cầu, nguồn đọc bản xuất bản cùng origin.
 - Vite plugins: `inject-config-og` (build), `dev-admin-save` (chỉ `vite dev`), script kiểm tra ngân sách bundle.
 - Asset: 11 ornament sprite SVG, sprite 21 loại hạt (SVG string), asset riêng của kiểu mở (flower-gate WebP, wax-seal SVG...).
+- **(Rev 5) v4a-1**: `motif-cap.ts`, `theme/parts.ts`, `motif/plan.ts` (shared); `guest/motif/{motif.ts, motif.css}`; 4 file CSS thành phần theme; asset `theme-assets/{ornaments,dividers,frames,textures,motifs}`; `admin/editor/motif-panel.{tsx,css}`; test `v4a1-*` + `e2e/v4a-1.spec.ts` (mục 10.9).
 
 ### Rủi ro / edge case chính
 - Bảo mật admin trên site tĩnh (mục 2); token fine-grained hết hạn trước ngày cưới. **(Rev 4)** Hash mật khẩu ngắn nằm trong bundle công khai nên dò được offline; vault mã hoá bằng chính mật khẩu đó nên yếu theo (2.9).
@@ -73,6 +85,7 @@ Toàn bộ nội dung điều khiển bởi **một file `config.json`** có `sc
 - VietQR client-side phải đúng chuẩn EMVCo/NAPAS -> test bằng app ngân hàng thật ở v1.
 - Font script với dấu chồng -> chỉ font trong whitelist design 2.3 + 2.3b, test chuỗi mẫu cho từng theme.
 - **(Rev 4)** Bản xuất bản đọc từ site có thể chậm hơn GitHub 30-90 s (CF đang build) hoặc khác hẳn (publish từ máy khác) -> đối chiếu `publish.id` khi kết nối (2.8.3).
+- **(Rev 5)** Chuyển texture sang `.sec::before` + `.sec{isolation:isolate}` đổi thứ tự lớp trong section; hoạ tiết sau chữ phải giữ AA (cap 1.7.5); nhiều FE chạy song song dễ xung đột ở file dùng chung (mục 10.9, theo bản đồ sở hữu `solution-v4a-2bc.md`).
 
 ---
 
@@ -495,6 +508,7 @@ Guest -> admin: `{ "type": "wp:preview-ready" }`, `{ "type": "wp:preview-error",
 - Ngày giờ: ISO 8601 có offset `+07:00` cho logic. Text hiển thị (`displayDate`, `lunarText`) là chuỗi tự do. **Âm lịch nhập tay**, không có nút "Tự tính".
 - Asset path tương đối với gốc site, resolve qua `import.meta.env.BASE_URL`.
 - **Giá trị đặc biệt `"theme"`** (hoặc vắng mặt) ở các field thành phần theme = theo gói của `theme.preset` (design 1.6.1). Với `theme.primaryColor` dùng `null`, `theme.overrides` dùng `{}`, `effects.reveal.<vai trò>` dùng `null`.
+- **(Rev 5)** Field mới `theme.motif` (B2) theo cùng cách: có mặc định trong `DEFAULT_CONFIG`, merge điền cho config cũ, **không tăng `schemaVersion`** (mục 10.1).
 
 #### 5.2 ThemePreset registry (trong code, không trong config)
 File: `src/shared/theme/presets.ts` (chỉ dữ liệu, ~4 KB gzip, **guest không import tĩnh**; admin và preview import). Cấu trúc theo Phụ lục B design:
@@ -514,6 +528,7 @@ interface ThemePreset {
 }
 ```
 Dữ liệu 12 preset lấy **nguyên văn** bảng design 1.6.2 (token), 1.6.4 (trọn gói), 1.6.3 (tương phản dùng làm expected value trong unit test). Token trạng thái: theme sáng `success #2E6B3F`, `danger #B3261E`; theme tối `#7BC59A`, `#F2A09A`.
+**(Rev 5)** `ThemePreset` thêm `motif: { set; placements; intensity }` và `motifSuggest: MotifSet[]` (dữ liệu 12 theme ở mục 10.1).
 
 **Resolver** `resolveTheme(config, preset): ResolvedTheme` (`src/shared/theme/resolve.ts`) - cùng 1 hàm chạy ở plugin build, preview runtime, admin:
 | Thành phần | Quy tắc (giá trị config khác `"theme"` thì thắng) |
@@ -525,6 +540,7 @@ Dữ liệu 12 preset lấy **nguyên văn** bảng design 1.6.2 (token), 1.6.4 
 | `effects.burst.onOpen` | config hoặc `preset.suggest.burstOnOpen` (Trầm Vàng -> `petals`) |
 | `effects.particles.types/color` | config hoặc `preset.suggest.particles` |
 | `effects.reveal.style` | config hoặc `preset.suggest.revealStyle` (Trầm Vàng -> `soft`); vai trò riêng `heading/block/image/ornament` != null thì đè gói |
+| **(Rev 5)** `theme.motif.set/placements/intensity` | config hoặc `preset.motif`; `motion` lấy thẳng config; `cap` tính từ token cuối cùng (mục 10.1) |
 | Capabilities | giá trị chưa có module trong phiên bản hiện tại (theo `src/shared/capabilities.ts`, mục Kế hoạch) -> fallback đã khai báo + `console.warn`; admin ẩn lựa chọn chưa có |
 
 **Quy tắc đổi theme (Q17, đã chốt "chỉ thay phần Theo theme")**: đổi `theme.preset` **chỉ** ghi field `theme.preset`; mọi field đang `"theme"`/`null`/`{}` tự đổi theo qua resolver. Admin phát hiện "phần đã tự chỉnh" = nhóm có giá trị khác mặc định-theo-theme:
@@ -537,6 +553,7 @@ Dữ liệu 12 preset lấy **nguyên văn** bảng design 1.6.2 (token), 1.6.4 
 | Sau khi mở | `effects.burst.onOpen` |
 | Hạt nền | `effects.particles.types`, `effects.particles.color` |
 | Reveal | `effects.reveal.style` + 4 vai trò |
+| **(Rev 5)** Hoạ tiết nền | `theme.motif.set`, `theme.motif.placements`, `theme.motif.intensity` (**không** gồm `theme.motif.motion`) |
 
 Có nhóm đã chỉnh -> dialog design 8.12: **[Giữ phần tôi đã chỉnh]** (mặc định: chỉ đổi `theme.preset`) / **[Dùng trọn gói]** (đặt các nhóm trên về `"theme"`/`null`/`{}`). Không có nhóm nào đã chỉnh -> đổi ngay + toast Hoàn tác. Field không thuộc theme (`intensity`, `particles.enabled/scope/wind`, `micro.*`, `fonts.scaleStep`...) không bị đụng tới.
 
@@ -549,7 +566,7 @@ Có nhóm đã chỉnh -> dialog design 8.12: **[Giữ phần tôi đã chỉnh]
 4. `overrides` áp sau cùng. `lineStrong = muted` (viền input, WCAG 1.4.11).
 5. JS thuần (không CSS relative-color). Đổi `primaryColor` không đổi `mode`.
 6. Admin: badge "AA ✓ 5.2:1" / "Không đạt ✗"; cảnh báo vàng nhưng cho lưu; **text/bg < 4.5 chặn xuất bản** + nút "Tự sửa".
-7. CSS variables: `--c-primary`, `--c-on-primary`, `--c-accent`, `--c-accent-2`, `--c-primary-decor`, `--c-bg`, `--c-surface`, `--c-text`, `--c-muted`, `--c-line`, `--c-line-strong`, `--c-overlay`, `--c-success`, `--c-danger`; cùng `--sp-*`, `--r-*`, `--fs-*`, `--dur-*`, `--ease-*`, `--z-*`, `--reveal-distance`, `--stagger` (design 1.5, 2.4, 5.1). `<html data-mode="dark">` cho nhánh shadow/QR/focus riêng của theme tối (design 1.6.3).
+7. CSS variables: `--c-primary`, `--c-on-primary`, `--c-accent`, `--c-accent-2`, `--c-primary-decor`, `--c-bg`, `--c-surface`, `--c-text`, `--c-muted`, `--c-line`, `--c-line-strong`, `--c-overlay`, `--c-success`, `--c-danger`; cùng `--sp-*`, `--r-*`, `--fs-*`, `--dur-*`, `--ease-*`, `--z-*`, `--reveal-distance`, `--stagger` (design 1.5, 2.4, 5.1). `<html data-mode="dark">` cho nhánh shadow/QR/focus riêng của theme tối (design 1.6.3). **(Rev 5)** Thêm `--motif-cap` (mục 10.1).
 
 #### 5.3 ResolvedTheme (inline vào HTML)
 ```json
@@ -562,6 +579,7 @@ Có nhóm đã chỉnh -> dialog design 8.12: **[Giữ phần tôi đã chỉnh]
   "reveal": { "style": "soft", "heading": "fade-up", "block": "fade-up", "image": "photo-settle", "ornament": "svg-draw", "stagger": 80 } }
 ```
 Guest runtime chỉ đọc object này (không cần registry); preview nhận config mới thì lazy-import `presets.ts` + `resolve.ts` + `derive.ts`.
+**(Rev 5)** Thêm `"motif": { "set": "none", "placements": [], "intensity": "medium", "motion": "auto", "cap": 0.05 }` (ví dụ Trầm Vàng) và field tuỳ chọn `"dividerUrl"` (plugin/preview gắn, cạnh `ornamentUrl`; mục 10.5a).
 
 #### 5.4 Font registry (design 2.3 + 2.3b)
 | Vai trò | id (★ mặc định của `tram-vang`) | Tổng |
@@ -583,6 +601,7 @@ Guest runtime chỉ đọc object này (không cần registry); preview nhận c
 - Mỗi family tối đa 2 weight: heading 500/600 + italic 400 (Old Standard TT: 400 + italic 400); body 400/600; script 400. Registry ghi `minPx` cho font cần cẩn trọng. Không cho nhập tên font tự do.
 - `fonts.scaleStep`: -1 | 0 | 1 -> hệ số 0.92 / 1 / 1.08 vào `--fs-*`.
 - Dropdown admin nhóm 2 tầng: "Gợi ý cho theme đang chọn" / "Tất cả" (design 2.3b).
+- **(Rev 5)** Registry đã có đủ 28 mục từ v1; tới v2.3 mới cài 14 gói `@fontsource`. v4a-1 cài thêm 14 gói còn lại và bật cả 28 trong capability (mục 10.3).
 
 #### 5.5 Schema v1 đầy đủ (giá trị mặc định)
 Kiểu dùng chung:
@@ -710,6 +729,7 @@ type ThemeOr<T> = 'theme' | T;
 ```
 
 > **(Rev 4) Ghi chú đồng bộ**: từ v2.1 (decisions 2026-10-08), mặc định `effects.autoScroll` là `{ "enabled": true, "speed": 45, "startDelayMs": 2500, "mode": "flow", "dwellMs": 1200 }` và `cover` có thêm `envelope: { style, color, guestOnFront, liner }`. Nguồn chuẩn cho các field này là `src/shared/config/defaults.ts` + `frontend-report-v2.1.md`; khối JSON trên chưa cập nhật phần đó.
+> **(Rev 5) Ghi chú đồng bộ**: `theme` có thêm `"motif": { "set": "theme", "placements": "theme", "intensity": "theme", "motion": "auto" }` (B2, mục 10.1). Nguồn chuẩn: `defaults.ts`.
 
 #### 5.6 Enum đầy đủ (gộp Phụ lục B design)
 | Field | Enum | Mặc định |
@@ -720,6 +740,10 @@ type ThemeOr<T> = 'theme' | T;
 | `theme.ornamentSet` | `"theme"` · `classic-line` · `romantic` · `traditional` · `minimal` · `deco` · `lotus` · `watercolor` · `boho` · `korean` · `luxe` · `tropical` | `"theme"` |
 | `theme.texture` | `"theme"` · `paper` · `paper-aged` · `linen` · `kraft` · `rice-paper` · `watercolor-wash` · `velvet` · `grain-fine` · `sand` · `none` | `"theme"` |
 | `theme.photoFrame` | `"theme"` · `arch` · `arch-double` · `rect-offset` · `soft-rect` · `circle-moon` · `oval` · `polaroid` · `stamp` · `scallop` · `wash-mask` · `deco-cut` | `"theme"` |
+| **(Rev 5)** `theme.motif.set` | `"theme"` · `none` · `dong-son` · `may-cat-tuong` · `song-nuoc` · `hoa-sen` · `chu-hy` · `art-deco` · `la-canh` | `"theme"` |
+| **(Rev 5)** `theme.motif.placements` | `"theme"` hoặc mảng 1-2 phần tử: `pattern` · `corners` · `title` · `band` · `hero` (không đồng thời `pattern` + `title`) | `"theme"` |
+| **(Rev 5)** `theme.motif.intensity` | `"theme"` · `light` · `medium` · `strong` (Nhạt/Vừa/Đậm) | `"theme"` |
+| **(Rev 5)** `theme.motif.motion` | `auto` · `off` | `auto` |
 | `sections.divider` (13 + theme) | `"theme"` · `ornament` · `wave` · `none` · `leaf-branch` · `double-line` · `cloud` · `lotus` · `dots` · `brush-stroke` · `torn-paper` · `deco-fan` · `wave-ocean` | `"theme"` |
 | `fonts.preset` | `"theme"` · `co-dien` · `thanh-lich` · `am-ap` · `bien-tap` · `truyen-thong` | `"theme"` |
 | `fonts.heading/script/body` | `"theme"` hoặc id trong registry 5.4 đúng vai trò | `"theme"` |
@@ -746,9 +770,9 @@ type ThemeOr<T> = 'theme' | T;
 | `album.layout` | `masonry` · `grid` · `carousel` | `masonry` |
 | `couple.order` | `groom-first` · `bride-first` | `groom-first` |
 
-**Hằng số trong code (không nằm trong config, design Phụ lục B)**: hệ số mật độ hạt theo nhóm section + opacity tối đa (5.7), vùng loại trừ (tối đa 6), trần 40 hạt nền / 120 hạt burst, ngưỡng pháo hoa (`threshold 0.5`, giữ 400 ms, rời < 10% mới lên đạn, cooldown 15 s), số hạt theo cấp 8/16/28, thứ tự tự hạ cấp (5.10).
+**Hằng số trong code (không nằm trong config, design Phụ lục B)**: hệ số mật độ hạt theo nhóm section + opacity tối đa (5.7), vùng loại trừ (tối đa 6), trần 40 hạt nền / 120 hạt burst, ngưỡng pháo hoa (`threshold 0.5`, giữ 400 ms, rời < 10% mới lên đạn, cooldown 15 s), số hạt theo cấp 8/16/28, thứ tự tự hạ cấp (5.10). **(Rev 5)** `MOTIF_LEVEL` (.10/.18/.28), luật đặt hoạ tiết theo section (1.7.3), tốc độ xoay/trôi (1.7.6).
 
-**Validation cross-field (admin)**: `particles.types` tối đa 2 và loại trùng; `reveal.heading = split-chars` với heading font script -> runtime tự rơi về `wipe` (không lỗi); `blur-in` chỉ desktop + `high`; chọn openStyle chi phí Cao (`light-gather`) -> cảnh báo; tổ hợp Cao + `high` + `cinematic` -> ghi chú vàng (8.13).
+**Validation cross-field (admin)**: `particles.types` tối đa 2 và loại trùng; `reveal.heading = split-chars` với heading font script -> runtime tự rơi về `wipe` (không lỗi); `blur-in` chỉ desktop + `high`; chọn openStyle chi phí Cao (`light-gather`) -> cảnh báo; tổ hợp Cao + `high` + `cinematic` -> ghi chú vàng (8.13). **(Rev 5)** `theme.motif.placements` tối đa 2, không `pattern` + `title`; cảnh báo khi `motif.cap < .10` và có vị trí nằm sau chữ.
 
 #### 5.7 Field MỚI / ĐỔI / BỎ so với dự án cũ và revision 2
 | Field | Trạng thái | Ghi chú |
@@ -761,6 +785,7 @@ type ThemeOr<T> = 'theme' | T;
 | `theme.ornamentSet` | ĐỔI | 11 bộ + `"theme"`; rev 2 `classic`->`classic-line` |
 | `theme.texture` | ĐỔI | 10 giá trị + `"theme"` (rev 2 mặc định `paper`) |
 | `theme.photoFrame` | MỚI | 11 khung + `"theme"` |
+| `theme.motif.{set, placements, intensity, motion}` | MỚI (Rev 5) | B2 hoạ tiết nền; không tăng `schemaVersion` (10.1) |
 | bỏ `theme.radius` | BỎ | Radius cố định trong token |
 | `fonts.preset`, `fonts.scaleStep` | MỚI | thay `fonts.scale`; `fonts.*` nhận `"theme"` |
 | `animation` -> **`effects`** | ĐỔI TÊN | |
@@ -849,12 +874,13 @@ wedding-page/
 └── docs/
 ```
 Đường dẫn thực tế trong code có thể khác bảng trên (vd `src/admin/screens/`, `src/admin/editor/routes/`); code là nguồn chuẩn cho vị trí file.
+**(Rev 5)** Thực tế ornament/divider/texture/motif nằm ở `src/guest/theme-assets/{ornaments,dividers,frames,textures,motifs}/` (plugin hoặc Vite băm tên + emit), CSS thành phần theme ở `src/guest/styles/{textures,frames,dividers,ornaments}.css`, module B2 ở `src/guest/motif/`; capability theo đợt ở `src/shared/caps/` (Bước 0 của `solution-v4a-2bc.md`); danh sách đầy đủ ở mục 10.9.
 
 ### 7. Data Flow
 
 **Guest:**
 1. `https://<site>/?to=gia-đình-anh-Mạnh` -> CDN trả `index.html` đã inline: `#wp-config`, `#wp-resolved`, `<style>:root{--c-*}</style>` (+ `data-mode`), OG, `modulepreload` cho module openStyle đang dùng + module loại hạt đang dùng, `preload` ảnh hero/cover, font cover (script + heading), ornament sprite đang dùng.
-2. `bootstrap.ts`: đọc config + resolved -> migrate/merge -> nạp `@font-face` 3 family -> parse tên khách -> render cover (overlay fixed) **và** landing bên dưới (`inert`, khoá cuộn) -> dynamic import module openStyle (đã preload) -> tính `effectiveIntensity` (8.4).
+2. `bootstrap.ts`: đọc config + resolved -> migrate/merge -> nạp `@font-face` 3 family -> parse tên khách -> render cover (overlay fixed) **và** landing bên dưới (`inert`, khoá cuộn) -> dynamic import module openStyle (đã preload) -> tính `effectiveIntensity` (8.4). **(Rev 5)** Sau khi dựng landing: nếu `motif.set` khác `none` -> lúc rảnh (timeout 1.5 s) import chunk `motif` chèn phần tử hoạ tiết (10.5f).
 3. Khách chạm -> **cùng handler đồng bộ**: `audio.play()` -> chạy openStyle (chạm lần 2 = tua nhanh 300 ms) -> gỡ cover, bỏ `inert`, focus hero -> burst `onOpen` -> khởi động `ParticleField` (scope/density/exclusion), reveal, micro; đo FPS 2 giây.
 4. Section render theo `sections.items`; ảnh lazy; bản đồ bấm mới tải; QR, lightbox, map, fireworks, wish-fly... là chunk lazy; RSVP/guestbook gọi Apps Script.
 
@@ -913,6 +939,7 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 - **Micro** (design 5.9): CSS là chính; `wish-fly`, `photo-tilt` (chỉ `pointer: fine`), `rsvp-success`, `countdown-odometer`, `fireworks` là chunk lazy. `cta-breathe`, `btn-shine`, `heartbeat` dừng sau ≤ 5 s / 3 lần (WCAG 2.2.2).
 - Chỉ animate `transform`/`opacity` (ngoại lệ có ghi chi phí: `clip-path`, `blur-in`, canvas). `will-change` ≤ 6 phần tử. Texture không bao giờ animate. ~~`autoScroll` mặc định tắt~~ **(Rev 4, theo decisions 2026-10-08)**: tự cuộn **bật** mặc định, 45px/s, bắt đầu sau 2.5 s, `flow` dừng 1.2 s đầu mỗi section; khách tác động -> dừng hẳn, có nút Tiếp tục.
 - **(Rev 4) Tự cuộn + nút nổi - sửa ở v2.3**: khi đã dừng, nút "Tiếp tục tự cuộn" **ẩn trong lúc khách tự cuộn** (opacity 0 + `pointer-events:none`, 160 ms), hiện lại sau khi đứng yên 1.2 s, ẩn hẳn khi focus trong form; khi đang chạy giữ như cũ (E05). Tooltip nhạc đặt bên trái nút nhạc (`right: 60px; bottom: 6px`) để không trùng nút tự cuộn (E10). Pill giữ `is-mini` suốt lúc tự cuộn chạy, kể cả lúc dừng 1.2 s ở đầu section (E11).
+- **(Rev 5) Hoạ tiết nền (B2)**: chuyển động theo `data-fx` + `theme.motif.motion` (design 1.7.6, mục 10.5f); không tạo observer khi `off`/reduced/máy yếu; perf-probe tới bước `parallaxLayers` thì hoạ tiết đứng yên.
 
 #### 8.5 Events, bản đồ, lịch
 - "Chỉ đường": `mapUrl` tab mới; trống thì `https://www.google.com/maps/search/?api=1&query=<address>`.
@@ -936,7 +963,7 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 - **(Rev 4) Đăng nhập & GitHub**: cổng mật khẩu 2.7; token chỉ hỏi khi cần 2.8; vault 2.4; top bar có chỉ báo nguồn "Đang xem bản trên site" / "Đã kết nối GitHub: owner/repo" và nút Đăng xuất.
 - **Thẩm mỹ & IA**: design 8.1, 8.3 (nền `#F7F6F3`, primary admin `#2F4A43`). "Chỉnh JSON nâng cao" cuối trang.
 - **Responsive**: ≥ 1200 px 3 cột; 1024-1199 px preview ẩn/hiện; < 768 px bottom tab `Chỉnh sửa · Xem trước · Thêm`, input 48 px.
-- **Gallery theme (8.12)**: 12 thẻ HTML/CSS thật (biến CSS scoped theo token preset), tên cặp đôi thật; chip lọc theo `tags`; `role="radiogroup"`; chạm = áp vào nháp + toast Hoàn tác; dialog "Giữ phần tôi đã chỉnh / Dùng trọn gói" (5.2); khối "Thành phần của theme" hiển thị nhóm đang "Theo theme" hay "Đã chỉnh riêng". Mobile: 2 cột + mini preview dính 38vh. Font thẻ tải kiểu `&text=` (9.3).
+- **Gallery theme (8.12)**: 12 thẻ HTML/CSS thật (biến CSS scoped theo token preset), tên cặp đôi thật; chip lọc theo `tags`; `role="radiogroup"`; chạm = áp vào nháp + toast Hoàn tác; dialog "Giữ phần tôi đã chỉnh / Dùng trọn gói" (5.2); khối "Thành phần của theme" hiển thị nhóm đang "Theo theme" hay "Đã chỉnh riêng". Mobile: 2 cột + mini preview dính 38vh. Font thẻ tải kiểu `&text=` (9.3). **(Rev 5)** Thêm dòng "Hoạ tiết nền" + panel B2 lười (mục 10.6).
 - **Trình chọn hiệu ứng (8.13)**: cường độ, gallery 17 kiểu mở (poster tĩnh, hoạt ảnh CSS thu nhỏ khi hover/focus/chọn; badge "Gợi ý cho theme", "Nặng ⚠"), "Sau khi mở", hạt nền (tối đa 2), màu, phạm vi, gói reveal, chi tiết nhỏ, pháo hoa. Chọn = gửi `fx:replay` tương ứng; nút "↻ Phát lại" (phím `R`), 0.5x, "Mô phỏng" (máy yếu / giảm chuyển động). Chỉ hiển thị lựa chọn có trong `capabilities.ts` của bản hiện tại.
 - **Preview**: khung 375/414/desktop, làm mới, "Bỏ qua cover", "Phát lại hiệu ứng mở thiệp", "Xem như khách"; sửa field -> cuộn tới + highlight.
 - **Nháp & trạng thái**: top bar theo design 8.8; "Hoàn tác" (undo phiên) + "Hoàn tác tất cả"; `beforeunload` khi còn thay đổi; banner token sắp hết hạn (2.6).
@@ -968,19 +995,23 @@ Theo 5.8 + design 8.6: kéo bằng tay cầm (giữ 200 ms trên touch) + nút �
 | **CSS ban đầu** | **≤ 25 KB** | core (tokens, base, sections, reveal, micro) ≤ 20 KB + CSS của photoFrame/divider/openStyle đang dùng ≤ 5 KB |
 | Ornament sprite đang dùng | ≤ 12 KB | `public/ornaments/<set>.svg`, preload, immutable |
 | Texture | ≤ 2 KB | CSS/SVG data-URI sinh lúc build; riêng `watercolor-wash` WebP ≤ 60 KB (chỉ theme dùng nó) |
+| **(Rev 5)** Texture tile SVG (v4a-1) | ≤ 4 KB gzip/tile | Thay dòng trên cho 7 tile SVG thật của designer (3-8 KB chưa nén); `watercolor-wash` là mask SVG, không WebP |
+| **(Rev 5)** Divider sprite đang dùng | ≤ 2.5 KB | `/ornaments/divider-<id>.<hash8>.svg` |
+| **(Rev 5)** Module hoạ tiết nền (B2) | JS ≤ 1.5 KB, CSS ≤ 3 KB | Chunk lười, tải lúc rảnh sau khi dựng landing; ảnh motif ≤ 15 KB/bộ chưa nén, chỉ tải mảnh của vị trí đang dùng, sau khi mở thiệp |
 | Asset riêng openStyle/ornament raster | ≤ 80 KB/ảnh | flower-gate, watercolor; chỉ tải khi được chọn |
 | Font ban đầu | ≤ 180 KB woff2 | 3 family đang chọn, subset vietnamese + latin; preload ≤ 2 file (font cover) |
 | **Trang ban đầu tổng** | **≤ 900 KB** | Không tính nhạc, album ngoài màn |
-| Admin JS ban đầu | ≤ 150 KB | Không ảnh hưởng khách; route gallery/hiệu ứng/crop lazy. **(Rev 4)** Màn Login + gate ≤ 15 KB gzip trước khi tải chunk Editor |
+| Admin JS ban đầu | ≤ 150 KB | Không ảnh hưởng khách; route gallery/hiệu ứng/crop lazy. **(Rev 4)** Màn Login + gate ≤ 15 KB gzip trước khi tải chunk Editor. **(Rev 5)** `size-limit` đang đặt chặt 80 KB (hiện 73.15 KB); mọi phần mới của admin phải vào chunk lười |
 
 **Chiến lược code-split / lazy-load:**
-1. **Theo theme**: guest không import registry 12 preset; plugin build resolve sẵn (`#wp-resolved` + CSS vars inline). CSS của từng `photoFrame`, `divider`, `texture` là file riêng import động theo giá trị đã resolve; plugin thêm `<link rel="stylesheet">`/`preload` cho đúng giá trị đang dùng (tránh FOUC).
+1. **Theo theme**: guest không import registry 12 preset; plugin build resolve sẵn (`#wp-resolved` + CSS vars inline). CSS của từng `photoFrame`, `divider`, `texture` là file riêng import động theo giá trị đã resolve; plugin thêm `<link rel="stylesheet">`/`preload` cho đúng giá trị đang dùng (tránh FOUC). **(Rev 5)** Thực tế CSS frame/divider/texture nằm trong CSS lõi (nhỏ, ước +3-4 KB gzip cho cả 12 theme); ảnh SVG vẫn là file riêng, chỉ tải khi rule khớp (10.4).
 2. **Theo openStyle**: `open-registry.ts` map id -> `() => import('./styles/<id>.ts')`; plugin chèn `modulepreload` cho module đang dùng; `fade-zoom`/`none` nằm trong entry (đích hạ cấp, fallback khi lỗi mạng).
 3. **Theo loại hạt/burst**: chỉ import 1-2 module loại hạt đã resolve + module burst `onOpen` (sau khi mở thiệp, trong `requestIdleCallback`); fireworks import khi countdown sắp vào viewport (`rootMargin: 600px`).
 4. **Theo tính năng**: QR, lightbox, map, `.ics`, Apps Script client, wish-fly, odometer, split-chars, photo-tilt (chỉ `pointer: fine`) đều dynamic import.
 5. **Preview mode**: mọi module vẫn được build ra (admin đổi gì cũng import được), nhưng khách chỉ tải phần đang dùng.
 6. Rollup `manualChunks` gom phần dùng chung giữa các module openStyle (helpers WAAPI, 3D) thành 1 chunk ≤ 3 KB để tránh lặp.
 7. **(Rev 4)** Chunk chỉ admin dùng (gồm `admin-password.ts`) xuất dưới `dist/admin/` để 1 rule Cloudflare Access `/admin/*` che được (2.9).
+8. **(Rev 5)** Hoạ tiết nền: `motif.ts` + `motif.css` là 1 chunk động, chỉ import khi `motif.set` khác `none`; panel B2 trong admin là chunk lười riêng (10.6).
 
 **Chỉ số Web Vitals**: LCP < 2.5 s (4G), **CLS < 0.05**, INP < 200 ms trên Android tầm thấp. Ảnh: `loading="lazy"` + `decoding="async"` ngoài màn đầu; hero `fetchpriority="high"` + preload; album dùng `thumb`; placeholder `dominantColor`.
 
@@ -992,11 +1023,167 @@ Theo 8.4: chỉ `transform`/`opacity`; canvas ≤ 2 ms/frame; dừng khi tab ẩ
 - Guest chỉ sinh `@font-face` cho **3 family đã resolve** (theo theme hoặc admin chỉnh); preload woff2 (vietnamese + latin) của font **script và heading dùng trên cover**; `font-display: swap`, riêng tên cover chờ tối đa 1.5 s.
 - **Admin gallery theme / dropdown font**: tải font xem trước bằng Google Fonts CSS2 `&text=<glyph của tên cặp đôi + "&">` (design 2.3b) - vài KB mỗi font, 12 thẻ không nặng. Chỉ admin; CSP admin mở `fonts.googleapis.com` + `fonts.gstatic.com`. Mất mạng tới Google -> fallback font serif hệ thống (không chặn tương tác).
 - QA: chuỗi `Nguyễn Thuỳ Linh · Đặng Hữu Phước · Hường · Quỳnh · Ngọc Ẩn · ẦẪỂỖỮ` cho từng theme trước khi bật theme đó (capabilities); script line-height ≥ 1.35; không `overflow:hidden`/`clip-path` sát chữ có dấu.
+- **(Rev 5) Đồng bộ với code**: (1) code chỉ dùng subset `vietnamese` + `latin` (bỏ `latin-ext` vì chồng `unicode-range`, tải thừa ~115 KB - `fonts/registry.ts`); (2) admin **không** gọi Google Fonts: tự host qua `preview-assets.json` (CSP admin `font-src 'self'`). v4a-1 thêm 14 gói, ngân sách và kiểm `vietnamese` ở mục 10.3.
 
 #### 9.4 Cache, OG
 - `_headers`: `/content/images/*`, `/content/audio/*`, `/assets/*`, `/fonts/*`, `/ornaments/*`, `/theme-assets/*` -> `public, max-age=31536000, immutable` (ornament/theme-assets tên có hash do Vite emit hoặc đổi tên khi sửa); `/index.html`, `/content/config.json` -> `no-cache`; `/admin/*` -> `X-Robots-Tag: noindex` + `no-cache`. **(Rev 4)** Chunk admin có hash dưới `/admin/assets/*` -> `immutable` + `noindex`.
 - OG: plugin ghi `<title>`, `description`, `og:*` (URL tuyệt đối từ `meta.siteUrl`), `twitter:card`. Không cá nhân hoá theo tên khách. Chốt OG trước khi gửi link.
 - Kiểm thử bắt buộc: webview **Zalo, Facebook, Messenger**, Safari iOS, Chrome Android tầm thấp.
+
+### 10. (Rev 5) Đợt v4a-1: 9 theme còn lại + asset + B2 hoạ tiết nền
+
+Nguồn: design Bản sửa 5 (1.6.7, 1.7, Phụ lục C), `design-report-v4a-1.md`, asset `assets/v4a-1/`, decisions "Review toàn bộ plan + chạy song song (2026-10-09)" (B2: bật mặc định chỉ `son-do`/`sen-cham`/`dem-nhung`/`bien-dao`; trống đồng 1 vòng/240 s ở mức Vừa; chữ Hỷ không xoay; chưa áp cho cover/phong bì; thêm 14 gói font). Người làm: **FE-1** trong git worktree riêng (`wt/v4a-1`, cổng e2e 4273/5275), song song FE-2 (v4a-2b). **Tuân theo bản đồ sở hữu file và Bước 0 của [`solution-v4a-2bc.md`](./solution-v4a-2bc.md) (mục 0, 3)**: FE-1 bắt đầu sau khi Bước 0 merge vào branch phiên (hoặc merge Bước 0 vào `wt/v4a-1` ngay khi có); mọi sửa ở file dùng chung chỉ nằm trong vùng `[v4a-1]`.
+
+#### 10.1 Schema B2 (chốt) - KHÔNG tăng `schemaVersion`
+**Config** (`WeddingConfig.theme.motif`, mọi field có mặc định):
+| Field | Kiểu / enum | Mặc định | Sanitize trong `merge.ts` (sai -> mặc định + `warn`) |
+|---|---|---|---|
+| `theme.motif.set` | `"theme"` · `none` · `dong-son` · `may-cat-tuong` · `song-nuoc` · `hoa-sen` · `chu-hy` · `art-deco` · `la-canh` | `"theme"` | ngoài enum -> `"theme"` |
+| `theme.motif.placements` | `"theme"` hoặc mảng 1-2 phần tử `pattern` · `corners` · `title` · `band` · `hero` | `"theme"` | bỏ phần tử lạ; bỏ trùng (giữ thứ tự); có cả `pattern` và `title` -> giữ cái đứng trước; cắt còn 2; rỗng hoặc không phải mảng -> `"theme"` |
+| `theme.motif.intensity` | `"theme"` · `light` · `medium` · `strong` | `"theme"` | ngoài enum -> `"theme"` |
+| `theme.motif.motion` | `auto` · `off` | `auto` | ngoài enum -> `auto` |
+
+- `enums.ts` (vùng `[v4a-1]` sau `DIVIDERS`): `MOTIF_SETS` (7 bộ, không gồm `none`; type `MotifSet`), `MOTIF_PLACEMENTS`, `MOTIF_INTENSITIES`, `MOTIF_MOTIONS`. `types.ts`/`defaults.ts` (vùng `[v4a-1]` trong `theme`): `theme.motif: { set: ThemeOr<MotifSet | 'none'>; placements: ThemeOr<MotifPlacement[]>; intensity: ThemeOr<MotifIntensity>; motion: MotifMotion }`. Hằng số code: `MOTIF_LEVEL = { light: .10, medium: .18, strong: .28 }` (design 1.7.4).
+- **Migration / tương thích**: chỉ thêm `theme.motif` vào `DEFAULT_CONFIG`; `deepMerge` điền mặc định cho config cũ (đã hỗ trợ base `"theme"` + override mảng). `CURRENT_SCHEMA_VERSION` giữ 1, `migrate()` không đổi, migrator v0 -> v1 không ghi `theme.motif`. Lý do không tăng version: field tuỳ chọn, mặc định `"theme"` cho đúng kết quả design; bản cũ (v2.3) đọc config mới thì `deepMerge` giữ key lạ, resolver bỏ qua -> vô hại cả 2 chiều. Hệ quả đã được chấp nhận (decisions 2026-10-09): config đang dùng `son-do`/`sen-cham`/`dem-nhung`/`bien-dao` tự có hoạ tiết. `public/content/config.json` hiện là `tram-vang` nên trang khách hiện tại và `guest.spec.ts` không đổi.
+
+**Preset** (`presets.ts`): `ThemePreset.motif: { set: MotifSet | 'none'; placements: MotifPlacement[] /* luôn 1-2 phần tử */; intensity: MotifIntensity }` + `ThemePreset.motifSuggest: MotifSet[]` (dấu ★ "Hợp theme này").
+| Theme | `motif.set` | `placements` | `intensity` | `motifSuggest` |
+|---|---|---|---|---|
+| `son-do` | `dong-son` | `title`, `band` | `light` | `may-cat-tuong`, `chu-hy` |
+| `sen-cham` | `hoa-sen` | `title`, `corners` | `light` | `song-nuoc`, `dong-son` |
+| `dem-nhung` | `art-deco` | `corners`, `band` | `medium` | - |
+| `bien-dao` | `song-nuoc` | `band` | `medium` | - |
+| 8 theme còn lại | `none` | `band` (*) | `medium` (*) | `tram-vang`, `hong-phan`, `mau-nuoc`, `dat-nung`, `pastel-han`: `la-canh`; `luc-bao`: `la-canh`, `art-deco`; `muc-giay`: `art-deco`; `hoai-co`: `art-deco`, `la-canh` (design 1.7.7) |
+
+(*) Dùng khi admin chọn một bộ nhưng để Vị trí/Độ đậm "Theo theme" trên theme mặc định tắt. Chọn `band` vì không nằm sau chữ nên không chịu cap (dùng được cả với `tram-vang` cap .05). Còn mở #11.
+
+**Resolved** (`ResolvedTheme.motif`, inline trong `#wp-resolved`; gom tên phẳng `motifSet/motifPlacements/…` của Phụ lục C vào 1 object): `{ set: MotifSet | 'none'; placements: MotifPlacement[]; intensity: MotifIntensity; motion: MotifMotion; cap: number }`.
+- `set`: config khác `"theme"` thắng, ngược lại `preset.motif.set`; qua capability `motifSet` (fallback `none`, cảnh báo nếu giá trị do config chọn).
+- `placements`, `intensity`: tương tự; `placements` sanitize lại (≤ 2, không `pattern` + `title`). `set = none` -> `placements = []`. `motion` lấy thẳng config.
+- **`cap` (`--motif-cap`, công thức design 1.7.5)**: hàm thuần `motifCap(tokens)` ở `src/shared/theme/motif-cap.ts`, gọi trong `resolveTheme` **mọi lần** từ token cuối cùng (sau `primaryColor` + `overrides`), không hardcode bảng. Với α = 0, .01, … 1: nền `m = mix(base, accent, α)` (trộn tuyến tính từng kênh sRGB đã gamma, như trình duyệt tổng hợp opacity, không làm tròn), base ∈ {bg, surface}, chữ ∈ {text, muted, primary}; `cap` = α lớn nhất mà **mọi** α' ≤ α đều cho `contrast(chữ, m) ≥ 4.5`; α = 0 đã trượt -> `cap = 0`; làm tròn 2 số lẻ. Khoảng 600 phép contrast, chỉ chạy ở plugin build/preview/admin (guest đọc giá trị inline). Bảng 1.7.5 là expected value của unit test (±.01).
+- `themeCssVars` thêm `--motif-cap` (vào `<style id="wp-theme">`; hash CSP tự tính lại). `ResolvedTheme` thêm field tuỳ chọn `dividerUrl?: string` (plugin/preview gắn, 10.5a) - để không phải sửa `src/guest/context.ts`.
+
+**Quan hệ Q17**: thêm nhóm `motif` ("Hoạ tiết nền") vào `ThemeGroup` (`src/admin/draft/ops.ts`): "đã chỉnh riêng" khi `set`, `placements` hoặc `intensity` khác `"theme"`; `resetGroup('motif')` đặt 3 field đó về `"theme"`; **`motion` không thuộc nhóm** (giống `effects.intensity`: sở thích của chủ nhà, đổi theme hay "Dùng trọn gói" không đụng). `changeTheme(keep)` vẫn chỉ ghi `theme.preset`.
+
+**Capabilities**: khoá mới `motifSet: { supported: ['none', …7 bộ], fallback: 'none' }` (`Capability<MotifSet | 'none'>`) ghi trong vùng `// [v4a-1] keys` cuối `CAPABILITIES` + vùng `[v4a-1]` của `caps/types.ts`. Không thêm capability cho vị trí/độ đậm (có đủ từ v4a-1).
+
+#### 10.2 Bật 9 theme + thành phần (`src/shared/caps/v4a-1.ts`)
+Theo Bước 0 (0.1) của `solution-v4a-2bc.md`, `capabilities.ts` ghép `supported` = danh sách gốc + add-on từng đợt. FE-1 chỉ ghi add-on vào **`src/shared/caps/v4a-1.ts`**:
+| Khoá | Add-on v4a-1 | Sau khi ghép |
+|---|---|---|
+| `theme` | 9 theme mới | đủ 12 |
+| `ornamentSet` | `romantic`, `minimal`, `deco`, `lotus`, `watercolor`, `boho`, `korean`, `tropical` | đủ 11 |
+| `texture` | `paper-aged`, `linen`, `kraft`, `rice-paper`, `watercolor-wash`, `grain-fine`, `sand` | đủ 10 |
+| `photoFrame` | `arch-double`, `rect-offset`, `soft-rect`, `oval`, `polaroid`, `stamp`, `scallop`, `wash-mask` | đủ 11 |
+| `divider` | `leaf-branch`, `double-line`, `lotus`, `dots`, `brush-stroke`, `torn-paper`, `wave-ocean` | đủ 12 |
+| `font` | 14 font mới (10.3) | đủ 28 |
+| `motifSet` (khoá mới) | vùng `[v4a-1] keys` trong `capabilities.ts` | `none` + 7 bộ |
+
+FE-1 **không** đổi `STAGE` (orchestrator đặt lúc merge) và không đụng add-on của đợt khác.
+
+#### 10.3 Font: 14 gói @fontsource
+- Thêm devDependencies `@fontsource/{newsreader, birthstone, manrope, old-standard-tt, josefin-sans, prata, allura, eb-garamond, nunito, style-script, lexend, crimson-pro, moon-dance, spectral}` `^5.x` (cùng major với 14 gói đang có). `package.json`/`package-lock.json` chỉ v4a-1 sửa (bản đồ sở hữu). `fonts/registry.ts` **đã có đủ 28 mục** (id, family, faces, `minPx`) từ v1 -> không sửa registry, trừ khi kiểm thấy thiếu face.
+- **Subset `vietnamese`**: cả 14 family nằm trong danh sách "Có subset vietnamese" của design 2.2 (gọi thật Google Fonts CSS2 API ngày 2026-10-07); Fontsource dựng từ Google Fonts nên có key `vietnamese` trong `unicode.json`. Đây là **giả định** (solution không cài gói để xem metadata); xác nhận bằng unit test sau `npm i`: với mọi font trong `CAPABILITIES.font.supported`, `fontFiles()` (plugin) trả đủ `faces × {vietnamese, latin}` và mọi file tồn tại. Thiếu -> test đỏ (build vốn đã fail khi thiếu gói).
+- Face theo registry: heading 500/600 + italic 400; Prata chỉ 400 (không italic); Old Standard TT 400 + italic 400; body 400/600; script 400. Prata/Old Standard không có 600 -> `.h3` bị "đậm giả". Đề xuất thêm `html { font-synthesis-weight: none }` trong vùng `[v4a-1]` của `base.css` (font khác đều có đủ weight nên không đổi gì; Còn mở #15). Prata không có italic -> nghiêng giả ở tên khách trên cover: chấp nhận, designer xem ở bước 4.
+- **Ngân sách font ban đầu ≤ 180 KB** (màn cover trước khi chạm; v1 đo `tram-vang` 162.4 KB / 8 file): unit test `tests/v4a1-fonts.test.ts` tính cho **từng theme trong 12** tổng byte woff2 của tập face cover = heading {500 thường, 400 nghiêng} + script {400} + body {600}, mỗi face × {latin, vietnamese}, lấy face gần nhất theo quy tắc khớp font CSS rút gọn (cùng style nếu có, ngược lại thường; weight gần nhất) -> ≤ 180 000 byte. E2E đo thật 2 theme nặng nhất (10.8 T6). Theme nào vượt: **không tự bỏ face**, báo designer chọn (Còn mở #14).
+- **Admin / gallery font**: `preview-assets.json` liệt kê đủ 28 family (dist `/fonts/` lớn thêm, khách không tải). Tab Theme gọi `ensureFonts` cho script + heading của 12 theme; trình duyệt chỉ tải face thực sự vẽ (`.tcard-names` = script 400, latin + vietnamese nếu tên có dấu) -> ước 250-450 KB lần đầu mở tab, sau đó cache immutable. Tab Font chỉ tải face của font đang hiển thị. Không đụng JS ban đầu của admin. Nếu đo > 600 KB: chỉ `ensureFonts` cho thẻ trong viewport (IntersectionObserver), không cần hỏi lại.
+
+#### 10.4 Đưa asset vào dự án
+| Nguồn `assets/v4a-1/` | Đích | Nạp thế nào |
+|---|---|---|
+| `ornaments/*.svg` (8 bộ) | `src/guest/theme-assets/ornaments/` | như 3 bộ cũ: plugin băm, emit `/ornaments/<set>.<hash8>.svg`, dùng qua `<use href>` |
+| `dividers/{leaf-branch,double-line,cloud,lotus,dots,brush-stroke,deco-fan,wave-ocean}.svg` | `src/guest/theme-assets/dividers/` | plugin emit `/ornaments/divider-<id>.<hash8>.svg` (chung tiền tố `/ornaments/` -> `_headers` + middleware dev không đổi); plugin/preview gắn `dividerUrl` |
+| `dividers/torn-paper.svg`, `frames/wash-mask.svg`, `textures/*.svg` | `src/guest/theme-assets/{dividers,frames,textures}/` | `url()` trong CSS -> Vite emit `/assets/<tên>-<hash>.svg` (đã immutable) |
+| `dividers.css`, `frames.css`, `textures.css` | `src/guest/styles/{dividers,frames,textures}.css` (CSS lõi) | import tĩnh từ `src/guest/sections/common.ts` (file của v4a-1; **không sửa `main.ts`**) -> vẫn vào CSS ban đầu; data-URI `paper`/`velvet` chuyển từ `base.css` sang `textures.css` |
+| `motifs/<bộ>/*.svg` (27 file) + `motifs.css` | `src/guest/theme-assets/motifs/<bộ>/` + `src/guest/motif/motif.css` | chunk lười (10.5f) |
+| `_generator/` | không chép | công cụ tài liệu (đường dẫn Windows tuyệt đối) |
+
+- **`vite.config.ts`** (thuộc Bước 0, đợt khác cần đổi phải qua orchestrator): cần `build.assetsInlineLimit: (file) => /[\\/]theme-assets[\\/]/.test(file) ? false : undefined` - không để Vite biến SVG < 4 KB thành data URI trong CSS (giữ CSS lõi nhỏ, ảnh chỉ tải khi rule khớp, cache immutable). Sprite `<use>` vốn không nhận data URI. Đề xuất gộp vào việc 0.6 của Bước 0; nếu Bước 0 đã xong thì orchestrator cho FE-1 đúng 1 hunk (Còn mở #18).
+- **SVGO** chạy **1 lần** khi chép (không thêm bước build): `npx svgo@3 --config scripts/svgo.theme-assets.mjs -f <thư mục>`; commit file config để chạy lại. Config: `preset-default` với `removeViewBox: false`, `cleanupIds: false`, `removeUselessDefs: false`, `mergePaths: false`, `convertShapeToPath: false`, `convertPathData.floatPrecision: 2`; không plugin nào được bỏ `class`, `pathLength`, `<defs>`/`<use>` nội bộ của motif. Riêng `ornaments/watercolor.svg`: đổi `fill-opacity` của path `class="wash"` thành thuộc tính `opacity` (để 10.5e điều khiển được). SVGO giảm < 10% thì chép nguyên bản.
+- Unit test `tests/v4a1-assets.test.ts` (đọc file): 11 ornament đủ 6 symbol (`traditional` thêm `songhy`, `cloud`), có `pathLength`, ≤ 12 KB; 8 divider sprite có đúng 1 `id="divider"`, ≤ 2.5 KB; motif đủ mảnh theo `MOTIF_PIECES` (`dong-son` không có `corner`), mỗi bộ ≤ 15 KB chưa nén; mỗi texture ≤ 4 KB gzip; mọi SVG có `viewBox`, không chứa `<script`, thuộc tính `on…=`, `<foreignObject`, `href="http`.
+
+#### 10.5 Kiến trúc nhỏ (không đổi schema)
+**a) Divider thành file riêng (design 1.6.7b).** `src/shared/theme/parts.ts` khai báo `DIVIDER_SPRITES` (8 id ở bảng 10.4) và `MOTIF_PIECES`. `divider()` (`sections/common.ts`): `ornament` -> `ornamentUrl` (như cũ); id thuộc `DIVIDER_SPRITES` -> `dividerUrl` + `ornament(url, 'divider', 'orn div-orn')`; `wave`/`torn-paper` -> chỉ CSS; `none` -> không chèn. Plugin (`inject-config-og.ts`, chủ sở hữu sau Bước 0 là v4a-1): `State.divider`, `resolved.dividerUrl`, emit file đang dùng + cả 8 file cho preview, `preview-assets.json` thêm `dividers: { id: url }`; `preview-bridge.ts` thêm `dividerUrlFor()`. Nhánh preview của `bootstrap.ts` (`loadConfig`, cạnh dòng gán `ornamentUrl`) cần thêm **1 dòng** gán `resolved.dividerUrl` - nằm ngoài vùng `[v4a-1]` nên xin orchestrator cho phép đúng hunk này (Còn mở #18). Kết quả: `tram-vang` + divider `cloud` ra đúng mây.
+
+**b) Texture `.sec::before` (1.6.7d).** `textures.css` theo bản designer: `.sec { isolation: isolate }`, `.sec > .sec-in { position: relative; z-index: 1 }`, `.sec::before` (absolute, z 0, không animate); không texture ở Hero/Cảm ơn có ảnh; theme tối đảo noise (trừ `velvet`, `watercolor-wash`); vignette `velvet` thành gradient 2 mép trong `.sec::before`; `watercolor-wash` = 1 vệt ở góc, `.sec { overflow: clip }`, xen kẽ theo `.sec:nth-of-type(even)`. Xoá khối texture `body::before`/`body::after` ở `base.css` (dòng 33-42 hiện tại, ngoài vùng; chỉ v4a-1 đụng khối này) - xin orchestrator cho phép hunk này (Còn mở #18). Overlay (lightbox, gift sheet, toast, floating, canvas hạt) đều gắn vào `body` nên `isolation` của section không nhốt chúng (đã kiểm code). FE xác nhận 1 lần trên build (designer chưa chụp): `getComputedStyle(sec, '::before').backgroundImage` khác `none` và thấy được trên ảnh. Cover: xem Còn mở #12.
+
+**c) `--sec-bg` theo tone.** Trong vùng `[v4a-1]` cuối `sections.css`: `.tone-bg, .sec-footer, .sec-hero.no-img { --sec-bg: var(--c-bg) } .tone-surface { --sec-bg: var(--c-surface) }`. Rule cục bộ cũ ở `.couple-amp` giữ nguyên (cùng giá trị). `circle-moon`: ghi đè trong `frames.css` (`.frame.frame--circle-moon` dùng `var(--sec-bg, var(--c-surface))`), không sửa dòng cũ của `sections.css`.
+
+**d) Khung ảnh.** `frames.css` (selector `.frame.frame--x`); `framed()`: `stamp` bọc thêm `<div class="frame-wrap--stamp">` (bóng ở phần tử cha); `polaroid` gắn class `tilt-r` cho ảnh polaroid thứ chẵn theo thứ tự render (bộ đếm trong module, reset mỗi lần render), không inline style; v4a-1 **không** có chú thích dưới polaroid (không có field schema).
+
+**e) Ornament `watercolor` - `.wash` hiện dần.** Sprite dùng qua `<use>` nên CSS ngoài không chọn được `.wash`; dùng thuộc tính kế thừa như `svg-draw` hiện có: file mới `src/guest/styles/ornaments.css` (**không sửa `fx.css`**) đặt `[data-orn="watercolor"] [data-rva="svg-draw"]:not(.is-in) { fill-opacity: 0 }` + `transition` = danh sách của `fx.css` thêm `fill-opacity var(--dur-reveal)`; `html[data-orn]` gán trong vùng `[v4a-1]` của `bootstrap.ts`. Nét (fill none) vẫn vẽ bằng `stroke-dashoffset`, vệt (`opacity` riêng sau SVGO) hiện dần. Trình duyệt không kế thừa vào `<use>` thì vệt hiện cùng nét (chấp nhận).
+
+**f) Module lười hoạ tiết (1.7.8).**
+- `src/shared/motif/plan.ts`: hàm thuần `planMotif(plan: PlannedSection[], config, placements)` -> `{ sectionId, placements[] }[]` theo luật 1.7.3: loại Hero/Cảm ơn **có ảnh**, Album; RSVP + Lời chúc chỉ `band`; `band` chỉ section `tone-surface` + footer; `hero` chỉ Hero/Cảm ơn **không ảnh**; `title` chỉ khi section có tiêu đề. Dùng chung guest + admin (preview cuộn tới section đầu tiên có hoạ tiết).
+- `src/guest/motif/motif.ts` (`mountMotifs(main, resolved.motif)`): gắn `html[data-motif]`, `[data-mtf-level]`, `[data-mtf-motion]`; chèn `<div class="mtf mtf--{kiểu}" aria-hidden="true">` bằng `h()`: `corners` 2 phần tử (section lẻ `tl` + `br`, chẵn `tr` + `bl`); `title` là con đầu của `.sec-head` (các con còn lại `position: relative; z-index: 1`); `hero` trong `.sec-hero.no-img` / `.sec-thankyou:not(.has-img)`; thêm `mtf--rot` cho medallion `title`/`hero` khi bộ khác `chu-hy`. 1 `IntersectionObserver` bật `.is-playing` cho `.mtf--rot`/`.mtf--band` khi section trong viewport; **không tạo observer** khi `motion = off`, `data-fx` là `off`/`reduced`, hoặc `ctx.fx.lowEnd`. Perf-probe tới bước `parallaxLayers` (đã gắn `html.fx-no-parallax`) -> CSS dừng mọi `.mtf` (không sửa perf-probe, thuộc 2a).
+- `motif.css` = bản designer (url sửa thành `../theme-assets/motifs/...`) + `[data-mtf-motion="off"] .mtf, [data-fx="reduced"] .mtf, .fx-no-parallax .mtf { animation: none !important }`. Tốc độ theo `data-fx` (xoay 360/240/150 s; band 40/24 s chỉ `song-nuoc`/`may-cat-tuong`; parallax pattern chỉ khi có `animation-timeline`); `chu-hy` không bao giờ xoay; `@media print` ẩn; `@supports not mask` ẩn.
+- Tải: trong vùng `[v4a-1]` của `bootstrap.ts` (sau `prepareReveal(main, …)`), nếu `motif.set` khác `none` và có vị trí -> `requestIdleCallback` (timeout 1.5 s, không có thì `setTimeout`) -> `import('./motif/motif')` (CSS chunk đi kèm, Vite chèn `<link>`, hợp CSP `style-src 'self'`). Landing đang `display:none` dưới cover nên ảnh mask chỉ tải sau khi mở thiệp. JS ban đầu chỉ thêm vài dòng.
+- Plugin **không** preload/modulepreload motif (không thuộc LCP; tránh tranh băng thông với font cover/ảnh hero); `--motif-cap` đi qua `themeCssVars`; `data-motif` do module gắn lúc chạy.
+- Thứ tự lớp trong section: nền -> texture `::before` (z 0) -> `.mtf` (z 0, sau trong DOM) -> `.sec-in` (z 1); divider (z 2) và hạt (z 20) ở trên.
+
+#### 10.6 Admin
+- **Vị trí điều khiển B2**: tab **Theme & Màu**, bảng "Thành phần của theme" thêm dòng **Hoạ tiết nền** (`Theo theme · Trống đồng (Sau tiêu đề + Dải viền)` / `Không dùng` / badge "Đã chỉnh riêng ●" + "Đặt lại theo theme") với nút **[Đổi]** mở panel ngay dưới bảng (design 1.7.9).
+- **Panel là chunk lười riêng** `src/admin/editor/motif-panel.tsx` + `motif-panel.css` (`import()` khi bấm [Đổi]), không nằm trong chunk ban đầu hay chunk route Theme. Nội dung theo 1.7.9: radio "Theo theme / Tự chọn"; gallery 8 thẻ (`Không dùng` + 7 bộ, `role="radiogroup"`, ★ khi bộ là `preset.motif.set` hoặc trong `motifSuggest`); thẻ là `<div>` tô `--tc-accent` + `mask-image` medallion (URL lấy bằng `import.meta.glob('…/theme-assets/motifs/*/medallion.svg', { query: '?url', import: 'default', eager: true })` trong chunk panel, gán qua `style` của Preact = CSSOM, hợp CSP admin); checkbox Vị trí (tối đa 2, ô thứ 3 vô hiệu + dòng giải thích; chọn `pattern` khi đã có `title` hoặc ngược lại -> tự bỏ cái kia + thông báo `aria-live`); segmented Độ đậm (Nhạt/Vừa/Đậm); Chuyển động (Theo mức hiệu ứng/Tắt); cảnh báo vàng khi `cap < .10` và có vị trí nằm sau chữ (`pattern`/`title`/`hero`/`corners`).
+- Hành vi: "Tự chọn" -> chép giá trị đang resolve vào `theme.motif.{set, placements, intensity}` (giao diện bắt đầu từ cái đang thấy); "Theo theme" -> 3 field về `"theme"` (`motion` giữ). Mỗi thay đổi = `store.update` + toast [Hoàn tác] (như 8.12); preview cuộn tới section đầu tiên có hoạ tiết (`planMotif`).
+- `labels.ts` (chủ: v4a-1 + 2a): `MOTIF_SET_LABEL` (`none` "Không dùng", `dong-son` "Trống đồng", `may-cat-tuong` "Mây cát tường", `song-nuoc` "Sóng nước", `hoa-sen` "Hoa sen", `chu-hy` "Song Hỷ", `art-deco` "Art-deco", `la-canh` "Cành lá"), `MOTIF_PLACEMENT_LABEL` (Phủ nền, Góc, Sau tiêu đề, Dải viền, Nền Hero), `MOTIF_INTENSITY_LABEL` (Nhạt, Vừa, Đậm), `MOTIF_MOTION_LABEL` (Theo mức hiệu ứng, Tắt) + `BY_PATH` cho `theme.motif.*` (diff "Xem thay đổi"); `schema-meta.ts` thêm nhãn đường dẫn.
+- Gallery theme: đủ 12 thẻ; `MOOD` thêm 9 theme (design 1.6.5); class `tex-*` của thẻ cho 7 texture mới đặt trong `src/admin/editor/routes/theme.css` (CSS của route lười; **không** cần vùng `[v4a-1]` của `admin.css`); bỏ dòng "Bản hiện tại có n/12 theme" khi đủ 12. Ô chọn Hoạ tiết/Texture/Khung ảnh/Đường phân cách giữ dạng `Select` (nhiều lựa chọn hơn); danh sách thẻ có hình của 8.12 (v5) để sau (Còn mở #13).
+- **Ngân sách admin**: JS ban đầu ≤ 80 KB (hiện 73.15): phần v4a-1 chạm chunk ban đầu chỉ là `enums`/`types`/`defaults`/`merge`/`ops`/`labels`/`presets` (dữ liệu nhỏ) -> mục tiêu tăng ≤ 1 KB gzip, ghi số đo trong report. Route Theme và chunk `motif-panel` mỗi cái ≤ 15 KB (luật "admin lazy" có sẵn). Không import tĩnh `motif-panel` vào chunk ban đầu; kiểm `motif-cap.ts` đi theo chunk chứa `resolve.ts`.
+
+#### 10.7 Plugin, ngân sách guest
+- `inject-config-og.ts` (chủ sau Bước 0: v4a-1; chỉ thêm khối, không sắp xếp lại phần Bước 0 đã thêm): `dividerUrl` + emit sprite divider; `previewAssets().dividers`; middleware dev phục vụ thêm sprite divider (cùng tiền tố `/ornaments/`); `budget.json` thêm `motif` (chunk có facade `/motif/motif.ts`) và `motifCss` (`importedCss` của chunk đó), loại khỏi danh sách `lazy` chung.
+- **`.size-limit.cjs`** (thuộc Bước 0): cần 2 dòng `motif JS ≤ 1.5 KB`, `motif CSS ≤ 3 KB` (design ước 1 KB / 2 KB). Đề xuất gộp vào việc 0.8 của Bước 0, hoặc orchestrator cho FE-1 đúng 1 hunk (Còn mở #18). Khi chưa có 2 dòng này, chunk motif vẫn bị chặn bởi luật "lazy ≤ 15 KB" chung.
+- Mục tiêu: JS ban đầu ≤ 60 KB (hiện 31.2, dự kiến tăng < 1 KB); **CSS ban đầu ≤ 25 KB** (hiện 11.4; 4 file CSS mới ước +3-4 KB gzip; ảnh không inline); ornament sprite ≤ 12 KB; divider sprite ≤ 2.5 KB; texture tile ≤ 4 KB gzip; motif ≤ 15 KB/bộ chưa nén, chỉ tải mảnh của vị trí đang dùng. Trang đầu ≤ 900 KB không đổi (motif tải sau khi mở thiệp).
+
+#### 10.8 Tiêu chí hoàn thành + test (chọn lọc)
+**Unit** (`npm test`), ưu tiên **file test mới** để không đụng FE song song:
+1. `tests/v4a1-schema.test.ts`: mặc định + sanitize `theme.motif` (thiếu, sai enum, placements trùng / 3 phần tử / `pattern` + `title` / rỗng / không phải mảng); config v1 không có `theme.motif` và import v0 -> `"theme"`; `schemaVersion` vẫn 1.
+2. `tests/v4a1-theme.test.ts`: với **12 preset**, `resolveTheme` (bật capabilities) giữ đúng preset và ornament/texture/frame/divider/font/motif của preset, không có cảnh báo về các nhóm của v4a-1 (cảnh báo kiểu mở/hạt/reveal chưa có là việc của 2a/2b/2c); tương phản khớp 1.6.3 ±0.05 (`derive.test.ts` có sẵn giữ xanh); motif đúng bảng 10.1; `motif.cap` khớp 1.7.5 ±0.01; 300 bộ `primaryColor`/`overrides.accent` ngẫu nhiên (seed cố định, sáng + tối): tại `cap` mọi cặp ≥ 4.5, tại `cap + .01` có cặp < 4.5 (trừ `cap = 1`); `--motif-cap` có trong `themeCssVars`; nhóm `motif` trong `customizedGroups`/`resetGroup`/`changeTheme` (keep giữ, full về theme, `motion` không bị đụng); `planMotif` đúng luật loại trừ.
+3. `tests/v4a1-assets.test.ts` (10.4) và `tests/v4a1-fonts.test.ts` (10.3: đủ file 28 family; font cover ≤ 180 000 byte cho 12 theme).
+4. `tests/sections-plugin.test.ts` (thêm case, không sửa case cũ): `tram-vang` + divider `cloud` -> `dividerUrl` = `/ornaments/divider-cloud.<hash8>.svg`; `previewAssetsJson` có 11 ornament, 8 divider, 28 font; `son-do` -> `styleText` chứa `--motif-cap`.
+5. `tests/resolve.test.ts`: sau Bước 0 (0.9) test fallback đã tự chọn giá trị chưa hỗ trợ theo capability nên không vỡ khi v4a-1 bật theme/frame/font; FE-1 chỉ thêm **1 khối `describe` motif riêng** (bản đồ sở hữu 3.2), không sửa test cũ. Test cũ nào vẫn vỡ vì v4a-1 bật capability -> FE-1 sửa đúng assertion đó và ghi trong report (nguyên tắc 3.1#5 của `solution-v4a-2bc.md`).
+
+**E2E chọn lọc** - file riêng `tests/e2e/v4a-1.spec.ts` (không sửa `guest.spec.ts`, `admin*.spec.ts`). Nạp cấu hình bất kỳ không cần build lại bằng helper **`bootPreview(page, patch, fx?)` của `tests/e2e/fx-helpers.ts`** (Bước 0, việc 0.10; chỉ import, không sửa): ghi stash `wp_preview_boot_v1` rồi mở `/?preview=1&debug=fx` (resolve lúc chạy, font/ornament/divider qua `preview-assets.json`). Helper riêng của v4a-1 (nếu cần) đặt trong chính file spec.
+- T1: 12 theme: không `pageerror`; `html[data-theme]` đúng; `.sec::before` có `background-image` khi texture khác `none` (bỏ Hero có ảnh); `<use>` của divider trỏ đúng sprite; `.frame--<id>` đúng; mọi request SVG/woff2 trả 200.
+- T2: `tram-vang` + `sections.divider = cloud` -> href chứa `divider-cloud`.
+- T3: `son-do` mặc định: `.mtf--title` chỉ ở section có tiêu đề ngoài Album/RSVP/Lời chúc; `.mtf--band` chỉ trong `.tone-surface`/footer; opacity tính ra ≤ `--motif-cap`; `.mtf--rot` có `animation-name: mtf-spin`, `animation-duration: 240s` ở mức Vừa.
+- T4: `tram-vang` mặc định: 0 phần tử `.mtf`, không request chunk motif. T5: `chu-hy` + `title` -> không animation; `fx.simulate.reducedMotion` -> không `.mtf` nào chạy animation.
+- T6: đo byte woff2 trước khi chạm mở (không `skipCover`) cho 2 theme nặng nhất theo unit test -> ≤ 180 KB.
+- T7 (admin trên `vite preview`, gieo phiên như `admin-v22.spec.ts`): tab Theme có 12 thẻ; [Đổi] Hoạ tiết nền -> Tự chọn + Mây cát tường + Góc + Phủ nền; chọn Sau tiêu đề -> Phủ nền tự bỏ + thông báo `aria-live`; ô thứ 3 vô hiệu; khung preview có `.mtf--corner`; đổi sang `sen-cham` "Giữ phần tôi đã chỉnh" -> vẫn Mây cát tường; "Dùng trọn gói" -> về Theo theme.
+- Lệnh trên cloud (FE-1): `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium PW_PREVIEW_PORT=4273 PW_DEV_PORT=5275 npx playwright test tests/e2e/v4a-1.spec.ts -g "<tên>"` khi cần; **toàn bộ** `npm run build && PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium PW_PREVIEW_PORT=4273 PW_DEV_PORT=5275 npm run test:e2e` **1 lần** ở cuối (sau khi `git merge <branch-phiên>` theo 3.4 của `solution-v4a-2bc.md`).
+
+**Build**: `npm run build` xanh (typecheck + size-limit theo 10.6/10.7). **Bước 4** (ui-ux-designer): review visual 12 theme + chuỗi dấu chồng (design 2.1) từng theme + texture thấy được trên build + 4 theme có hoạ tiết mặc định; ảnh lưu `screenshots/design-review-v4a-1/<ID>.png`.
+
+#### 10.9 Danh sách file v4a-1 sẽ đụng (khớp bản đồ sở hữu `solution-v4a-2bc.md` 3.2-3.3)
+| File | Quyền của v4a-1 | Việc |
+|---|---|---|
+| `src/shared/caps/v4a-1.ts` | chủ | add-on 6 khoá (10.2) |
+| `src/shared/capabilities.ts`, `src/shared/caps/types.ts` | vùng `[v4a-1]` | khoá `motifSet` |
+| `src/shared/config/enums.ts`, `types.ts`, `defaults.ts` | vùng `[v4a-1]` | enum + cây `theme.motif` |
+| `src/shared/config/merge.ts`, `schema-meta.ts` | chủ (cùng 2a, theo vùng) | sanitize + nhãn đường dẫn `theme.motif.*`; `migrations.ts` không đổi |
+| `src/shared/theme/presets.ts` | chủ | `motif`, `motifSuggest` |
+| `src/shared/theme/resolve.ts` | chủ (2a merge sau) | `ResolvedTheme.motif`, `dividerUrl?`, `--motif-cap` |
+| `src/shared/labels.ts` | chủ (cùng 2a) | khối `MOTIF_*` + `BY_PATH` |
+| `src/shared/theme/motif-cap.ts`, `src/shared/theme/parts.ts`, `src/shared/motif/plan.ts` | mới | |
+| `package.json`, `package-lock.json` | chủ | 14 `@fontsource` (đợt khác không chạy `npm install <pkg>`) |
+| `scripts/vite-plugins/inject-config-og.ts` | chủ sau Bước 0 | khối divider + budget motif |
+| `scripts/svgo.theme-assets.mjs` | mới | |
+| `src/guest/theme-assets/**` | chủ | asset mới |
+| `src/guest/styles/{textures,frames,dividers,ornaments}.css` | mới | import từ `sections/common.ts` |
+| `src/guest/styles/base.css`, `sections.css` | vùng `[v4a-1]` | `font-synthesis-weight`; `--sec-bg` |
+| `src/guest/motif/{motif.ts,motif.css}` | mới | |
+| `src/guest/sections/common.ts` (+ `sections/*.ts` nếu cần) | chủ (2a merge sau) | `divider()`, `framed()`, import 4 CSS |
+| `src/guest/bootstrap.ts` | vùng `[v4a-1]` | mount motif lúc rảnh, `data-orn` |
+| `src/guest/preview-bridge.ts` | chủ | `dividerUrlFor()`, kiểu manifest |
+| `src/admin/draft/ops.ts` | (không có trong bảng 3.2; chỉ v4a-1 cần) | nhóm `motif` |
+| `src/admin/editor/routes/theme.tsx` | chủ | dòng Hoạ tiết nền, `MOOD`, bỏ "n/12" |
+| `src/admin/editor/routes/theme.css`, `src/admin/editor/motif-panel.{tsx,css}` | mới | |
+| `tests/v4a1-*.test.ts`, `tests/e2e/v4a-1.spec.ts` | mới | |
+| `tests/sections-plugin.test.ts` | thêm case | |
+| `tests/resolve.test.ts` | khối `describe` motif riêng | |
+| `docs/tasks/<id>/frontend-report-v4a-1.md` | mới | report tiến độ (CLAUDE.md) |
+
+**4 hunk ngoài vùng/ngoài quyền cần orchestrator cho phép** (Còn mở #18): (1) `vite.config.ts` `assetsInlineLimit`; (2) `.size-limit.cjs` 2 dòng motif; (3) `base.css` xoá khối texture `body::before`/`::after`; (4) `bootstrap.ts` 1 dòng gán `dividerUrl` trong nhánh preview. Đề xuất (1)-(2) gộp vào Bước 0.
+**Không đụng**: `src/guest/main.ts`, `src/guest/context.ts`, `src/guest/styles/{fx,cover,tokens}.css`, `src/guest/cover/**`, `src/guest/effects/**`, `src/admin/editor/routes/effects.tsx`, `src/admin/editor/fx/**`, `src/admin/admin.css`, `tests/e2e/{guest,admin,admin-v22}.spec.ts`, `tests/e2e/fx-helpers.ts`, `tests/e2e/helpers.ts`, `playwright.config.ts`, `public/_headers`, `public/content/config.json`.
 
 ---
 
@@ -1006,6 +1193,7 @@ Theo 8.4: chỉ `transform`/`opacity`; canvas ≤ 2 ms/frame; dừng khi tab ẩ
 - **Frontend (frontend-developer)**: guest app (vanilla TS), admin app (Preact), shared, Vite plugins, ngân sách bundle, `_headers`/`_redirects`, Apps Script, README (tạo PAT theo 2.2, Cloudflare Pages, Sheet + Apps Script). Theo Kế hoạch. **(Rev 4) v2.3**: cổng mật khẩu + script đổi mật khẩu (2.7), `requireGitHub` + overlay Kết nối + nguồn site (2.8), vault v2 (2.4), tách chunk admin dưới `/admin/` (2.9), README mục bảo mật (Cloudflare Access, thu hồi token, đổi mật khẩu); sửa E01–E11 phong bì/tự cuộn.
 - **Cần ui-ux-designer: Có** - cung cấp asset theo giai đoạn: 11 ornament sprite (mỗi bộ 6 phần, ≤ 12 KB gz), sprite 21 loại hạt (SVG), asset kiểu mở (phong bì, dấu sáp, cổng hoa WebP, cửa trăng, hộp quà...), poster tĩnh 17 kiểu mở cho gallery admin, ảnh minh hoạ các bước tạo token (8.2b); review visual cuối mỗi giai đoạn; duyệt chuỗi dấu tiếng Việt cho từng theme. **(Rev 4) v2.3**: review lại E01–E11 trên bản sửa; xem copy màn Login, overlay Kết nối, dialog nhập lại mật khẩu và cảnh báo "Ghi nhớ" (không cần thiết kế mới, dùng lại thành phần 8.2/8.2b); cập nhật SVG nắp trong design.md 3.2 khi được giao.
 - **Có thể làm song song BE và FE: Có** - schema, enum, contract (StorageAdapter, postMessage + `fx:*`, Apps Script, manifest) đã đủ rõ; Apps Script (v3) làm song song v2; asset của designer làm song song code engine. **(Rev 4)** Trong v2.3, phần login/GitHub và phần E01–E11 độc lập, làm song song được.
+- **(Rev 5) v4a-1**: frontend-developer **FE-1** làm mục 10 trong worktree riêng sau Bước 0, song song FE-2 (v4a-2b), theo bản đồ sở hữu `solution-v4a-2bc.md` + danh sách 10.9; ui-ux-designer **có** - bước 4 review visual 12 theme + B2 (asset đã xong ở bước 1, không cần thiết kế thêm). Backend: không.
 
 ---
 
@@ -1015,13 +1203,20 @@ Nguyên tắc: **schema v1 đầy đủ từ v1** (mọi enum hợp lệ, migrat
 
 **(Rev 4)** Các giai đoạn trung gian đã làm: **v2.1** (phong bì mới, 6 mẫu phong thư, tự cuộn, sửa visual v1; commit `f0a6465`, `frontend-report-v2.1.md`), **v2.2** (sửa điểm admin sau review; commit `55b8b69`, `frontend-report-v2.2.md`). **v2.3** bên dưới làm trên `feat/20261007-wedding-page-v2.3`.
 
+**(Rev 5)** v2.3 đã xong (commit `7c476e9`). Thứ tự đã chốt (decisions 2026-10-09): **v4a-1 -> v4a-2 (tách 2a/2b/2c, chạy song song tối đa 2 FE) -> v3 -> v4b**; B3 (v4a-3) dời sau v4b. Mỗi đợt: designer -> solution -> frontend -> designer review -> commit. Trước khi tách worktree: **Bước 0** của `solution-v4a-2bc.md` (khung chung, không đổi hành vi).
+
 | Giai đoạn | Phạm vi | Tiêu chí hoàn thành (đo được) | Phụ trách |
 |---|---|---|---|
 | **v1 - Khung + schema + guest app lõi** | Scaffold Vite multi-page + TS strict; `src/shared` đầy đủ (types, enums 5.6, defaults, migrations v0->v1, merge, **registry đủ 12 preset dạng dữ liệu**, resolver, derive OKLCH **sáng + tối**, contrast, font registry 28 family, guest-name, section meta, ics, vietqr, capabilities); guest: 14 section, floating UI, lightbox, countdown `flip` + `simple` + milestones, map lazy, gift sheet + VietQR, music player; plugin `inject-config-og` (config + resolved + CSS vars + OG + modulepreload/preload); `_redirects`, `_headers`, `size-limit`. **Theme bật: 3** - `tram-vang` ★, `son-do` (ornament truyền thống), `dem-nhung` (kiểm chứng nhánh tối). **Kiểu mở: 3** - `envelope` ★, `card-flip`, `fade-zoom` (+ `none` = nhánh reduced-motion). **Hạt: engine `ParticleField` đủ 4 lớp bảo vệ, `scope: all`** + 5 loại (`petal-rose`, `heart`, `petal-peach`, `gold-dust`, `firefly`); burst `petals` + `fireworks-soft` (`every-view`); reveal gói `soft` + `gentle`; micro `btn-press`, `cta-breathe`, `copy-morph`, `segmented-slide`; ma trận cường độ 4 cấp + tự hạ cấp + reduced-motion + nút khách | `npm run build` ra static chạy trên CF Pages; sửa `config.json` tay -> site đổi đúng (3 theme, 5 font preset, bật/tắt/sắp xếp section, số thứ tự + nền xen kẽ đúng; giá trị chưa có -> fallback, không lỗi console ngoài `warn`); unit test xanh: `guest-name`, `migrations` (import `wedding-site/data/config.js` không mất dữ liệu), `merge`, `resolve` (quy tắc "theme" cho mọi nhóm 5.2), `derive` (12 preset khớp tương phản bảng 1.6.3 ±0.05; primary ngẫu nhiên 500 mẫu luôn ≥ 4.5:1 cả sáng/tối), `intensity` (mọi ô ma trận 5.3/5.10 đã triển khai), `vietqr/payload` (CRC đúng mẫu chuẩn), pháo hoa (ngưỡng 400 ms, cooldown 15 s, re-arm < 10% bằng fake timers); QR quét được bằng ≥ 2 app ngân hàng với 1 tài khoản thật; `size-limit`: JS ban đầu ≤ 60 KB, CSS ≤ 25 KB; Lighthouse mobile (throttle 4G, Moto G Power): LCP < 2.5 s, CLS < 0.05; hạt nền cả trang: 0 hạt vẽ trong vùng form RSVP/lời chúc (test Playwright đọc vị trí hạt qua hook debug), canvas dừng khi focus input; CSP `style-src` chốt; ui-ux-designer duyệt visual 3 theme | frontend-developer; ui-ux-designer (asset 3 theme + review) |
 | **v2 - Admin + GitHub + kết nối + backup/restore** | Admin Preact responsive; **Kết nối lần đầu 3 bước** + Login passphrase + vault (2.3-2.6) **(Rev 4: Login passphrase được thay ở v2.3 bằng cổng mật khẩu + vault khoá bằng mật khẩu đăng nhập, Kết nối chuyển sang mở khi cần; 2.7-2.9)**; `GitHubAdapter` (Git Data API 3.5), `DevServerAdapter` (+ `dev-admin-save`), `DownloadAdapter`; nháp IndexedDB (3.2) + undo; form từ schema-meta; **gallery theme 8.12** (cho theme đã bật) + dialog giữ/trọn gói; font, nhạc upload; **trình chọn hiệu ứng 8.13** + `fx:replay`/`fx:done` + Phát lại/0.5x/Mô phỏng (cho hiệu ứng đã bật); sections; preview; ImageSlot 3 khối + pipeline; link generator + toggle "Mã hoá link" + CSV `link_ma_hoa`; checklist + diff; publish 1 commit + poll; restore swap + 4 thao tác quay lại (3.4); export/import | Trên repo test private + CF Pages: kết nối lần đầu từ **điện thoại** ≤ 5 phút theo hướng dẫn; mỗi lỗi bảng 2.5 tái hiện được (token sai, token chỉ đọc, repo sai, nhánh sai, repo rỗng, offline, rate limit mock) và hiện đúng thông điệp; token hết hạn trước ngày cưới -> cảnh báo vàng ở 3 nơi; vault: ~~sai passphrase bị từ chối, 5 lần -> khoá 30 s~~ **(Rev 4: chuyển thành tiêu chí mật khẩu đăng nhập ở v2.3)**, ciphertext không chứa token dạng rõ (kiểm `localStorage`/IndexedDB/bundle/repo); publish từ điện thoại, site cập nhật ≤ 2 phút; thay ảnh hero -> file cũ vào `backup/`, tên mới có hash, publish không upload lại blob đã có (đếm request); **Restore 2 lần liên tiếp = tree ban đầu** (unit test mock + test thật); "Lấy lại ảnh trước đó" chỉ đổi nháp; "Hoàn tác tất cả" về đúng bản xuất bản; restore khi còn nháp -> nháp reset, file .json tải được và import lại đủ ảnh; xung đột ref (2 tab) báo đúng, không ghi đè; ~~401 giữa phiên về login vẫn giữ nháp~~ **(Rev 4: 401 giữa phiên ở lại Editor, xoá token, giữ nháp, hỏi lại token ở thao tác GitHub kế tiếp - kiểm ở v2.3)**; đổi theme khi đã chỉnh font -> dialog, "Giữ" giữ font; ui-ux-designer duyệt UX admin | frontend-developer; ui-ux-designer review |
 | **v2.3 - Đăng nhập mới + sửa phong bì/tự cuộn (Rev 4)** | **A. Đăng nhập (2.0, 2.4, 2.7-2.9)**: `admin-password.ts` + `scripts/set-admin-password.mjs` (`npm run admin:password`) + `auth/gate.ts`; màn Login 1 ô + `UnlockGuard`; phiên `wp_admin_auth_v1`; `SitePublishedSource`; `requireGitHub(intent)` + overlay Kết nối (Huỷ / tiếp tục thao tác) + 2 lối phụ (tải về, máy chủ dev); dialog nhập lại mật khẩu cho vault; vault v2 (khoá bằng mật khẩu đăng nhập, `pwTag`, "Ghi nhớ" mặc định tắt + cảnh báo), xoá vault v1; 401 không về Login; trạng thái "cần GitHub" ở Sao lưu và ImageSlot; tách chunk admin dưới `dist/admin/`; README bảo mật. **B. Phong bì/tự cuộn**: E01–E11 của `design-review-envelopes.md` theo giả định đã chốt (8.1, 8.2 #9, 8.4); chấp nhận hình nắp mới. E12 để v4 | **A.** (1) Mở `/admin` khi chưa có phiên -> màn Login; Playwright đếm **0** request tới `api.github.com` từ lúc mở tới khi bấm Xuất bản, và chỉ 1 request `content/config.json` cùng origin để nạp bản xuất bản. (2) Sai mật khẩu -> thông báo; 5 lần sai -> khoá 30 s có đếm ngược; tải lại trang vẫn khoá (fake clock). (3) Đúng mật khẩu -> Editor hiện bản đang xuất bản lấy từ site; sửa chữ, upload ảnh, xem trước chạy được khi chưa có token. (4) Tải lại tab giữ phiên; tab mới phải đăng nhập lại; đổi record hash (mô phỏng đổi mật khẩu) -> phiên cũ về Login. (5) Bấm Xuất bản/Khôi phục/"Lấy lại ảnh" khi chưa có token -> overlay Kết nối đúng tiêu đề theo intent; Huỷ -> nháp IndexedDB giống hệt trước khi bấm; kết nối ✓ -> dialog xuất bản/khôi phục **tự mở**, không phải bấm lại. (6) `publish.id` site khác GitHub + nháp có thay đổi -> dialog "Tiếp tục nháp / Dùng bản đang xuất bản" đúng 2.8.3 (fake GitHub). (7) "Ghi nhớ" mặc định tắt; tick -> vault v2 tạo được; phiên sau (đăng nhập lại) bấm Xuất bản **không** hỏi token; tải lại tab trước khi giải mã xong -> dialog nhập lại mật khẩu; vault v1 có sẵn -> bị xoá + toast 1 lần. (8) Đổi mật khẩu bằng script -> vault cũ bị xoá ở lần đăng nhập kế, có toast. (9) 401 giữa phiên -> ở lại Editor, token bị xoá (cả vault nếu từ vault), nháp giữ nguyên. (10) Kiểm chuỗi: `dist/` và mã nguồn không chứa mật khẩu dạng rõ (kiểm tay bằng tìm kiếm chuỗi, mật khẩu nhập từ terminal, không lưu) và không chứa token; ngoài `dist/admin/` không file nào chứa `salt`/`hash` của record. (11) Unit test xanh: `verifyPassword` (đúng/sai/NFC/không trim), vault v2 (đúng, sai khoá, sai AAD, `pwTag` lệch), `UnlockGuard`, script `--stdin` sinh record verify được. (12) Đăng nhập ≤ 1.5 s trên Android tầm trung (đo); admin JS ban đầu vẫn ≤ 150 KB, Login + gate ≤ 15 KB gzip trước khi tải Editor. **B.** (13) E01: ở 360×740, 3 tên mẫu có dấu nặng ở dòng cuối × 6 mẫu × 3 theme, ảnh chụp `.env-guest` với `overflow:visible` và mặc định **giống hệt**; cỡ chữ ≥ 15 px, ≤ 3 dòng; tên 60 ký tự không mất chữ; không còn `line-clamp` trên `.env-guest`. (14) E02: kraft không pixel dây nào nằm trong khung `.env-addr` (thẻ 72% × 40%). (15) E04: lấy mẫu 50 ms, thẻ/nắp không giao `.cv-head` khi `.cv-head` opacity > 0.1; tổng thời lượng mỗi mẫu không đổi quá ±50 ms và vẫn ≤ 2.4 s. (16) E05: đã dừng + khách cuộn -> nút Tiếp tục opacity 0 và không nhận chạm; đứng yên 1.2 s -> hiện lại; focus trong form -> ẩn; không giao vùng chạm "Gửi lời chúc" khi đang ẩn. (17) E06: theme tối với classic/minimal/lace: viền phong bì ≥ 1.5:1 với nền, mép nắp/ren ≥ 2:1; lace theme sáng mép ren ≥ 2:1. (18) E07-E09: velvet "Theo theme" trên theme sáng không còn quầng `#7A1E2C`; minimal nhiều dòng không có "·" treo; seal ở 1440×900 ≥ 15% bề rộng phong bì, ở 360 trong 52-58 px. (19) E10: khung tooltip nhạc không giao khung nút tự cuộn. (20) E11: đo 30 s tự cuộn, pill đổi class `is-mini` **0 lần** khi đang chạy. (21) Không khung nào ra khỏi viewport (test cũ vẫn xanh); `size-limit` xanh; ui-ux-designer review lại: 0 điểm Cao/Vừa còn mở | frontend-developer; ui-ux-designer (review E01–E11 + copy Login/Kết nối) |
+| **v4a-1 - 9 theme + asset + B2 hoạ tiết nền (Rev 5)** | Mục 10: bật 9 theme (`hong-phan`, `luc-bao`, `muc-giay`, `hoai-co`, `sen-cham`, `mau-nuoc`, `dat-nung`, `pastel-han`, `bien-dao`) + 8 ornament, 8 divider sprite + `torn-paper` (divider thành file riêng), 8 khung mới + `wash-mask`, 7 texture (chuyển sang `.sec::before`), `--sec-bg`; 14 gói font @fontsource; B2: schema `theme.motif.*` (không tăng version), `motifCap`, module lười `motif`, panel admin lười; sửa 2 lỗi kiến trúc (divider trộn bộ, texture bị nền section che). Làm sau Bước 0 của `solution-v4a-2bc.md`, theo bản đồ sở hữu | (1) `npm run build` xanh: JS ban đầu ≤ 60 KB, CSS ban đầu ≤ 25 KB, motif JS ≤ 1.5 KB / CSS ≤ 3 KB, Admin JS ban đầu ≤ 80 KB (tăng ≤ 1 KB), mọi chunk admin lười ≤ 15 KB. (2) Unit 10.8 xanh: 12 theme resolve không fallback ở nhóm của v4a-1 + tương phản khớp 1.6.3; `cap` khớp 1.7.5 ±.01 + 300 mẫu ngẫu nhiên; schema/migration motif; asset; 28 font đủ `vietnamese` + `latin`; font cover ≤ 180 KB cả 12 theme. (3) E2E `v4a-1.spec.ts` T1-T7 xanh; full e2e chạy 1 lần cuối xanh (gồm `guest.spec.ts` không sửa). (4) Hoạ tiết mặc định chỉ ở `son-do`/`sen-cham`/`dem-nhung`/`bien-dao`; `chu-hy` không xoay; reduced-motion đứng yên; không áp cho cover/phong bì. (5) Diff chỉ chạm file theo 10.9 (+ 4 hunk đã được cho phép). (6) ui-ux-designer review: 0 điểm Cao/Vừa; chuỗi dấu chồng duyệt bằng ảnh cho 12 theme | frontend-developer FE-1 (worktree `wt/v4a-1`, cổng 4273/5275); ui-ux-designer (bước 4) |
+| **v4a-2a - B1 reveal theo section + 4 gói reveal + micro (Rev 5)** | Theo `design-v4a-2a.md` (đang thiết kế); solution bổ sung schema + kế hoạch sau khi thiết kế xong; vùng `[v4a-2a]` đã chừa sẵn ở Bước 0 | Định nghĩa trong tài liệu solution của đợt | FE (slot trống đầu tiên); ui-ux-designer A |
+| **v4a-2b - 13 kiểu mở + E12 (Rev 5)** | Xem `solution-v4a-2bc.md` (Bước 0 + kế hoạch + bản đồ sở hữu file cho FE song song) | Theo `solution-v4a-2bc.md` | FE-2 (Bước 0 rồi 2b, song song FE-1); ui-ux-designer B |
+| **v4a-2c - 16 loại hạt + 4 burst (Rev 5)** | Xem `solution-v4a-2bc.md` | Theo `solution-v4a-2bc.md` | FE-3 (sau FE-1 hoặc FE-2); ui-ux-designer B |
+| **v4a-3 - B3 mascot (Rev 5)** | **Dời sau v4b** (decisions 2026-10-09); chốt nhân vật + giấy phép khi tới lượt | - | - |
 | **v3 - Apps Script RSVP/guestbook + micro liên quan** | `apps-script/Code.gs` (ping, guestbook GET/POST, rsvp upsert theo `submissionId`, honeypot, validate, rate-limit, `LockService`); client `integrations/apps-script.ts`; trạng thái form design 4.10/4.11; fallback khi URL rỗng; nút ping trong admin; micro `wish-fly` (3 biến thể), `rsvp-success`, `choice-card`, `stepper-bump`, burst `onRsvp`; README | Gửi lời chúc/RSVP từ webview Zalo + Safari iOS ghi đúng Sheet; `hidden = TRUE` -> biến mất sau lần poll kế; "Sửa phản hồi" cập nhật dòng cũ; honeypot + gửi dồn bị chặn; tắt mạng -> giữ nội dung + "Thử lại"; "Không thể đến" không có confetti; chunk lazy mỗi cái ≤ 15 KB | frontend-developer; bắt đầu song song v2 sau v1 |
-| **v4 - Thư viện mở rộng + polish/perf/QA** | **v4a**: 9 theme còn lại (`hong-phan`, `luc-bao`, `muc-giay`, `hoai-co`, `sen-cham`, `mau-nuoc`, `dat-nung`, `pastel-han`, `bien-dao`) + ornament/texture/photoFrame/divider tương ứng; 13 kiểu mở còn lại (`curtain`, `wax-seal`, `origami`, `double-door`, `flower-gate`, `scroll`, `card-3d`, `light-gather`, `gift-box`, `moon-gate`, `book`, `ink-spread`, `polaroid`); 16 loại hạt còn lại; burst `confetti`, `gold`, `red-paper`, `heart-burst`; reveal 4 gói còn lại (`editorial`, `letter`, `playful`, `cinematic`) gồm `mask-up`, `split-*`, `blur-in`, `parallax-layers`; micro còn lại (`btn-shine`, `photo-tilt`, `countdown-odometer`, `slide`, `scroll-progress`, `name-sparkle`, `music-ripple`, `gift-shake`, `calendar-flip`, `couple-heart-tap`); **(Rev 4)** E12 - cấp "Nhiều" riêng cho từng mẫu phong thư; **(B1, 2026-10-08)** reveal **theo từng section** (gán gói/kiểu reveal riêng cho mỗi section + chế độ "tự động xen kẽ", admin chọn) — cần ui-ux-designer thiết kế + solution-designer bổ sung schema trước khi code (xem backlog.md B1); **(B2, 2026-10-08)** hoạ tiết trang trí nền dạng vector (trống đồng, mây, sóng, sen, chữ Hỷ...; màu theo theme, chuyển động nhẹ; admin chọn bộ/độ đậm/vị trí) — cần ui-ux-designer vẽ + solution-designer schema; **(B3, 2026-10-08)** mascot "nhìn theo" hướng scroll hoặc nghiêng máy (DeviceOrientation, xin quyền iOS lúc chạm mở thiệp, fallback scroll, reduced-motion đứng yên), tham khảo nilbuild/page-mascot (kiểm giấy phép) — cần làm rõ nhân vật + thiết kế trước khi code; mỗi mục bật trong `capabilities.ts` khi đạt tiêu chí. **v4b**: tối ưu bundle, a11y WCAG 2.2 AA (design 9), ma trận thiết bị/webview, CSP cuối, Playwright smoke, README deploy + PAT + Cloudflare Access | Cả 12 theme: test tương phản tự động khớp 1.6.3, chuỗi dấu chồng duyệt bằng ảnh chụp từng theme; cả 17 kiểu mở: ≤ 2.4 s, chạm lần 2 tua nhanh ≤ 300 ms, bản Nhẹ/Nhiều đúng bảng 3.4b, module ≤ 4 KB, không clip chữ có dấu (ảnh chụp tên "Nguyễn Thuỳ Linh" giữa animation); `light-gather` ≥ 45 fps ở `medium` trên máy tầm trung và tự về `fade-zoom` khi mô phỏng máy yếu; với **tổ hợp nặng nhất** (`dem-nhung` + `light-gather` + `high` + `cinematic`) JS ban đầu vẫn ≤ 60 KB, trang đầu ≤ 900 KB; LCP < 2.5 s / CLS < 0.05 / INP < 200 ms trên Android tầm thấp 4G; axe 0 lỗi serious/critical; pháo hoa < 3 lần nháy/giây; checklist Zalo/Facebook/Messenger/Safari iOS/Chrome Android pass (nhạc, cover, link có dấu và link mã hoá, .ics, QR, bản đồ); người duyệt nghiệm thu | frontend-developer; ui-ux-designer (asset 9 theme + 13 kiểu mở, visual cuối) |
+| **v4 - Thư viện mở rộng + polish/perf/QA** | **(Rev 5) Phần v4a của dòng này đã tách thành các dòng v4a-1/2a/2b/2c/3 ở trên; tiêu chí chung của dòng này vẫn áp dụng khi nghiệm thu v4b.** **v4a**: 9 theme còn lại (`hong-phan`, `luc-bao`, `muc-giay`, `hoai-co`, `sen-cham`, `mau-nuoc`, `dat-nung`, `pastel-han`, `bien-dao`) + ornament/texture/photoFrame/divider tương ứng; 13 kiểu mở còn lại (`curtain`, `wax-seal`, `origami`, `double-door`, `flower-gate`, `scroll`, `card-3d`, `light-gather`, `gift-box`, `moon-gate`, `book`, `ink-spread`, `polaroid`); 16 loại hạt còn lại; burst `confetti`, `gold`, `red-paper`, `heart-burst`; reveal 4 gói còn lại (`editorial`, `letter`, `playful`, `cinematic`) gồm `mask-up`, `split-*`, `blur-in`, `parallax-layers`; micro còn lại (`btn-shine`, `photo-tilt`, `countdown-odometer`, `slide`, `scroll-progress`, `name-sparkle`, `music-ripple`, `gift-shake`, `calendar-flip`, `couple-heart-tap`); **(Rev 4)** E12 - cấp "Nhiều" riêng cho từng mẫu phong thư; **(B1, 2026-10-08)** reveal **theo từng section** (gán gói/kiểu reveal riêng cho mỗi section + chế độ "tự động xen kẽ", admin chọn) — cần ui-ux-designer thiết kế + solution-designer bổ sung schema trước khi code (xem backlog.md B1); **(B2, 2026-10-08)** hoạ tiết trang trí nền dạng vector (trống đồng, mây, sóng, sen, chữ Hỷ...; màu theo theme, chuyển động nhẹ; admin chọn bộ/độ đậm/vị trí) — cần ui-ux-designer vẽ + solution-designer schema; **(B3, 2026-10-08)** mascot "nhìn theo" hướng scroll hoặc nghiêng máy (DeviceOrientation, xin quyền iOS lúc chạm mở thiệp, fallback scroll, reduced-motion đứng yên), tham khảo nilbuild/page-mascot (kiểm giấy phép) — cần làm rõ nhân vật + thiết kế trước khi code; mỗi mục bật trong `capabilities.ts` khi đạt tiêu chí. **v4b**: tối ưu bundle, a11y WCAG 2.2 AA (design 9), ma trận thiết bị/webview, CSP cuối, Playwright smoke, README deploy + PAT + Cloudflare Access | Cả 12 theme: test tương phản tự động khớp 1.6.3, chuỗi dấu chồng duyệt bằng ảnh chụp từng theme; cả 17 kiểu mở: ≤ 2.4 s, chạm lần 2 tua nhanh ≤ 300 ms, bản Nhẹ/Nhiều đúng bảng 3.4b, module ≤ 4 KB, không clip chữ có dấu (ảnh chụp tên "Nguyễn Thuỳ Linh" giữa animation); `light-gather` ≥ 45 fps ở `medium` trên máy tầm trung và tự về `fade-zoom` khi mô phỏng máy yếu; với **tổ hợp nặng nhất** (`dem-nhung` + `light-gather` + `high` + `cinematic`) JS ban đầu vẫn ≤ 60 KB, trang đầu ≤ 900 KB; LCP < 2.5 s / CLS < 0.05 / INP < 200 ms trên Android tầm thấp 4G; axe 0 lỗi serious/critical; pháo hoa < 3 lần nháy/giây; checklist Zalo/Facebook/Messenger/Safari iOS/Chrome Android pass (nhạc, cover, link có dấu và link mã hoá, .ics, QR, bản đồ); người duyệt nghiệm thu | frontend-developer; ui-ux-designer (asset 9 theme + 13 kiểu mở, visual cuối) |
 
 ---
 
@@ -1031,11 +1226,13 @@ Nguyên tắc: **schema v1 đầy đủ từ v1** (mọi enum hợp lệ, migrat
   - Guest: `default-src 'self'; img-src 'self' blob: data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://script.google.com https://script.googleusercontent.com; frame-src https://www.google.com; frame-ancestors 'self'; script-src 'self'; style-src 'self' <chốt ở v1>`.
   - Admin: thêm `connect-src https://api.github.com`, `frame-src 'self'`, `style-src https://fonts.googleapis.com`, `font-src https://fonts.gstatic.com`. **(Rev 4)** `connect-src 'self'` đã có, đủ cho đọc `/content/config.json`.
   - `mapUrl` chỉ `https:`, `mapEmbedUrl` chỉ host `www.google.com`, `phone` chỉ `tel:`.
+  - **(Rev 5)** v4a-1 không đổi CSP: hoạ tiết/texture/khung dùng `url()` trong stylesheet (ảnh cùng origin, `img-src 'self'`), CSS chunk động nạp bằng `<link>` (`style-src 'self'`), vị trí/biến đặt qua CSSOM (không inline `style` trong HTML); SVG asset được unit test kiểm không có script/handler/`foreignObject`/link ngoài.
 - **Repo private**; dung lượng repo tăng theo số lần thay ảnh - chấp nhận. Backup không deploy.
 - **Build quota**: mỗi Xuất bản/Khôi phục = 1 build; CF Pages 500 build/tháng là dư. **(Rev 4)** Đổi mật khẩu = sửa mã nguồn = cũng cần 1 lần build/deploy.
 - **Xung đột**: optimistic lock bằng SHA nhánh (`force: false`). **(Rev 4)** Khi nháp dựng từ site, đối chiếu `publish.id` trước khi lấy `baseCommit` (2.8.3).
 - **Breaking change so với dự án cũ**: `config.js` -> `config.json`; `sections` thành object; theme `xanh-ngoc`/`xanh-navy` -> `luc-bao`; `vendor` gộp vào `footer`; `petals` -> `particles`. **So với revision 2**: `effects.intensity` đổi `light/strong` -> `low/high`; `theme.accentColor` -> `overrides.accent`; `effects.petals` -> `effects.particles`; `reveal.style` thành gói; `ornamentSet` `classic` -> `classic-line`. Chưa có code nên không cần migration cho rev 2.
 - **(Rev 4) Breaking change admin v2.2 -> v2.3**: vault `wp_admin_vault_v1` (passphrase) không dùng được nữa -> xoá + toast, người dùng dán lại token khi xuất bản. Không ảnh hưởng config/khách.
+- **(Rev 5) Thay đổi hành vi v4a-1 (không phải breaking schema)**: config đang dùng `son-do`/`sen-cham`/`dem-nhung`/`bien-dao` tự có hoạ tiết nền (đã được chấp nhận); texture chuyển từ lớp cố định toàn trang sang lớp của từng section (cuộn theo trang); divider `cloud`/`deco-fan` không còn phụ thuộc bộ ornament đang chọn.
 - `file://` không hỗ trợ (dùng `npm run dev` / `npm run preview`).
 - **Data/ETL**: không liên quan.
 
@@ -1060,6 +1257,11 @@ Nguyên tắc: **schema v1 đầy đủ từ v1** (mọi enum hợp lệ, migrat
 | Nháp mất do trình duyệt dọn IndexedDB (Safari 7 ngày) | Thấp | `navigator.storage.persist()`; cảnh báo "chưa xuất bản"; nút tải nháp; xuất bản sớm |
 | Safari không encode WebP, HEIC | Thấp | Fallback JPEG; báo chọn JPG/PNG |
 | Asset của 9 theme / 13 kiểu mở trễ | Thấp | Capabilities: chưa xong thì không bật, schema không đổi |
+| **(Rev 5)** Chuyển texture sang `.sec::before` + `isolation` làm lệch lớp (hero, divider, nội dung section) | Trung bình | Overlay gắn `body`; divider nằm ngoài section (z 2); `.sec-in` z 1; e2e T1 + designer review ảnh |
+| **(Rev 5)** Font của theme mới vượt 180 KB ở màn cover | Trung bình | Unit test 12 theme trước khi bật; designer chọn face bỏ (Còn mở #14) |
+| **(Rev 5)** Xung đột merge giữa các FE song song (capabilities, plugin, lock file, `bootstrap.ts`, `resolve.test.ts`) | Trung bình | Bước 0 + bản đồ sở hữu `solution-v4a-2bc.md` (add-on `caps/v4a-1.ts`, vùng `[v4a-1]`); 4 hunk ngoài vùng xin phép trước (10.9); orchestrator merge lần lượt, chạy lại `npm install` + toàn bộ test sau mỗi lần merge |
+| **(Rev 5)** `motifCap` tính ra lệch bảng 1.7.5 | Thấp | Công thức 10.1 là nguồn; lệch > .01 báo designer, không sửa tay bảng/công thức |
+| **(Rev 5)** Texture SVG `feTurbulence` tốn raster trên máy yếu | Thấp | Tile vẽ 1 lần, không animate; designer đã chọn tile 128-400 px; theo dõi trong Lighthouse v4b |
 
 ---
 
@@ -1085,6 +1287,9 @@ Nguồn: [`decisions.md`](./decisions.md). Áp dụng trong file này:
 17. **(Rev 4)** Yêu cầu "sửa cấu hình không cần deploy" **đã được người duyệt bỏ**: site tĩnh nên mọi thay đổi (kể cả chữ) đều phải publish; giữ nguyên luồng publish qua GitHub, không thêm nơi lưu runtime.
 18. **(Rev 4)** Đăng nhập admin: **cổng mật khẩu** (mật khẩu đã chốt trong decisions, lưu dạng hash PBKDF2 trong code, có script đổi mật khẩu), phiên `sessionStorage`, khoá 30 s sau 5 lần sai; **token GitHub chỉ hỏi khi Xuất bản/Khôi phục/thao tác cần GitHub**, kết nối xong tự tiếp tục thao tác; token ghi nhớ mã hoá bằng mật khẩu đăng nhập (bỏ passphrase riêng); chưa có token thì đọc bản xuất bản từ site cùng origin.
 19. **(Rev 4)** Phạm vi **v2.3** = #18 + sửa E01–E11 theo giả định designer (tên khách tự giảm cỡ, tối đa 3 dòng ≥ 15 px, không mất dấu; nút "Tiếp tục tự cuộn" ẩn khi khách cuộn, hiện lại sau 1.2 s đứng yên; kraft dây dừng ở mép thẻ; theme tối pha 14% accent cho classic/minimal/lace; chấp nhận hình nắp mới). E12 để v4.
+20. **(Rev 5)** Thứ tự: **v4a trước v3**; v4a tách **v4a-1** (9 theme + asset + B2), **v4a-2a** (B1 + 4 gói reveal + micro), **v4a-2b** (13 kiểu mở + E12), **v4a-2c** (16 hạt + 4 burst); **B3 dời sau v4b**. Chạy song song tối đa 2 FE, mỗi FE 1 worktree + cặp cổng e2e riêng; designer/solution viết file riêng theo đợt (decisions 2026-10-09).
+21. **(Rev 5)** B2: hoạ tiết mặc định **bật chỉ** ở `son-do` (trống đồng), `sen-cham` (sen), `dem-nhung` (art-deco), `bien-dao` (sóng), tắt ở 8 theme còn lại kể cả Trầm Vàng; trống đồng xoay 1 vòng/240 s ở mức Vừa; chữ Hỷ không bao giờ xoay; chưa áp cho cover/phong bì ở v4a-1.
+22. **(Rev 5)** Font v4a-1: thêm đủ **14 gói `@fontsource`** cho 6 theme mới; kiểm subset tiếng Việt + font ban đầu ≤ 180 KB.
 
 ---
 
@@ -1101,6 +1306,10 @@ Nguồn: [`decisions.md`](./decisions.md). Áp dụng trong file này:
 - [ ] **(Rev 4)** Người duyệt xác nhận các giả định bảo mật 2.9 (Còn mở #5-#8) trước khi bắt đầu v2.3
 - [ ] **(Rev 4)** Xử lý mật khẩu dạng rõ trong `decisions.md` trước khi commit v2.3 (Còn mở #5)
 - [ ] **(Rev 4)** Thêm `npm run admin:password` vào CLAUDE.md của dự án (mục Lệnh)
+- [ ] **(Rev 5)** Review schema `theme.motif.*` + bảng preset motif (10.1) và việc không tăng `schemaVersion`
+- [ ] **(Rev 5)** Người duyệt xác nhận Còn mở #11-#16 (hoặc đồng ý để FE-1 làm theo giả định mặc định)
+- [ ] **(Rev 5)** Orchestrator chốt 4 hunk ngoài vùng của v4a-1 (Còn mở #18; đề xuất gộp `assetsInlineLimit` + 2 dòng size-limit motif vào Bước 0) trước khi giao FE-1
+- [ ] **(Rev 5)** Bước 0 của `solution-v4a-2bc.md` đã merge vào branch phiên (hoặc vào `wt/v4a-1`) trước khi FE-1 sửa file dùng chung
 
 ---
 
@@ -1116,3 +1325,11 @@ Nguồn: [`decisions.md`](./decisions.md). Áp dụng trong file này:
 8. **(Rev 4) Độ mạnh mật khẩu**. Giả định mặc định: giữ mật khẩu đã chốt (7 ký tự) theo decisions; script chỉ cảnh báo khi < 12 ký tự; không chuyển sang Argon2id, không tăng số vòng PBKDF2. Khuyến nghị: đổi sang ≥ 12 ký tự hoặc 4 từ trước khi bật "Ghi nhớ" trên bất kỳ máy nào.
 9. **(Rev 4) Phiên đăng nhập không tự hết theo thời gian rảnh** (chỉ hết khi đóng tab/Đăng xuất). Giả định mặc định: chấp nhận, vì sau cổng không có bí mật; token vẫn chỉ trong `sessionStorage`.
 10. **(Rev 4) Cổng đăng nhập áp dụng cả chế độ máy chủ dev và "Tải về máy"**. Giả định mặc định: có (một luồng duy nhất). E2E trên `vite dev` dùng record mật khẩu thử qua `WP_ADMIN_PASSWORD_FILE`, chỉ có hiệu lực ở lệnh `serve`.
+11. **(Rev 5) Theme mặc định tắt hoạ tiết mà admin chọn một bộ, để Vị trí/Độ đậm "Theo theme"**: dùng gì? Giả định mặc định: `band` + `medium` cho cả 8 theme (dải viền không nằm sau chữ, dùng được với cap thấp như Trầm Vàng .05). Thay thế: lấy vị trí gợi ý riêng theo từng bộ (vd `dong-son` -> `title` + `band`).
+12. **(Rev 5) Texture mới trên màn cover**: `cover.css` (chủ: v4a-2b) hiện chỉ có noise cho `paper`/`velvet`; 7 texture mới chưa có trên cover. Giả định mặc định: `textures.css` (file của v4a-1) thêm selector `.cover::before` cho các texture dạng tile (trừ `watercolor-wash`), dùng opacity cover hiện có (.06), **không sửa `cover.css`**. Nếu designer thấy rối với phong bì thì bỏ, cover các theme đó giữ nền phẳng + "nền bàn".
+13. **(Rev 5) Danh sách "Đổi" có hình thật cho Hoạ tiết/Texture/Khung ảnh/Đường phân cách (design 8.12 v5)**. Giả định mặc định: v4a-1 giữ ô `Select` (chỉ thêm lựa chọn); thẻ có hình làm ở v4b. Chỉ panel Hoạ tiết nền có thẻ hình (design 1.7.9 bắt buộc).
+14. **(Rev 5) Theme có font cover vượt 180 KB** (nếu unit test 10.3 phát hiện). Giả định mặc định: không tự bỏ face; FE-1 báo số đo theo theme, ui-ux-designer chọn bỏ face nào (vd heading 500 dùng 400) rồi mới bật theme đó. Không nới ngân sách.
+15. **(Rev 5) `html { font-synthesis-weight: none }`** để Prata/Old Standard TT không bị đậm giả ở `.h3` (600). Giả định mặc định: áp toàn cục (các font khác có đủ weight nên không đổi gì). Prata không có italic -> tên khách trên cover nghiêng giả: chấp nhận, designer xem ở bước 4.
+16. **(Rev 5) Polaroid không có chú thích ảnh ở v4a-1** (schema không có field). Giả định mặc định: chấp nhận; nếu cần chú thích thì thêm field tuỳ chọn ở đợt sau (vẫn không tăng version).
+17. **(Rev 5) Ai cập nhật `STAGE` trong `capabilities.ts`** khi nhiều FE cùng bật capability. Giả định mặc định (khớp `solution-v4a-2bc.md` câu hỏi #13): các FE không đổi `STAGE`; orchestrator đặt giá trị khi merge từng đợt.
+18. **(Rev 5) 4 hunk ngoài vùng/ngoài quyền của v4a-1** theo bản đồ sở hữu: (1) `vite.config.ts` `assetsInlineLimit` loại trừ `theme-assets`; (2) `.size-limit.cjs` 2 dòng motif JS/CSS; (3) `base.css` xoá khối texture `body::before`/`::after` (dòng 33-42, chỉ v4a-1 đụng); (4) `bootstrap.ts` 1 dòng gán `dividerUrl` trong nhánh preview cạnh `ornamentUrl`. Giả định mặc định: (1)-(2) gộp vào Bước 0 (việc 0.6, 0.8) do FE-2 làm; (3)-(4) orchestrator cho FE-1 sửa đúng các hunk đó. Nếu không được phép: (1) bỏ qua thì SVG nhỏ bị inline vào CSS (CSS ban đầu tăng, vẫn phải ≤ 25 KB); (3) thay bằng rule `content: none` trong `textures.css` (để lại CSS chết ~1 KB); (4) chuyển việc gán `dividerUrl` vào `preview-bridge.ts` qua hàm trả cả 2 URL (vẫn cần sửa dòng gọi).

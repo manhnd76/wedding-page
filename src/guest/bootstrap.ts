@@ -9,6 +9,7 @@ import { guestNameFromUrl } from '@shared/guest-name';
 import { planSections, type PlannedSection } from '@shared/sections/meta';
 import { ctx, emit, watchTyping, type Resolved } from './context';
 import { h } from './dom';
+import { OPEN_META } from '@shared/open-styles';
 import { mountCover } from './cover/cover';
 import { MusicPlayer } from './music/player';
 import { mountFloating } from './floating/floating';
@@ -59,6 +60,7 @@ async function loadConfig(boot: PreviewBoot | null): Promise<{ config: WeddingCo
     if (boot) {
       const bridge = await import('./preview-bridge');
       resolved.ornamentUrl = await bridge.ornamentUrlFor(import.meta.env.BASE_URL, resolved.ornamentSet);
+      resolved.dividerUrl = await bridge.dividerUrlFor(import.meta.env.BASE_URL, resolved.divider);
       await bridge.ensureFonts(import.meta.env.BASE_URL, [resolved.fonts.heading, resolved.fonts.script, resolved.fonts.body]);
     }
     const vars = themeCssVars(resolved, { heading: fontStack(resolved.fonts.heading), script: fontStack(resolved.fonts.script), body: fontStack(resolved.fonts.body) });
@@ -160,7 +162,21 @@ export async function bootstrap(): Promise<void> {
   const nextSec = main.querySelectorAll<HTMLElement>('.sec')[1];
   if (cue) { if (nextSec?.id) cue.href = `#${nextSec.id}`; else cue.remove(); }
 
+  // [v4a-2a] >>>
+  // [v4a-2a] <<<
   prepareReveal(main, ctx.resolved.reveal, ctx.fx.state);
+  // [v4a-1] >>>
+  // ornament watercolor: vệt .wash hiện dần cùng svg-draw (ornaments.css); polaroid thứ chẵn nghiêng phải (frames.css)
+  document.documentElement.dataset.orn = ctx.resolved.ornamentSet;
+  main.querySelectorAll('.frame--polaroid').forEach((f, i) => { if (i % 2) f.classList.add('tilt-r'); });
+  // hoạ tiết nền B2: chunk lười lúc rảnh (sau khi landing render, không ảnh hưởng LCP) - solution Rev 5 mục 10.5f
+  const mtf = ctx.resolved.motif;
+  if (mtf && mtf.set !== 'none' && mtf.placements.length) {
+    const load = () => void import('./motif/motif').then((m) => m.mountMotifs(main, plan));
+    const ric = (window as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    if (ric) ric(load, { timeout: 1500 }); else setTimeout(load, 200);
+  }
+  // [v4a-1] <<<
 
   const cfgMusic = ctx.config.music;
   const music = new MusicPlayer(cfgMusic.enabled && cfgMusic.src ? assetUrl(cfgMusic.src, ctx.base) : null, {
@@ -224,7 +240,7 @@ function previewAfterOpen(boot: PreviewBoot, target: string | null, bridge: type
     bridge.applyOptions(o);
     return;
   }
-  if (target === 'cover') { done(1600); return; }
+  if (target === 'cover') { done((OPEN_META[ctx.resolved.openStyle]?.ms ?? 1300) + 300); return; }
   if (target === 'autoscroll') {
     window.scrollTo(0, 0);
     void import('./autoscroll/autoscroll').then((m) => {

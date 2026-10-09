@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>v4a-2 particles</title>
+<style>
+body { margin: 0; padding: 16px; background: #e9e6e1; font: 12px/1.4 sans-serif; color: #222; }
+h1 { font-size: 15px; margin: 0 0 10px; }
+.row { display: grid; grid-template-columns: 150px 330px 330px 330px; gap: 10px; align-items: center; margin-bottom: 8px; }
+.row b { display: block; font-size: 12px; } .row small { color: #666; }
+canvas { display: block; border-radius: 8px; }
+.hd { font-weight: 600; color: #444; }
+</style></head><body>
+<h1>v4a-2 · 16 hạt nền - vẽ bằng Path2D từ <code>particles/particles.json</code> (cột 1: biến thể ở 3 cỡ tối đa ×2 DPR · cột 2–3: cảnh rơi tĩnh trên nền theme gợi ý / nền tối dem-nhung)</h1>
+<div class="row hd"><span>loại</span><span>biến thể (cỡ min / max / ×3 soi nét)</span><span>nền theme gợi ý (màu "theme")</span><span>nền tối #1C1517 (naturalDark / theme tối)</span></div>
+<div id="list"></div>
+<script type="module">
+const { items } = await (await fetch('../../particles/particles.json')).json();
+const THEME = { // theme gợi ý (design 1.6.4) -> [bg, accent, primaryDecor, accent2]
+  'petal-sakura': ['#FBF8F6', '#F3C6B8', '#6A5A8C', '#CFC6E8'], 'petal-lotus': ['#F5F3EC', '#E7A9B6', '#2D3E5E', '#E7A9B6'],
+  'petal-dried': ['#F4ECDD', '#C99A8B', '#6B3E26', '#C99A8B'], 'petal-watercolor': ['#F7F8F3', '#A9C3A0', '#4E6B4A', '#E9C2B8'],
+  plumeria: ['#FAF6EE', '#F2A38A', '#1D5C7A', '#8FD0CF'], 'paper-heart': ['#FBF3F1', '#E3BDB5', '#A4495A', '#E3BDB5'],
+  'leaf-green': ['#F7F8F3', '#A9C3A0', '#4E6B4A', '#E9C2B8'], 'leaf-eucalyptus': ['#F3F0E8', '#C2A26A', '#1F5A4A', '#C2A26A'],
+  'leaf-maple': ['#F6EEE4', '#D9A47E', '#9A4A2C', '#D9A47E'], pampas: ['#F6EEE4', '#D9A47E', '#9A4A2C', '#D9A47E'],
+  snow: ['#FBF7F0', '#C9A86A', '#8A6A3B', '#C9A86A'], bubble: ['#FAF6EE', '#F2A38A', '#1D5C7A', '#8FD0CF'],
+  sparkle: ['#F3F0E8', '#C2A26A', '#1F5A4A', '#C2A26A'], 'ink-dot': ['#FAF9F6', '#C2703D', '#262624', '#C2703D'],
+  'dust-mote': ['#F4ECDD', '#C99A8B', '#6B3E26', '#C99A8B'], 'red-paper': ['#FFF8EE', '#D4A23C', '#A3201D', '#D4A23C'],
+};
+const DARK = { bg: '#1C1517', accent: '#9C7A45', decor: '#D9B77E', accent2: '#9C7A45' };
+const mix = (h, to, k) => { const p = (x) => [1, 3, 5].map((i) => parseInt(x.slice(i, i + 2), 16)); if (!/^#/.test(h)) return h; const a = p(h), b = p(to); return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
+const tone = (t, c1, c2) => t === 'c1' ? c1 : t === 'c2' ? c2 : t === 'light' ? mix(c1, '#ffffff', 0.4) : t === 'dark' ? mix(c1, '#000000', 0.28) : t;
+// == helper chung đề xuất cho FE (design-v4a-2bc §4.1): drawLayers(g, s, layers, c1, c2)
+function drawLayers(g, s, layers, c1, c2, offset) {
+  const base = g.globalAlpha; // alpha của hạt NHÂN với alpha lớp (không ghi đè)
+  g.save(); g.scale(s / 24, s / 24); if (offset) g.translate(offset[0], offset[1]);
+  for (const l of layers) {
+    g.save();
+    g.globalAlpha = base * (l.a ?? 1);
+    if (l.clip) g.clip(new Path2D(l.clip));
+    if (l.radial) { const [x, y, r] = l.radial; const gr = g.createRadialGradient(x, y, 0, x, y, r); for (const [t, tn, a] of l.stops) gr.addColorStop(t, rgba(tone(tn, c1, c2), a)); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); g.restore(); continue; }
+    const p = l.circle ? (() => { const q = new Path2D(); q.arc(l.circle[0], l.circle[1], l.circle[2], 0, Math.PI * 2); return q; })() : new Path2D(l.d);
+    if (l.fill) { g.fillStyle = tone(l.fill, c1, c2); g.fill(p); }
+    else if (l.lw) { g.strokeStyle = tone(l.stroke, c1, c2); g.lineWidth = l.lw; g.lineCap = 'round'; g.lineJoin = 'round'; g.stroke(p); }
+    g.restore();
+  }
+  g.restore();
+}
+const rgba = (c, a) => { if (c.startsWith('rgba')) return c; const p = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); return `rgba(${p.join(',')},${a})`; };
+let seed = 3; const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+const pickV = (k) => { let r = rnd(), acc = 0; for (const v of k.variants) { acc += v.w; if (r <= acc) return v; } return k.variants[0]; };
+function scene(cv, k, bg, c1, c2, dark) {
+  const g = cv.getContext('2d'); const W = cv.width, H = cv.height; g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  // chữ mẫu để soi độ lấn át
+  g.fillStyle = dark ? '#F2E9E1' : '#2B2320'; g.font = 'italic 22px serif'; g.fillText('Minh Anh & Thuỳ Linh', 60, H / 2 + 8);
+  const n = Math.round(14 * Math.min(1.5, k.density) + 4);
+  for (let i = 0; i < n; i++) {
+    const v = pickV(k); const s = k.size[0] + rnd() * (k.size[1] - k.size[0]);
+    const x = rnd() * W, y = rnd() * H; const back = (v.back ?? k.back) && k.flip && rnd() < 0.35;
+    const a0 = k.alpha ? k.alpha[0] + rnd() * (k.alpha[1] - k.alpha[0]) : 1;
+    const depthA = k.depth ? 0.45 + 0.55 * (s - k.size[0]) / (k.size[1] - k.size[0]) : 1;
+    g.save(); g.translate(x, y); g.rotate(rnd() * 6.28 * (k.spin ? 1 : 0)); if (k.flip) g.scale(0.35 + rnd() * 0.65, 1); g.globalAlpha = a0 * depthA;
+    const usePal = (rnd() < 0.5);
+    drawLayers(g, s, back ? (v.back ?? k.back) : v.layers, usePal ? c1 : c1, c2, v.offset);
+    g.restore();
+  }
+}
+const list = document.getElementById('list');
+for (const k of items) {
+  const [bg, accent, decor, accent2] = THEME[k.id];
+  const nat = k.natural; const natD = k.naturalDark ?? k.natural;
+  // màu "theme": loại có natural -> natural; không có -> accent/primary-decor (bubble, watercolor: accent-2/accent)
+  const themeCols = nat ?? (['bubble', 'petal-watercolor'].includes(k.id) ? [accent2, accent] : [accent, decor]);
+  const darkCols = natD ?? [DARK.decor, DARK.accent];
+  const row = document.createElement('div'); row.className = 'row';
+  row.innerHTML = `<div><b>${k.id}</b><small>${k.name} · ${k.motion} · ×${k.density} · ${k.variants.length} biến thể</small></div>`;
+  const cv0 = document.createElement('canvas'); cv0.width = 330; cv0.height = 84;
+  const g0 = cv0.getContext('2d'); g0.fillStyle = bg; g0.fillRect(0, 0, 330, 84);
+  let x = 10;
+  k.variants.forEach((v) => {
+    for (const s of [k.size[0] * 2, k.size[1] * 2]) { g0.save(); g0.translate(x + s / 2, 42); drawLayers(g0, s, v.layers, themeCols[0], themeCols[1], v.offset); g0.restore(); x += s + 6; }
+    if (v.back ?? k.back) { const s = k.size[1] * 2; g0.save(); g0.translate(x + s / 2, 42); drawLayers(g0, s, v.back ?? k.back, themeCols[0], themeCols[1], v.offset); g0.restore(); x += s + 6; }
+    x += 6;
+  });
+  const big = k.variants[0]; const S = 72; g0.save(); g0.translate(330 - S / 2 - 4, 42); drawLayers(g0, S, big.layers, themeCols[0], themeCols[1], big.offset); g0.restore();
+  const cv1 = document.createElement('canvas'); cv1.width = 330; cv1.height = 84; scene(cv1, k, bg, themeCols[0], themeCols[1], false);
+  const cv2 = document.createElement('canvas'); cv2.width = 330; cv2.height = 84; scene(cv2, k, DARK.bg, darkCols[0], darkCols[1], true);
+  row.append(cv0, cv1, cv2); list.appendChild(row);
+}
+window.__ready = true;
+</script></body></html>

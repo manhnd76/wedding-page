@@ -7,7 +7,7 @@
  * admin dùng 2 khung luân phiên (double buffer) nên người dùng không thấy nháy.
  */
 import type { WeddingConfig } from '@shared/config/types';
-import type { FontId, OrnamentSet } from '@shared/config/enums';
+import type { Divider, FontId, OrnamentSet } from '@shared/config/enums';
 import { FONT_REGISTRY } from '@shared/fonts/registry';
 
 export interface PreviewOptions {
@@ -149,6 +149,8 @@ export function applyOptions(o: PreviewOptions): void {
 interface AssetManifest {
   fonts: Record<string, { family: string; weight: number; style: string; url: string; range: string }[]>;
   ornaments: Record<string, string>;
+  /** sprite divider riêng theo id (v4a-1, design 1.6.7b) */
+  dividers?: Record<string, string>;
 }
 let manifestP: Promise<AssetManifest | null> | null = null;
 function assetManifest(base: string): Promise<AssetManifest | null> {
@@ -175,4 +177,9 @@ export async function ensureFonts(base: string, fonts: FontId[]): Promise<void> 
 
 export async function ornamentUrlFor(base: string, set: OrnamentSet): Promise<string> {
   return (await assetManifest(base))?.ornaments[set] ?? '';
+}
+
+/** URL sprite divider riêng (rỗng nếu divider không phải sprite: ornament/wave/torn-paper/none). */
+export async function dividerUrlFor(base: string, d: Divider): Promise<string> {
+  return (await assetManifest(base))?.dividers?.[d] ?? '';
 }

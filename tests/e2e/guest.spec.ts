@@ -207,6 +207,11 @@ test.describe('360×740', () => {
     const built = await builtTheme();
     test.skip(built.openStyle !== 'envelope', `config mẫu đang dùng kiểu mở ${built.openStyle}`);
     const errors = watchConsole(page);
+    // đo thời lượng mức "Vừa" -> giả lập máy khoẻ (máy CI/cloud ≤ 4 nhân bị tự hạ cấp, phong bì ngắn hơn)
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
+      Object.defineProperty(navigator, 'deviceMemory', { get: () => 8 });
+    });
     await page.goto('/?to=gia-%C4%91%C3%ACnh-anh-M%E1%BA%A1nh');
     await expect(page.locator('.cv-cta')).toBeEnabled({ timeout: 6000 });
     await expect(page.locator('.cover')).toHaveAttribute('data-env', built.envelope!.style);

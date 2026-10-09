@@ -1,0 +1,21 @@
+/*
+ * Divider `sections.divider` (design 1.6.7b, solution Rev 5 mục 10.5a) - CSS lõi, import từ sections/common.ts.
+ * Divider có hình (leaf-branch, double-line, cloud, lotus, dots, brush-stroke, deco-fan, wave-ocean) là sprite riêng
+ * `/ornaments/divider-<id>.<hash>.svg` (1 symbol `#divider` 160×24), vẽ bằng `.div-orn` như R07. `ornament` = divider
+ * của bộ hoạ tiết; `wave`/`torn-paper` chỉ CSS; `none` không chèn.
+ */
+.divider--brush-stroke .div-orn { opacity: .75; } /* vệt cọ đặc: hạ đậm để không nặng hơn tiêu đề */
+.divider--dots .div-orn { width: 120px; } /* 3 chấm không cần khung rộng */
+@media (min-width: 1024px) { .divider--dots .div-orn { width: 160px; } }
+
+/* torn-paper (Đất Nung): mép giấy xé chạy hết chiều ngang = mép trên của section SAU (màu --div-bg).
+   Mask tile 240×20 lặp ngang; cao 20px mobile / 26px desktop, nhô lên trên ranh giới. Bóng mảnh đặt ở CHA (mask cắt filter). */
+.divider--torn-paper { filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, .08)); }
+.divider--torn-paper::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 20px;
+  background: var(--div-bg, var(--c-bg));
+  -webkit-mask: url("../theme-assets/dividers/torn-paper.svg") 0 100% / 240px 100% repeat-x;
+  mask: url("../theme-assets/dividers/torn-paper.svg") 0 100% / 240px 100% repeat-x;
+}
+@media (min-width: 1024px) { .divider--torn-paper::before { height: 26px; -webkit-mask-size: 320px 100%; mask-size: 320px 100%; } }
+[data-mode="dark"] .divider--torn-paper { filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, .08)); }

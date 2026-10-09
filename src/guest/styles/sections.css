@@ -267,3 +267,15 @@ p { text-wrap: pretty; }
 .ft-vendor { margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .ft-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .small .ic { display: inline-block; vertical-align: -2px; }
+
+/* [v4a-1] >>> */
+/* --sec-bg theo tone (solution Rev 5 mục 10.5c): vành nền khung ảnh, nền chữ "&" cần đúng màu section */
+.tone-bg, .sec-hero.no-img, .sec-thankyou.no-img { --sec-bg: var(--c-bg); }
+.tone-surface { --sec-bg: var(--c-surface); }
+.sec-footer { --sec-bg: var(--c-bg); }
+/* texture nay đã thấy được (.sec::before): nền đặc hình chữ nhật sau "&" lộ thành mảng phẳng -> mép mềm (vẫn che nét amp phía sau) */
+.couple-amp { background: radial-gradient(closest-side, var(--sec-bg, transparent) 55%, transparent); }
+/* [v4a-1] <<< */
+
+/* [v4a-2a] >>> */
+/* [v4a-2a] <<< */

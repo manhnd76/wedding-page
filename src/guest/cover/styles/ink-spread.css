@@ -1,0 +1,18 @@
+/* ink-spread (design-v4a-2bc §2.12): lỗ khoét hình vệt mực trên cover (mask-composite) + vành fixed trên cùng */
+.cover[data-open="ink-spread"] { --op-ink-rim: var(--c-accent); --ik-fill: var(--c-accent); }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .cover[data-open="ink-spread"] { --ik-fill: color-mix(in srgb, var(--c-accent) 30%, var(--c-bg)); }
+}
+[data-theme="muc-giay"] { --op-ink-rim: var(--c-text); }
+.ik-hole {
+  -webkit-mask: url(../theme-assets/ink-spread/blob-core.svg) 0 0 / 0 0 no-repeat, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: url(../theme-assets/ink-spread/blob-core.svg) 0 0 / 0 0 no-repeat exclude, linear-gradient(#000 0 0);
+}
+.ik-pre { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ik-p1 { -webkit-mask-image: url(../theme-assets/ink-spread/blob-core.svg); mask-image: url(../theme-assets/ink-spread/blob-core.svg); }
+.ik-p2 { -webkit-mask-image: url(../theme-assets/ink-spread/blob-rim.svg); mask-image: url(../theme-assets/ink-spread/blob-rim.svg); }
+.ik-rim, .ik-fill { position: fixed; pointer-events: none; transform: scale(0); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.ik-rim { z-index: calc(var(--z-cover) + 2); background: var(--op-ink-rim, #9c7a45); opacity: .55; -webkit-mask-image: url(../theme-assets/ink-spread/blob-rim.svg); mask-image: url(../theme-assets/ink-spread/blob-rim.svg); }
+[data-mode="dark"] .ik-rim { background: var(--c-primary); }
+.ik-fill { z-index: 9; background: var(--ik-fill); -webkit-mask-image: url(../theme-assets/ink-spread/blob-core.svg); mask-image: url(../theme-assets/ink-spread/blob-core.svg); }

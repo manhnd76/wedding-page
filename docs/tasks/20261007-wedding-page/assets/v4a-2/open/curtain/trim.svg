@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 40" width="16" height="40">
+<!-- curtain: dải viền dọc mép giữa (mask, tô ‐‐c-accent), tile 16×40 repeat-y -->
+<g fill="none" stroke="#000" stroke-width="1.2"><path d="M2 0V40M14 0V40" stroke-width=".8"/><path d="M8 6 13 14 8 22 3 14Z"/></g><circle cx="8" cy="31" r="1.8"/>
+</svg>

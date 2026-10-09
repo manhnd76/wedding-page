@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>v4a-2 burst + E12</title>
+<style>
+body { margin: 0; padding: 16px; background: #e9e6e1; font: 12px/1.4 sans-serif; color: #222; }
+h1 { font-size: 15px; margin: 0 0 6px; } h2 { font-size: 13px; margin: 14px 0 6px; }
+.row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+.row > div:first-child { width: 120px; } .row b { display: block; } .row small { color: #555; }
+figure { margin: 0; text-align: center; font-size: 11px; color: #555; }
+canvas { display: block; border-radius: 10px; }
+</style></head><body>
+<h1>v4a-2 · 4 burst + E12 - mô phỏng đúng công thức engine (vx·e^(-drag·dt), vy·e^(-drag·dt) + g·dt), màn 360×740 thu 0.5, seed cố định</h1>
+<div id="b"></div>
+<h2>E12 - mức "Nhiều" riêng cho 6 mẫu phong thư (khung ở ~mốc ghi dưới ảnh; vùng chấm = vùng dịu .env-addr, hạt qua đây alpha ≤ .3)</h2>
+<div id="e" class="row"></div>
+<script type="module">
+const [{ items: P }, { items: B }, { items: E }] = await Promise.all(['../../particles/particles.json', '../../burst/bursts.json', '../../envelope-e12/e12.json'].map(async (u) => (await fetch(u)).json()));
+const mix = (h, to, k) => { if (!/^#/.test(h)) return h; const p = (x) => [1, 3, 5].map((i) => parseInt(x.slice(i, i + 2), 16)); const a = p(h), b = p(to); return '#' + a.map((v, i) => Math.round(v + (b[i] - v) * k).toString(16).padStart(2, '0')).join(''); };
+const tone = (t, c1, c2) => t === 'c1' ? c1 : t === 'c2' ? c2 : t === 'light' ? mix(c1, '#ffffff', 0.4) : t === 'dark' ? mix(c1, '#000000', 0.28) : t;
+const rgba = (c, a) => { const p = [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)); return `rgba(${p.join(',')},${a})`; };
+function drawLayers(g, s, layers, c1, c2) {
+  const base = g.globalAlpha; g.save(); g.scale(s / 24, s / 24);
+  for (const l of layers) { g.save(); g.globalAlpha = base * (l.a ?? 1); if (l.clip) g.clip(new Path2D(l.clip));
+    if (l.radial) { const [x, y, r] = l.radial; const gr = g.createRadialGradient(x, y, 0, x, y, r); for (const [t, tn, a] of l.stops) gr.addColorStop(t, rgba(tone(tn, c1, c2), a)); g.fillStyle = gr; g.fillRect(-r, -r, 2 * r, 2 * r); g.restore(); continue; }
+    const p = l.circle ? (() => { const q = new Path2D(); q.arc(l.circle[0], l.circle[1], l.circle[2], 0, 6.2832); return q; })() : new Path2D(l.d);
+    if (l.fill) { g.fillStyle = tone(l.fill, c1, c2); g.fill(p); } else if (l.lw) { g.strokeStyle = tone(l.stroke, c1, c2); g.lineWidth = l.lw; g.lineCap = 'round'; g.stroke(p); }
+    g.restore(); }
+  g.restore();
+}
+let seed = 9; const R = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296); const U = (a, b) => a + R() * (b - a);
+const pick = (vs) => { let r = R(), acc = 0; for (const v of vs) { acc += v.w; if (r <= acc) return v; } return vs[0]; };
+/** sinh hạt: spec = {x,y, angle:[a,b], speed:[a,b], gravity, drag, life:[a,b], at}, trả list */
+function emit(n, s) { const out = []; for (let i = 0; i < n; i++) { const a = U(...s.angle) * Math.PI / 180, sp = U(...s.speed); out.push({ x: s.x(), y: s.y(), vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g: s.gravity, d: s.drag, life: U(...s.life), at: s.at ?? 0, rot: U(0, 6.28), vr: U(-1, 1) * (s.spin ?? 3), ph: U(0, 6.28), phs: U(3, 7), piece: pick(s.piece.variants), flip: s.piece.flip, size: U(...s.piece.size), col: s.cols[Math.floor(R() * s.cols.length)], col2: s.col2, twinkle: s.twinkle }); } return out; }
+function step(list, tMs) { // vị trí tại thời điểm tMs (tích phân 1/60)
+  return list.map((p0) => { const p = { ...p0 }; let t = p.at; const dt = 1 / 60; while (t < tMs) { const d = Math.exp(-p.d * dt); p.vx *= d; p.vy = p.vy * d + p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt; p.ph += p.phs * dt; t += dt * 1000; } const age = tMs - p.at; const k = age / p.life; p.alive = age >= 0 && k < 1; p.a = k < 0.7 ? 1 : Math.max(0, 1 - (k - 0.7) / 0.3); if (p.twinkle) p.a *= 0.6 + 0.4 * Math.sin(p.ph * 3); return p; });
+}
+function render(cv, bg, list, tMs, deco, soft) {
+  const g = cv.getContext('2d'); const S = 0.5; g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = bg; g.fillRect(0, 0, cv.width, cv.height); g.scale(S, S);
+  deco?.(g);
+  for (const p of step(list, tMs)) { if (!p.alive) continue; let a = p.a; if (soft && p.x > soft[0] && p.x < soft[2] && p.y > soft[1] && p.y < soft[3]) a = Math.min(a, 0.3); g.save(); g.globalAlpha = a; g.translate(p.x, p.y); g.rotate(p.rot); if (p.flip) g.scale(Math.cos(p.ph), 1); const back = p.flip && Math.cos(p.ph) < 0 && p.piece.back; drawLayers(g, p.size, back ? p.piece.back : p.piece.layers, p.col, p.col2 ?? p.col); g.restore(); }
+  g.fillStyle = '#0006'; g.font = '22px sans-serif'; g.fillText(`${tMs}ms`, 12, 30);
+}
+const W = 360, H = 740, piece = (id) => B.find((x) => x.id === id), ep = (id) => E.find((x) => x.id === id);
+const LIGHT = { bg: '#FBF7F0', accent: '#C9A86A', accent2: '#C9A86A', primary: '#8A6A3B' };
+const rows = [
+  ['confetti · sau mở thiệp (Vừa 80)', '#FBF3F1', () => { const pc = piece('confetti'); const cols = ['#E3BDB5', '#C99A8B', '#A4495A', mix('#E3BDB5', '#ffffff', 0.45)]; const base = { piece: pc, cols, gravity: 0.6 * H, drag: 2.2, life: [1500, 1800], spin: 6 }; return [...emit(40, { ...base, x: () => W * 0.06, y: () => H * 1.02, angle: [-80, -55], speed: [2.0 * H, 2.8 * H], at: 0 }), ...emit(40, { ...base, x: () => W * 0.94, y: () => H * 1.02, angle: [-125, -100], speed: [2.0 * H, 2.8 * H], at: 40 })]; }, [300, 900, 1300, 1700]],
+  ['gold · sau mở thiệp (Vừa 60) - theme sáng', '#FBF7F0', () => emit(60, { piece: piece('gold'), cols: ['#C9A24A', '#B8862F'], col2: '#FFF4D6', x: () => W / 2, y: () => H * 0.42, angle: [0, 360], speed: [100, 420], gravity: 30, drag: 2.4, life: [1100, 1400], spin: 1, twinkle: true }), [150, 450, 900, 1250]],
+  ['gold · theme tối dem-nhung', '#1C1517', () => emit(60, { piece: piece('gold'), cols: ['#F3D48C', '#D9B77E'], col2: '#FFF8E6', x: () => W / 2, y: () => H * 0.42, angle: [0, 360], speed: [100, 420], gravity: 30, drag: 2.4, life: [1100, 1400], spin: 1, twinkle: true }), [150, 450, 900, 1250]],
+  ['red-paper · sau mở (Vừa 80, 3 đợt)', '#FFF8EE', () => { const pc = piece('red-paper'); const base = { piece: pc, cols: ['#C8231F', '#E0392B'], col2: '#E0392B', gravity: 520, drag: 1.6, life: [1500, 1800], spin: 4.5 }; return [...emit(32, { ...base, x: () => W / 2, y: () => H * 0.12, angle: [20, 160], speed: [300, 650], at: 0 }), ...emit(24, { ...base, x: () => U(W * 0.12, W * 0.88), y: () => -12, angle: [70, 110], speed: [150, 420], at: 150 }), ...emit(24, { ...base, x: () => U(W * 0.12, W * 0.88), y: () => -12, angle: [70, 110], speed: [150, 420], at: 300 })]; }, [200, 600, 1100, 1600]],
+  ['heart-burst · gửi lời chúc (Nhiều 12)', '#FBF3F1', () => emit(12, { piece: piece('heart-burst'), cols: ['#A4495A', '#E3BDB5', mix('#A4495A', '#ffffff', 0.35)], x: () => W / 2, y: () => 600, angle: [-150, -30], speed: [220, 380], gravity: 260, drag: 1.2, life: [1000, 1200], spin: 0.6 }), [150, 450, 800, 1100], (g) => { g.fillStyle = '#A4495A'; g.beginPath(); g.roundRect(90, 600, 180, 48, 24); g.fill(); g.fillStyle = '#fff'; g.font = '600 16px sans-serif'; g.fillText('Gửi lời chúc', 135, 630); }],
+  ['confetti · RSVP "Tôi sẽ đến" (Vừa 40)', '#F3F0E8', () => emit(40, { piece: piece('confetti'), cols: ['#C2A26A', '#1F5A4A', mix('#C2A26A', '#ffffff', 0.45), '#C2A26A'], x: () => W / 2, y: () => 560, angle: [-140, -40], speed: [520, 820], gravity: 1100, drag: 1.6, life: [1100, 1400], spin: 6 }), [150, 400, 800, 1200], (g) => { g.fillStyle = '#fff'; g.fillRect(24, 300, 312, 250); g.strokeStyle = '#D5D2C6'; g.strokeRect(24, 300, 312, 250); g.fillStyle = '#1F5A4A'; g.beginPath(); g.roundRect(90, 560, 180, 48, 24); g.fill(); }],
+];
+const host = document.getElementById('b');
+for (const [name, bg, make, times, deco] of rows) {
+  const list = make(); const row = document.createElement('div'); row.className = 'row'; row.innerHTML = `<div><b>${name.split(' · ')[0]}</b><small>${name.split(' · ').slice(1).join(' · ')}</small></div>`;
+  for (const t of times) { const cv = document.createElement('canvas'); cv.width = W / 2; cv.height = H / 2; render(cv, bg, list, t, deco); row.appendChild(cv); }
+  host.appendChild(row);
+}
+// ---- E12: phong bì giản lược (ngang 10:7 rộng 316px ở y 260) + seal ở mũi nắp
+const ENV = { x: 22, y: 250, w: 316, h: 221 };
+const env = (paper, paper2, edge, tipY, flap = 'point', seal = '#8A6A3B') => (g) => {
+  g.fillStyle = paper2; g.fillRect(ENV.x, ENV.y, ENV.w, ENV.h); g.fillStyle = paper; g.strokeStyle = edge; g.lineWidth = 1.5;
+  g.beginPath(); g.moveTo(ENV.x, ENV.y); g.lineTo(ENV.x + ENV.w / 2, ENV.y + ENV.h * 0.55); g.lineTo(ENV.x + ENV.w, ENV.y); g.lineTo(ENV.x + ENV.w, ENV.y + ENV.h); g.lineTo(ENV.x, ENV.y + ENV.h); g.closePath(); g.fill(); g.stroke();
+  // nắp đang mở một phần (lật ~40%)
+  const ty = ENV.y + ENV.h * tipY * 0.45; g.fillStyle = paper; g.beginPath(); g.moveTo(ENV.x, ENV.y); g.lineTo(ENV.x + ENV.w, ENV.y); flap === 'rect' ? (g.lineTo(ENV.x + ENV.w, ty), g.lineTo(ENV.x, ty)) : g.lineTo(ENV.x + ENV.w / 2, ty); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#0008'; g.font = 'italic 18px serif'; g.fillText('Gia đình anh Mạnh', ENV.x + 88, ENV.y + ENV.h * 0.8);
+  g.setLineDash([3, 4]); g.strokeStyle = '#0003'; g.strokeRect(ENV.x + 30, ENV.y + ENV.h * 0.64, ENV.w - 60, ENV.h * 0.3); g.setLineDash([]);
+};
+const SEAL = (tipY) => ({ x: () => ENV.x + ENV.w / 2, y: () => ENV.y + ENV.h * tipY });
+const SOFT = [ENV.x + 30, ENV.y + ENV.h * 0.64, ENV.x + ENV.w - 30, ENV.y + ENV.h * 0.94];
+const gold = piece('gold');
+const e12 = [
+  ['classic', 'tram-vang · t≈420ms', '#FBF7F0', env('#FFFFFF', '#F4ECDF', '#D9CDBE', 0.555), [...emit(12, { piece: gold, cols: ['#C9A24A', '#B8862F'], col2: '#FFF4D6', ...SEAL(0.555), angle: [0, 360], speed: [60, 180], gravity: 40, drag: 2.6, life: [600, 800], twinkle: true, at: 90 })], 420],
+  ['kraft', 'dat-nung · t≈700ms', '#F6EEE4', env('#D8B98F', '#C9A47A', '#A88760', 0.555), [...emit(5, { piece: ep('e12-lavender'), cols: ['#8E7CC3'], col2: '#7A8F5C', ...SEAL(0.47), angle: [20, 80], speed: [40, 140], gravity: 380, drag: 1.4, life: [1000, 1300], spin: 3, at: 120 }), ...emit(5, { piece: ep('e12-lavender'), cols: ['#8E7CC3'], col2: '#7A8F5C', ...SEAL(0.47), angle: [100, 160], speed: [40, 140], gravity: 380, drag: 1.4, life: [1000, 1300], spin: 3, at: 120 })], 700],
+  ['song-hy', 'son-do · t≈650ms', '#FFF8EE', env('#A3201D', '#8E1B18', '#D4A23C', 0.2), [...emit(24, { piece: piece('red-paper'), cols: ['#C8231F', '#E0392B'], col2: '#E0392B', ...SEAL(0.2), angle: [-160, -20], speed: [180, 420], gravity: 520, drag: 1.6, life: [1100, 1400], spin: 4, at: 60 }), ...emit(8, { piece: gold, cols: ['#E8C46A'], col2: '#FFF4D6', ...SEAL(0.2), angle: [0, 360], speed: [60, 160], gravity: 30, drag: 2.4, life: [700, 900], twinkle: true, at: 60 })], 650],
+  ['lace', 'hong-phan · t≈800ms (Nhiều 12; Vừa 6)', '#FBF3F1', env('#F6E6E3', '#F1DBD7', '#E6D3CF', 0.555), [...emit(12, { piece: ep('e12-lace-petal'), cols: ['#E3BDB5', '#E3BDB5'], col2: '#C98E8A', ...SEAL(0.555), angle: [-150, -30], speed: [60, 160], gravity: 160, drag: 1.8, life: [1400, 1800], spin: 1.8, at: 60 })], 800],
+  ['minimal', 'muc-giay · t≈300ms', '#FAF9F6', env('#FFFFFF', '#F3F1EC', '#E2E0DA', 0.378, 'rect'), [...emit(7, { piece: { ...ep('e12-dot'), variants: [ep('e12-dot').variants[0]] }, cols: ['#C2703D'], ...SEAL(0.378), angle: [0, 360], speed: [90, 200], gravity: 0, drag: 4, life: [500, 650], spin: 0, at: 40 }), ...emit(3, { piece: { ...ep('e12-dot'), variants: [ep('e12-dot').variants[1]] }, cols: ['#1C1C1A'], col2: '#1C1C1A', ...SEAL(0.378), angle: [0, 360], speed: [90, 200], gravity: 0, drag: 4, life: [500, 650], spin: 0, at: 40 })], 300],
+  ['velvet', 'dem-nhung · t≈520ms', '#1C1517', env('#1C1517', '#2A1F22', '#D9B77E', 0.555), [...emit(16, { piece: gold, cols: ['#F3D48C', '#D9B77E'], col2: '#FFF8E6', ...SEAL(0.555), angle: [0, 360], speed: [80, 220], gravity: 30, drag: 2.4, life: [800, 1100], twinkle: true, at: 200 })], 520],
+];
+const eh = document.getElementById('e');
+for (const [id, note, bg, deco, list, t] of e12) { const f = document.createElement('figure'); const cv = document.createElement('canvas'); cv.width = W / 2; cv.height = H / 2; render(cv, bg, list, t, deco, SOFT); f.append(cv); f.insertAdjacentHTML('beforeend', `<figcaption><b>${id}</b><br>${note}</figcaption>`); eh.appendChild(f); }
+window.__ready = true;
+</script></body></html>

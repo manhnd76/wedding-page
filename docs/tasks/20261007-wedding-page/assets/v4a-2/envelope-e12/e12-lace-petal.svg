@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 28" width="224" height="112">
+<!-- e12-lace-petal: xem thử 2 biến thể (ô 24×24 tâm 0,0; màu mẫu #E3BDB5/#A4495A). Dữ liệu thật: e12.json -->
+<g transform="translate(14 14)"><title>v1 w=0.5</title><path d="M0 9C-5.4 6-6 -2-3.4-6.6-2-9 2-9 3.4-6.6 6-2 5.4 6 0 9Z" fill="#E3BDB5"/><path d="M0 8V-5" fill="none" stroke="#a38882" stroke-width="0.5" stroke-linecap="round" stroke-opacity="0.25"/></g>
+<g transform="translate(42 14)"><title>v2 w=0.5</title><path d="M0 9C-5.4 6-6 -2-3.4-6.6-2-9 2-9 3.4-6.6 6-2 5.4 6 0 9Z" fill="#A4495A"/><path d="M-2-4C-1-6.4 1.4-6.6 2.4-5" fill="none" stroke="#eed7d3" stroke-width="0.9" stroke-linecap="round" stroke-opacity="0.6"/></g>
+</svg>
