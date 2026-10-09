@@ -22,9 +22,9 @@
 | v2.3 | Cổng login mật khẩu (hash), token GitHub chỉ hỏi khi Xuất bản/Khôi phục, sửa E01–E11 | Xong | 7c476e9 |
 | (người duyệt) | `_redirects` cho Cloudflare: `/invite/*  /  200` | Xong | 60f385c |
 | **v4a-1** | 9 theme + ornament/texture/photoFrame/divider + **B2** hoạ tiết nền vector | **Đang làm** (bước 1/4 xong) | - |
-| v4a-2a | **B1** reveal theo section + 4 gói reveal + micro | Thiết kế XONG (`design-v4a-2a.md`), chờ người duyệt 7 câu + solution-designer | - |
-| v4a-2b | 13 kiểu mở + **E12** | Kế hoạch XONG (`solution-v4a-2bc.md`), chờ Cổng 1; asset đang làm | - |
-| v4a-2c | 16 hạt + 4 burst | Kế hoạch XONG (`solution-v4a-2bc.md`), chờ Cổng 1; sprite đang làm | - |
+| v4a-2a | **B1** reveal theo section + 4 gói reveal + micro | Thiết kế + kế hoạch XONG, Cổng 1 đã duyệt; FE sau khi v4a-1 merge | - |
+| v4a-2b | 13 kiểu mở + **E12** | Kế hoạch + asset XONG, Cổng 1 đã duyệt; FE-2 sau Bước 0 | - |
+| v4a-2c | 16 hạt + 4 burst | Kế hoạch + sprite XONG, Cổng 1 đã duyệt; FE khi có slot | - |
 | v4a-3 | **B3** mascot theo scroll/nghiêng máy | **Dời sau v4b** (decisions 2026-10-09) | - |
 | v3 | Apps Script RSVP/lời chúc + micro liên quan | Chưa (người duyệt chọn làm SAU v4a) | - |
 | v4b | Tối ưu bundle, a11y, ma trận thiết bị/webview, CSP cuối, README deploy | Chưa | - |

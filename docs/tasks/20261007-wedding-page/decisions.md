@@ -118,3 +118,8 @@
 ## Cổng 1 v4a-1 (2026-10-09)
 - `solution.md` Rev 5 mục 10: người duyệt đồng ý. Còn mở #11–#17 theo giả định: (#11) theme tắt motif mà admin chọn bộ -> `band` + `medium`; (#12) 7 texture mới lên cover qua `textures.css`, không sửa `cover.css`; (#13) Texture/Khung/Divider giữ Select, thẻ hình để v4b (riêng Hoạ tiết nền có thẻ hình); (#14) theme vượt 180 KB font -> FE báo số đo, designer chọn face bỏ, không nới ngân sách; (#15) `font-synthesis-weight: none` toàn cục, Prata nghiêng giả chấp nhận; (#16) polaroid chưa có chú thích; (#17) orchestrator đặt `STAGE` khi merge.
 - FE-1 (v4a-1) bắt đầu sau khi Bước 0 merge, song song FE-2 (v4a-2b).
+
+## Cổng 1 v4a-2a (2026-10-09)
+- `solution-v4a-2a.md`: người duyệt đồng ý cả 4 giả định — ghim gói chưa bật -> bỏ ghim + cảnh báo (theo tự động); hoạ tiết ở cấp Nhẹ giữ như hiện nay (hiện ngay, không vẽ nét); cho sửa 1 hunk `diff.ts` bỏ dòng "xoá {}"; micro thêm ≤ +0.6 KB JS ban đầu (ngoài +2.5 KB reveal).
+- Orchestrator: cho 2a sửa 1 hunk mỗi file `checklist.ts`, `icons.ts`, `.size-limit.cjs`; **2a tách nhánh SAU khi v4a-1 merge** (chung `resolve.ts`, `merge.ts`, `labels.ts`, `schema-meta.ts`, `ops.ts`).
+- Thứ tự: Bước 0 -> FE-1 v4a-1 ‖ FE-2 v4a-2b -> slot trống: v4a-2c, rồi v4a-2a (sau merge v4a-1).
