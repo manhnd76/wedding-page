@@ -18,3 +18,9 @@ Stack của dự án này (thay cho CLAUDE.md global - decisions.md "Quyết đ�
 
 ## Điều cấm
 - Không commit/push/merge/deploy khi chưa được yêu cầu. Không đưa token/STK thật vào repo.
+
+## Quy ước làm việc của agent (người duyệt chốt 2026-10-08)
+- **Ghi tiến độ liên tục vào report**: tạo file report ngay khi bắt đầu, cập nhật sau mỗi phần việc xong (không đợi cuối). Đơn vị "một phần" vừa phải, không cần quá nhỏ — vd sửa danh sách lỗi của designer thì xong mỗi lỗi (mỗi ID) ghi 1 lần: ID, đã sửa gì, file nào, trạng thái. Nếu bị ngắt giữa chừng, agent sau đọc report là biết đã làm tới đâu và làm tiếp, không làm lại.
+- **Tiết kiệm e2e và chụp màn hình** (phần tốn quota nhất):
+  - ui-ux-designer khi phát hiện lỗi giao diện phải **lưu ảnh chụp làm bằng chứng** vào `docs/tasks/<task-id>/screenshots/<file-review>/<ID>.png` (vd `screenshots/design-review-envelopes/E01.png`) và ghi đường dẫn ảnh + viewport/theme/thao tác tái hiện vào cột tương ứng trong bảng review.
+  - frontend-developer dùng chính ảnh đó để hiểu lỗi, **không chạy e2e/chụp lại chỉ để tái hiện**. Trong lúc sửa chỉ chạy unit test và e2e có chọn lọc (`npx playwright test <file> -g "<tên>"`) khi thật cần; chạy **toàn bộ** `npm run test:e2e` **một lần** ở cuối để xác nhận tiêu chí hoàn thành.

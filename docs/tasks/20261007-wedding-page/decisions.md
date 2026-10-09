@@ -76,3 +76,20 @@
 ## Bảo mật login (2026-10-08)
 - "Ghi nhớ token trên máy này": **mặc định BẬT** (người duyệt chọn, chấp nhận rủi ro token mã hoá bằng mật khẩu ngắn có thể bị giải nếu lộ localStorage).
 - Không sửa lịch sử commit 55b8b69 (có mật khẩu rõ trong decisions.md, chưa push) — người duyệt chấp nhận.
+
+## Kế hoạch (2026-10-08)
+- Đưa backlog **B1 "mỗi section một kiểu reveal"** vào **v4a** (cùng 4 gói reveal còn lại). Trước khi code cần: ui-ux-designer thiết kế (gán theo section, chế độ tự động xen kẽ, UX admin), solution-designer bổ sung schema.
+- Cập nhật: đưa luôn **B2** (hoạ tiết nền vector) và **B3** (mascot theo scroll/nghiêng máy) vào **v4a**. Cả B1–B3 cần thiết kế (ui-ux) + schema (solution) trước khi code.
+
+## Quy ước làm việc của agent (2026-10-08)
+- Ghi tiến độ liên tục vào report theo từng phần (vd mỗi bug/ID xong ghi 1 lần) để agent sau tiếp tục được khi bị ngắt.
+- Hạn chế e2e/chụp màn hình lặp: designer lưu ảnh bằng chứng cho từng lỗi (`docs/tasks/<task-id>/screenshots/...`), FE dùng ảnh đó thay vì chạy lại e2e để tái hiện; full e2e chỉ chạy 1 lần cuối. Đã ghi vào `CLAUDE.md` dự án (mục "Quy ước làm việc của agent"). Thư mục screenshots được gitignore.
+
+## Review plan đầu phiên (2026-10-09)
+- Thứ tự: **v4a trước v3** (RSVP/lời chúc để sau).
+- Chia v4a thành 3 đợt, mỗi đợt kiểm tra/duyệt/commit riêng:
+  - **v4a-1**: 9 theme còn lại + asset (ornament/texture/photoFrame/divider) + **B2** hoạ tiết nền vector.
+  - **v4a-2**: animation — 13 kiểu mở, 16 hạt, 4 burst, 4 gói reveal, micro, **B1** reveal theo section, **E12**.
+  - **v4a-3**: **B3** mascot theo scroll/nghiêng máy.
+- Quy trình mỗi đợt: ui-ux-designer thiết kế + asset -> solution-designer bổ sung schema/kế hoạch -> frontend-developer code -> designer review.
+- Ghi nhận: người duyệt đã sửa `public/_redirects` thành `/invite/*  /  200` cho Cloudflare Pages (commit 60f385c).
