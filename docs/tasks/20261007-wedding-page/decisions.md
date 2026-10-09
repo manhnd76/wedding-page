@@ -93,3 +93,16 @@
   - **v4a-3**: **B3** mascot theo scroll/nghiêng máy.
 - Quy trình mỗi đợt: ui-ux-designer thiết kế + asset -> solution-designer bổ sung schema/kế hoạch -> frontend-developer code -> designer review.
 - Ghi nhận: người duyệt đã sửa `public/_redirects` thành `/invite/*  /  200` cho Cloudflare Pages (commit 60f385c).
+
+## Review toàn bộ plan + chạy song song (2026-10-09, phiên cloud)
+- Phiên cloud: Claude đóng vai orchestrator theo `.claude/agents/orchestrator.md`.
+- E2E chạy được trên cloud: `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium`; cổng e2e tham số hoá `PW_PREVIEW_PORT`/`PW_DEV_PORT` để nhiều worktree chạy song song.
+- **Tách v4a-2 thành 3 đợt** (người duyệt đồng ý):
+  - **v4a-2a**: B1 reveal theo section + 4 gói reveal (`editorial`, `letter`, `playful`, `cinematic`) + micro còn lại.
+  - **v4a-2b**: 13 kiểu mở còn lại + E12 ("Nhiều" riêng từng mẫu phong thư).
+  - **v4a-2c**: 16 loại hạt còn lại + 4 burst (`confetti`, `gold`, `red-paper`, `heart-burst`).
+- **Chạy song song nhiều agent** (người duyệt yêu cầu): các đợt độc lập làm đồng thời, mỗi FE một git worktree + cặp cổng e2e riêng; tối đa 2 FE cùng lúc (máy 4 nhân, test hiệu năng dễ nhiễu); designer/solution viết vào file riêng theo đợt, không 2 agent cùng sửa một file. Orchestrator merge lần lượt sau mỗi cổng duyệt.
+- **B2** (người duyệt đồng ý cả 4 giả định designer): motif mặc định BẬT chỉ ở `son-do` (trống đồng), `sen-cham` (sen), `dem-nhung` (art-deco), `bien-dao` (sóng), TẮT ở 8 theme còn lại kể cả Trầm Vàng; trống đồng xoay 1 vòng/240s ở mức Vừa, chữ Hỷ không bao giờ xoay; chưa áp motif cho cover/phong bì ở v4a-1.
+- **Font v4a-1**: thêm đủ 14 gói `@fontsource` cho 6 theme mới (newsreader, birthstone, manrope, old-standard-tt, josefin-sans, prata, allura, eb-garamond, nunito, style-script, lexend, crimson-pro, moon-dance, spectral); kiểm subset tiếng Việt + font ban đầu ≤ 180 KB.
+- **Ngày cưới còn > 2 tháng** -> giữ thứ tự v4a -> v3 -> v4b.
+- **B3 (mascot) dời sau v4b**; chốt nhân vật + giấy phép khi tới lượt.

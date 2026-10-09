@@ -9,6 +9,8 @@ Stack của dự án này (thay cho CLAUDE.md global - decisions.md "Quyết đ�
 - Build: `npm run build` (typecheck + vite build + size-limit)
 - Unit test: `npm test` (vitest, `tests/**/*.test.ts`)
 - E2E: `npm run build && npm run test:e2e` (Playwright, Chrome đã cài trên máy; tự chạy `vite preview` :4173 + `vite dev` :5175 với `WP_DEV_SAVE_ROOT` = thư mục tạm. KHÔNG dùng cổng 5173)
+  - Claude Code cloud (không có Chrome): thêm `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium`.
+  - Nhiều agent chạy e2e song song (mỗi agent một worktree): mỗi bộ đặt cổng riêng `PW_PREVIEW_PORT` / `PW_DEV_PORT` (mặc định 4173 / 5175) theo bảng phân cổng trong `status.md`.
 - Typecheck/lint: `npm run typecheck`
 
 ## Quy ước

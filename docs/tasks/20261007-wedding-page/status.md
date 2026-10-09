@@ -5,10 +5,11 @@
 ## 1. Đang ở đâu
 - Giai đoạn hiện tại: **v4a-1** (9 theme còn lại + asset + B2 hoạ tiết nền).
   - Bước 1 ui-ux-designer: **XONG** (asset + spec, xem mục 3).
-  - Bước 2 solution-designer: **CHƯA GIAO** — chờ người duyệt trả lời 3 câu hỏi B2 (mục 4).
+  - Bước 2 solution-designer: **ĐANG LÀM** (2026-10-09) — người duyệt đã trả lời B2 + đồng ý thêm 14 font.
   - Bước 3 frontend-developer, bước 4 designer review: chưa.
-- Không có agent nào đang chạy. Không có việc dở dang trong code (`src/` sạch, khớp commit trên `main`).
+- Không có việc dở dang trong code trừ: sửa race focus A12 (`src/admin/editor/form.tsx`, frontend-developer, 2026-10-09) + e2e chạy được trên cloud (`playwright.config.ts`, `scripts/e2e-dev-server.mjs`, `tests/e2e/*`) — chưa commit.
 - Vòng lặp sửa đã dùng (v4a-1): 0/3.
+- **(2026-10-09) Chạy song song** — xem mục 8.
 
 ## 2. Roadmap
 | Giai đoạn | Nội dung | Trạng thái | Commit |
@@ -20,12 +21,14 @@
 | v2.3 | Cổng login mật khẩu (hash), token GitHub chỉ hỏi khi Xuất bản/Khôi phục, sửa E01–E11 | Xong | 7c476e9 |
 | (người duyệt) | `_redirects` cho Cloudflare: `/invite/*  /  200` | Xong | 60f385c |
 | **v4a-1** | 9 theme + ornament/texture/photoFrame/divider + **B2** hoạ tiết nền vector | **Đang làm** (bước 1/4 xong) | - |
-| v4a-2 | 13 kiểu mở, 16 hạt, 4 burst, 4 gói reveal, micro, **B1** reveal theo section, **E12** | Chưa (B1 cần thiết kế trước) | - |
-| v4a-3 | **B3** mascot theo scroll/nghiêng máy | Chưa (cần làm rõ nhân vật + giấy phép page-mascot) | - |
+| v4a-2a | **B1** reveal theo section + 4 gói reveal + micro | Chưa (B1 cần thiết kế trước) | - |
+| v4a-2b | 13 kiểu mở + **E12** | Chưa (spec có ở design 3.4b; cần asset) | - |
+| v4a-2c | 16 hạt + 4 burst | Chưa (spec có ở design 5.7; cần sprite) | - |
+| v4a-3 | **B3** mascot theo scroll/nghiêng máy | **Dời sau v4b** (decisions 2026-10-09) | - |
 | v3 | Apps Script RSVP/lời chúc + micro liên quan | Chưa (người duyệt chọn làm SAU v4a) | - |
 | v4b | Tối ưu bundle, a11y, ma trận thiết bị/webview, CSP cuối, README deploy | Chưa | - |
 
-Thứ tự đã chốt (decisions 2026-10-09): v4a-1 -> v4a-2 -> v4a-3 -> v3 -> v4b. Mỗi đợt: designer -> solution-designer -> frontend -> designer review -> commit.
+Thứ tự đã chốt (decisions 2026-10-09): v4a-1 -> v4a-2 (tách 2a/2b/2c, làm song song được) -> v4a-3 -> v3 -> v4b. Ngày cưới còn > 2 tháng -> giữ v3 sau v4a; B3 dời sau v4b. Mỗi đợt: designer -> solution-designer -> frontend -> designer review -> commit.
 
 ## 3. Kết quả bước 1 v4a-1 (ui-ux-designer)
 - Asset: `assets/v4a-1/` — 8 ornament sprite, 9 divider + `dividers.css`, 9 photo frame (`frames.css` + `wash-mask.svg`), 7 texture + `textures.css`, B2: 7 bộ motif (trống đồng Đông Sơn, mây cát tường, sóng nước, sen, song hỷ, art-deco, cành lá) + `motifs.css`, generator `_generator/*.mjs`.
@@ -60,3 +63,26 @@ Thứ tự đã chốt (decisions 2026-10-09): v4a-1 -> v4a-2 -> v4a-3 -> v3 -> 
 
 ## 7. Tài liệu
 `request.md` · `decisions.md` (nguồn sự thật) · `solution.md` (Rev 4 + v4a/B1–B3) · `design.md` (Bản sửa 5) · `backlog.md` · review: `design-review-v1.md`, `design-review-admin-v2.md`, `design-review-envelopes.md` · report: `frontend-report*.md`, `design-report-v4a-1.md`.
+
+## 8. Chạy song song (2026-10-09)
+| Đợt | Phụ thuộc | Đợt 1 (giao ngay) | Đợt 2 | Đợt 3 |
+|---|---|---|---|---|
+| v4a-1 | Câu hỏi B2 + 14 font (chờ người duyệt) | - | solution -> FE-1 | designer review |
+| v4a-2a | Thiết kế B1 | ui-ux-designer A: `design-v4a-2a.md` | solution -> (cổng) | FE (slot trống đầu tiên) |
+| v4a-2b | Asset kiểu mở + E12 | ui-ux-designer B: `assets/v4a-2/` + `design-v4a-2bc.md` | FE-2 | designer review |
+| v4a-2c | Sprite hạt/burst | (chung designer B) | FE (sau FE-1 hoặc FE-2) | designer review |
+| kế hoạch kỹ thuật 2b/2c + bản đồ file sở hữu cho FE song song | - | solution-designer: `solution-v4a-2bc.md` | - | - |
+
+Quy tắc:
+- Mỗi FE một git worktree (cần `npm ci` riêng) trên branch `wt/<đợt>`; orchestrator merge vào branch phiên sau cổng duyệt, lần lượt.
+- Tối đa 2 FE cùng lúc. Designer/solution không chạy e2e; chụp ảnh dùng `vite dev` cổng riêng.
+- File dùng chung dễ đụng (`src/shared/capabilities.ts`, trình chọn hiệu ứng admin, plugin `inject-config-og`, `fx.css`): theo bản đồ sở hữu trong `solution-v4a-2bc.md`; chỉ thêm dòng, không sắp xếp lại.
+
+| Agent | `PW_PREVIEW_PORT` | `PW_DEV_PORT` | Cổng chụp ảnh (`vite dev`) |
+|---|---|---|---|
+| main / orchestrator | 4173 | 5175 | - |
+| FE-1 | 4273 | 5275 | - |
+| FE-2 | 4373 | 5375 | - |
+| FE-3 | 4473 | 5475 | - |
+| ui-ux-designer A | - | - | 5181 |
+| ui-ux-designer B | - | - | 5182 |
