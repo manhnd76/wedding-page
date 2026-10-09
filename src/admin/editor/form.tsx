@@ -3,7 +3,7 @@
  * Mỗi field ghi thẳng vào nháp (store.setPath) -> autosave + preview cuộn tới section.
  */
 import type { ComponentChildren } from 'preact';
-import { useId, useRef, useState } from 'preact/hooks';
+import { useId, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { AnyField, FieldMeta, FormGroup, ListMeta } from '@shared/config/schema-meta';
 import { BANKS } from '@shared/vietqr/banks';
 import type { EditorStore } from '../state/store';
@@ -77,6 +77,9 @@ function setTwo<T>(c: T, p1: string, v1: unknown, p2: string, v2: unknown): T {
   return setAt(setAt(c, p1, v1), p2, v2);
 }
 
+type PendingFocus = { want: string[]; find: (box: HTMLElement) => HTMLElement | null | undefined; left: number };
+const sameKeys = (a: string[], b: string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
+
 let keySeq = 0;
 const newKey = () => `k${++keySeq}`;
 
@@ -100,24 +103,39 @@ function ListField(p: { store: EditorStore; f: ListMeta; path: string; section: 
   const isOpen = (k: string) => open[k] ?? list.length <= 2;
   const boxRef = useRef<HTMLFieldSetElement>(null);
   const setList = (next: unknown[], keys: string[]) => { keysRef.current = keys; store.update((c) => setAt(c, path, next), '', p.section || undefined); };
-  const focusLater = (find: (box: HTMLElement) => HTMLElement | null | undefined) =>
-    requestAnimationFrame(() => { const b = boxRef.current; if (b) find(b)?.focus(); });
+  // Focus chờ (A12): chỉ đặt khi DOM đã phản ánh thứ tự thẻ mới (want), không phụ thuộc thời điểm render
+  // (rAF có thể chạy trước khi Preact render xong -> nút còn disabled/thẻ ở chỗ cũ -> mất focus).
+  const pendingRef = useRef<PendingFocus | null>(null);
+  const focusAfterRender = (want: string[], find: PendingFocus['find']) => { pendingRef.current = { want, find, left: 5 }; };
+  useLayoutEffect(() => {
+    const pf = pendingRef.current;
+    const b = boxRef.current;
+    if (!pf || !b) return;
+    const order = Array.from(b.querySelectorAll<HTMLElement>(':scope > .card'), (c) => c.dataset.k ?? '');
+    const el = sameKeys(order, pf.want) ? pf.find(b) : null;
+    if (el && !(el as HTMLButtonElement).disabled) { pendingRef.current = null; el.focus(); }
+    else if (--pf.left <= 0) pendingRef.current = null; // update bị bỏ/ghi đè -> không giữ focus treo mãi
+  });
   const move = (i: number, d: number) => {
     const j = i + d;
     if (j < 0 || j >= list.length) return;
     const k = keyOf(i);
+    const want = list.map((_, x) => keyOf(x));
+    [want[i], want[j]] = [want[j]!, want[i]!];
     const n = [...list];
     const ks = [...keysRef.current];
     [n[i], n[j]] = [n[j]!, n[i]!];
     [ks[i], ks[j]] = [ks[j]!, ks[i]!];
-    setList(n, ks);
     // ra tới đầu/cuối thì nút cùng chiều bị tắt -> focus nút chiều ngược lại
     const dir = j === 0 || j === n.length - 1 ? -d : d;
-    focusLater((b) => Array.from(b.querySelectorAll<HTMLElement>('.card')).find((c) => c.dataset.k === k)?.querySelector<HTMLElement>(`[data-mv="${dir}"]`));
+    focusAfterRender(want, (b) => b.querySelector<HTMLElement>(`:scope > .card[data-k="${CSS.escape(k)}"] [data-mv="${dir}"]`));
+    setList(n, ks);
   };
   const remove = (i: number) => {
     const removed = list[i];
     const k = keysRef.current[i]!;
+    const want = list.map((_, x) => keyOf(x)).filter((_, x) => x !== i);
+    focusAfterRender(want, (b) => b.querySelector<HTMLElement>(':scope > .list-add'));
     setList(list.filter((_, x) => x !== i), keysRef.current.filter((_, x) => x !== i));
     toast(`Đã xoá ${f.itemTitle.toLowerCase()} ${i + 1}`, {
       action: {
@@ -131,7 +149,6 @@ function ListField(p: { store: EditorStore; f: ListMeta; path: string; section: 
         },
       },
     });
-    focusLater((b) => b.querySelector<HTMLElement>('.list-add'));
   };
   const add = () => {
     const t = JSON.parse(JSON.stringify(f.template)) as Record<string, unknown>;

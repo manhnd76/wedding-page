@@ -7,7 +7,7 @@
   - Bước 1 ui-ux-designer: **XONG** (asset + spec, xem mục 3).
   - Bước 2 solution-designer: **ĐANG LÀM** (2026-10-09) — người duyệt đã trả lời B2 + đồng ý thêm 14 font.
   - Bước 3 frontend-developer, bước 4 designer review: chưa.
-- Không có việc dở dang trong code trừ: sửa race focus A12 (`src/admin/editor/form.tsx`, frontend-developer, 2026-10-09) + e2e chạy được trên cloud (`playwright.config.ts`, `scripts/e2e-dev-server.mjs`, `tests/e2e/*`) — chưa commit.
+- (2026-10-09) Đã commit: e2e chạy được trên cloud + sửa A12 tận gốc (`useStore` giữ selector cũ -> ô nhập đọc/ghi nhầm mục khi dời thẻ; preview `cover.ts` kéo focus khỏi admin; focus chờ render trong `form.tsx`). E2E cloud 34/34.
 - Vòng lặp sửa đã dùng (v4a-1): 0/3.
 - **(2026-10-09) Chạy song song** — xem mục 8.
 

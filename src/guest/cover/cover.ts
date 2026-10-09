@@ -227,7 +227,9 @@ export function mountCover(music: MusicPlayer): CoverHandle {
     cta.querySelector('.cv-cta-label')!.textContent = c.tapToOpenLabel || 'Chạm để mở thiệp';
     el.classList.add('is-ready');
     if (fx('attention', state)) cta.classList.add('is-breathe');
-    cta.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
+    // khách thật: đưa focus bàn phím vào CTA. Không làm trong khung preview của admin và khi trang không giữ focus
+    // (iframe cùng origin gọi focus() sẽ kéo focus khỏi trang cha - mất focus đang thao tác trong admin, A12)
+    if (!ctx.preview && document.hasFocus()) cta.focus({ preventScroll: true, focusVisible: false } as FocusOptions);
   };
   const prepTimer = setTimeout(() => el.classList.add('is-preparing'), PREP_DELAY_MS);
   void Promise.all([fontsReady, modReady]).then(() => { clearTimeout(prepTimer); setReady(); });
