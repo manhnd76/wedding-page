@@ -1,2 +1,2 @@
-# Link khách dạng path: /invite/<slug> -> trang thiệp (tên khách đọc từ URL ở client)
+# Link khách dạng path: /invite/<slug> -> trang thiệp (tên khách đọc từ URL ở client) -- trigger on cloudflare-feat-v1
 /invite/*  /  200
