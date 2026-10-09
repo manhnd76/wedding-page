@@ -68,7 +68,10 @@ export function write(file, body, limit) {
 }
 
 /** SVG đơn: dùng làm mask-image (1 màu, alpha) hoặc xem thử */
+/** XML comment không được chứa "--" (SVG hỏng -> mask không tải): biến CSS ghi dạng "‐‐op-x" (U+2010) */
+export const cmt = (s) => s.replace(/--/g, '\u2010\u2010');
 export function svgDoc(file, comment, vb, inner, limit = 0, extra = '') {
+  comment = cmt(comment);
   const [, , w, h] = vb.split(' ');
   const body = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}" width="${w}" height="${h}"${extra}>\n<!-- ${comment} -->\n${inner}\n</svg>\n`;
   return write(file, body, limit);
@@ -76,6 +79,7 @@ export function svgDoc(file, comment, vb, inner, limit = 0, extra = '') {
 
 /** sprite nhiều symbol (dùng <use href="file#id"> hoặc chép path vào TS) */
 export function sprite(file, comment, symbols, limit = 0) {
+  comment = cmt(comment);
   const body = `<svg xmlns="http://www.w3.org/2000/svg">\n<!-- ${comment} -->\n${symbols.map(([id, vb, inner]) => `<symbol id="${id}" viewBox="${vb}">${inner}</symbol>`).join('\n')}\n</svg>\n`;
   return write(file, body, limit);
 }

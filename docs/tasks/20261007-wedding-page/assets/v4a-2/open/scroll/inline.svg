@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-<!-- scroll: trục 320×24 (.sc-rod --op-wood, .sc-knob --c-accent, .sc-hi trắng .35) + ruy băng 60×72 (.sc-rib --op-ribbon, .sc-rib2 đậm hơn) có nút thắt và 2 đuôi -->
+<!-- scroll: trục 320×24 (.sc-rod ‐‐op-wood, .sc-knob ‐‐c-accent, .sc-hi trắng .35) + ruy băng 60×72 (.sc-rib ‐‐op-ribbon, .sc-rib2 đậm hơn) có nút thắt và 2 đuôi -->
 <symbol id="sc-rod" viewBox="0 0 320 24"><path d="M16 6H304Q307 6 307 9V15Q307 18 304 18H16Q13 18 13 15V9Q13 6 16 6Z" class="sc-rod"/><path d="M18 8.5H302" class="sc-hi"/><path d="M13 4.5H8Q5 4.5 5 7.5V16.5Q5 19.5 8 19.5H13ZM307 4.5H312Q315 4.5 315 7.5V16.5Q315 19.5 312 19.5H307Z" class="sc-knob"/><path d="M5 9.5H1Q0 9.5 0 10.5V13.5Q0 14.5 1 14.5H5ZM315 9.5H319Q320 9.5 320 10.5V13.5Q320 14.5 319 14.5H315Z" class="sc-knob"/></symbol>
 <symbol id="sc-ribbon" viewBox="0 0 60 72"><path d="M22 0H38V72H22Z" class="sc-rib"/><path d="M30 30C18 14 4 16 6 27S22 36 30 30ZM30 30C42 14 56 16 54 27S38 36 30 30Z" class="sc-rib" pathLength="100"/><path d="M30 30 18 60 24 58 26 66ZM30 30 42 60 36 58 34 66Z" class="sc-rib2"/><circle cx="30" cy="30" r="5" class="sc-rib2"/></symbol>
 </svg>

@@ -1,11 +1,14 @@
 <!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><title>v4a-2 open styles preview</title>
 <style>
-@font-face { font-family: GV; src: url(/nm/@fontsource/great-vibes/files/great-vibes-vietnamese-400-normal.woff2), url(/nm/@fontsource/great-vibes/files/great-vibes-latin-400-normal.woff2); }
-@font-face { font-family: PF; src: url(/nm/@fontsource/playfair-display/files/playfair-display-vietnamese-400-italic.woff2); font-style: italic; }
-@font-face { font-family: PF; src: url(/nm/@fontsource/playfair-display/files/playfair-display-vietnamese-400-normal.woff2); }
-@font-face { font-family: PF; src: url(/nm/@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff2); unicode-range: U+0000-00FF; }
-@font-face { font-family: BV; src: url(/nm/@fontsource/be-vietnam-pro/files/be-vietnam-pro-vietnamese-600-normal.woff2); font-weight: 600; }
+@font-face { font-family: GV; src: url(/nm/@fontsource/great-vibes/files/great-vibes-latin-400-normal.woff2); }
+@font-face { font-family: GV; src: url(/nm/@fontsource/great-vibes/files/great-vibes-vietnamese-400-normal.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: PF; src: url(/nm/@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff2); }
+@font-face { font-family: PF; src: url(/nm/@fontsource/playfair-display/files/playfair-display-vietnamese-400-normal.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: PF; font-style: italic; src: url(/nm/@fontsource/playfair-display/files/playfair-display-latin-400-italic.woff2); }
+@font-face { font-family: PF; font-style: italic; src: url(/nm/@fontsource/playfair-display/files/playfair-display-vietnamese-400-italic.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: BV; font-weight: 600; src: url(/nm/@fontsource/be-vietnam-pro/files/be-vietnam-pro-latin-600-normal.woff2); }
+@font-face { font-family: BV; font-weight: 600; src: url(/nm/@fontsource/be-vietnam-pro/files/be-vietnam-pro-vietnamese-600-normal.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
 * { box-sizing: border-box; margin: 0; }
 body { background: #e9e6e1; font: 13px/1.4 BV, sans-serif; padding: 18px; color: #222; }
 h1 { font: 600 16px BV, sans-serif; margin-bottom: 12px; }
@@ -66,11 +69,15 @@ h1 { font: 600 16px BV, sans-serif; margin-bottom: 12px; }
 .ws-seal { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px 0 0 -35px; z-index: 5; }
 .ws-seal svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
 .ws-mono { position: absolute; inset: 0; display: grid; place-items: center; font: 400 15px PF, serif; color: var(--c-on-primary); letter-spacing: .04em; }
-.wx-body { fill: url(#wxg); } .wx-press { fill: color-mix(in srgb, var(--op-wax) 82%, #000); } .wx-ring { stroke: rgba(255,255,255,.35); stroke-width: 1.2; } .wx-ring2 { stroke: rgba(0,0,0,.3); stroke-width: 1; }
+.wx-body { fill: url(#wxg); } .wx-press { fill: color-mix(in srgb, var(--op-wax) 90%, #000); } .wx-ring { stroke: rgba(255,255,255,.35); stroke-width: 1.2; } .wx-ring2 { stroke: rgba(0,0,0,.3); stroke-width: 1; }
 .wx-crack { stroke: color-mix(in srgb, var(--op-wax) 40%, #000); stroke-width: 1.4; stroke-linejoin: round; }
 .wxs-hi { stop-color: color-mix(in srgb, var(--op-wax) 65%, #fff); } .wxs-mid { stop-color: var(--op-wax); } .wxs-lo { stop-color: color-mix(in srgb, var(--op-wax) 65%, #000); }
-[data-op="wax-seal"].mid .ws-l { transform: rotateY(-120deg); } [data-op="wax-seal"].mid .ws-r { transform: rotateY(120deg); }
-[data-op="wax-seal"].mid .ws-seal .h-l { transform: translate(-16px, 26px) rotate(-30deg); opacity: .8; } [data-op="wax-seal"].mid .ws-seal .h-r { transform: translate(18px, 30px) rotate(34deg); opacity: .8; }
+
+[data-op="wax-seal"].mid .ws-seal .h-l { transform: translate(-58px, 34px) rotate(-38deg); opacity: .55; } [data-op="wax-seal"].mid .ws-seal .h-r { transform: translate(60px, 40px) rotate(42deg); opacity: .55; }
+.ws-wb { position: absolute; top: 0; bottom: 0; width: 50%; background: color-mix(in srgb, var(--c-accent) 14%, var(--c-surface)); border: 1px solid var(--c-line); transform: rotateY(180deg); backface-visibility: hidden; }
+.ws-wrap { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; } .ws-wrap.l { left: 0; transform-origin: 0 50%; } .ws-wrap.r { right: 0; transform-origin: 100% 50%; }
+.ws-wrap > * { left: 0; right: 0; width: auto; }
+[data-op="wax-seal"].mid .ws-wrap.l { transform: rotateY(-120deg); } [data-op="wax-seal"].mid .ws-wrap.r { transform: rotateY(120deg); }
 .ws-seal .h-l, .ws-seal .h-r { position: absolute; inset: 0; }
 
 /* ===== origami */
@@ -85,7 +92,7 @@ h1 { font: 600 16px BV, sans-serif; margin-bottom: 12px; }
 .og-stk { fill: var(--c-primary); } .og-stk-ring { stroke: rgba(255,255,255,.55); stroke-width: .6; stroke-dasharray: 1 1.2; } .og-stk-heart { fill: #fff; }
 .og-sticker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; z-index: 9; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
 .og-t { transform-origin: 50% 0; z-index: 4; } .og-b { transform-origin: 50% 100%; z-index: 3; } .og-l { transform-origin: 0 50%; z-index: 2; } .og-r { transform-origin: 100% 50%; z-index: 1; }
-[data-op="origami"].mid .og-t { transform: rotateX(165deg); } [data-op="origami"].mid .og-r { transform: rotateY(150deg); } [data-op="origami"].mid .og-sticker { opacity: 0; }
+[data-op="origami"].mid .og-t { transform: rotateX(165deg); } [data-op="origami"].mid .og-r { transform: rotateY(150deg); } [data-op="origami"].mid .og-sticker { opacity: 0; } [data-op="origami"].mid .eyb, [data-op="origami"].mid .dt, [data-op="origami"].mid .nm, [data-op="gift-box"].mid .eyb, [data-op="gift-box"].mid .dt, [data-op="gift-box"].mid .nm { opacity: 0; }
 
 /* ===== double-door */
 [data-op="double-door"] { --op-door: color-mix(in srgb, var(--c-primary) 80%, #1a120c); }
@@ -130,8 +137,11 @@ h1 { font: 600 16px BV, sans-serif; margin-bottom: 12px; }
 .c3-card { position: absolute; inset: 0; background: var(--c-surface); border-radius: 10px; box-shadow: 0 1px 0 var(--c-line); transform: rotateY(-14deg) rotateX(6deg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; padding: 18px; }
 .c3-frame { position: absolute; inset: 0; --mc: var(--c-accent); -webkit-mask: url(../../open/card-3d/card-frame.svg) 0 0 / 100% 100%; mask: url(../../open/card-3d/card-frame.svg) 0 0 / 100% 100%; }
 .c3-shadow { position: absolute; left: 10%; right: 10%; bottom: -24px; height: 22px; background: radial-gradient(closest-side, rgba(0,0,0,.35), transparent); transform: scaleX(.86); }
+.c3-back { position: absolute; inset: 0; background: var(--c-primary); border-radius: 10px; transform: rotateY(180deg); backface-visibility: hidden; display: grid; place-items: center; color: var(--c-on-primary); font: 400 26px GV, cursive; }
+.c3-rot { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(-14deg) rotateX(6deg); } .c3-rot > .c3-card { transform: none; backface-visibility: hidden; }
+[data-op="card-3d"].mid .c3-rot { transform: rotateY(-120deg); }
 .c3-sheen { position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, transparent 60%); }
-[data-op="card-3d"].mid .c3-card { transform: rotateY(-120deg); } [data-op="card-3d"].mid .c3-shadow { transform: scaleX(.35); opacity: .6; }
+ [data-op="card-3d"].mid .c3-shadow { transform: scaleX(.35); opacity: .6; }
 
 /* ===== gift-box */
 [data-op="gift-box"] { --op-box: color-mix(in srgb, var(--c-accent) 40%, var(--c-surface)); --op-box-deep: color-mix(in srgb, var(--c-accent) 70%, var(--c-primary) 10%); --op-ribbon: var(--c-primary); }
@@ -180,8 +190,10 @@ h1 { font: 600 16px BV, sans-serif; margin-bottom: 12px; }
 .ik i { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
 .ik .core { --mc: var(--c-bg); -webkit-mask-image: url(../../open/ink-spread/blob-core.svg); mask-image: url(../../open/ink-spread/blob-core.svg); }
 .ik .rim { --mc: var(--c-accent); opacity: .6; -webkit-mask-image: url(../../open/ink-spread/blob-rim.svg); mask-image: url(../../open/ink-spread/blob-rim.svg); }
-.ik-landing { position: absolute; inset: 0; background: var(--c-bg); }
+.ik-landing { position: absolute; inset: 0; background: linear-gradient(180deg, #cfd9c8, #8fa886 60%, #4e6b4a); display: grid; place-items: center; color: #fff; font: 400 28px GV, cursive; }
 .ik-cover { position: absolute; inset: 0; background: var(--c-surface); }
+.mid .ik-coverwrap { -webkit-mask: url(../../open/ink-spread/blob-core.svg) var(--mx) var(--my) / var(--ms) var(--ms) no-repeat, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: url(../../open/ink-spread/blob-core.svg) var(--mx) var(--my) / var(--ms) var(--ms) no-repeat exclude, linear-gradient(#000 0 0); }
+.ik-coverwrap { position: absolute; inset: 0; }
 
 /* ===== polaroid */
 .pl { position: relative; width: 186px; height: 222px; perspective: 900px; }
@@ -217,17 +229,17 @@ const guest = `<p class="pre">Kính gửi</p><p class="gst">Gia đình anh Mạn
 const cta = `<div class="bottom"><span class="cta">♡ Chạm để mở thiệp</span></div>`;
 const cells = {
   curtain: ['son-do', 'Rèm kéo · gate', `<div class="ct-behind">${head()}</div><div class="ct-l"><i class="ct-trim mk"></i></div><div class="ct-r"><i class="ct-trim mk"></i></div><div class="ct-val"><i class="f mk"></i><i class="t mk"></i></div><div class="col" style="z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
-  'wax-seal': ['hoai-co', 'Dấu sáp vỡ · object', `<div class="col" style="justify-content:flex-start;padding-top:26px">${head()}<div class="ws-card"><div class="ws-in"><div><p class="gst" style="font-size:20px;color:var(--c-primary)">Chúng mình<br>sắp cưới!</p></div></div><div class="ws-w ws-l"></div><div class="ws-w ws-r"></div><div class="ws-seal"><div class="h-l"><svg viewBox="-48 -48 96 96" style="clip-path:url(#ckl)">${sym['wx-body'].inner}${sym['wx-press'].inner}</svg></div><div class="h-r"><svg viewBox="-48 -48 96 96" style="clip-path:url(#ckr)">${sym['wx-body'].inner}${sym['wx-press'].inner}</svg></div>${MID ? '' : `<svg viewBox="-48 -48 96 96">${sym['wx-crack'].inner}</svg><span class="ws-mono">M&amp;L</span>`}</div></div>${guest}</div>${MID ? '' : cta}<svg width="0" height="0"><clipPath id="ckl" clipPathUnits="userSpaceOnUse">${sym['crack-l'].inner}</clipPath><clipPath id="ckr" clipPathUnits="userSpaceOnUse">${sym['crack-r'].inner}</clipPath></svg>`],
+  'wax-seal': ['hoai-co', 'Dấu sáp vỡ · object', `<div class="col" style="justify-content:flex-start;padding-top:26px">${head()}<div class="ws-card"><div class="ws-in"><div><p class="gst" style="font-size:20px;color:var(--c-primary)">Chúng mình<br>sắp cưới!</p></div></div><div class="ws-wrap l"><div class="ws-w ws-l"></div><div class="ws-wb"></div></div><div class="ws-wrap r"><div class="ws-w ws-r"></div><div class="ws-wb"></div></div><div class="ws-seal"><div class="h-l"><svg viewBox="-48 -48 96 96" style="clip-path:url(#ckl)">${sym['wx-body'].inner}${sym['wx-press'].inner}</svg></div><div class="h-r"><svg viewBox="-48 -48 96 96" style="clip-path:url(#ckr)">${sym['wx-body'].inner}${sym['wx-press'].inner}</svg></div>${MID ? '' : `<svg viewBox="-48 -48 96 96">${sym['wx-crack'].inner}</svg><span class="ws-mono">M&amp;L</span>`}</div></div>${guest}</div>${MID ? '' : cta}<svg width="0" height="0"><clipPath id="ckl" clipPathUnits="userSpaceOnUse">${sym['crack-l'].inner}</clipPath><clipPath id="ckr" clipPathUnits="userSpaceOnUse">${sym['crack-r'].inner}</clipPath></svg>`],
   origami: ['dat-nung', 'Gấp giấy · object', `<div class="col" style="justify-content:flex-start;padding-top:30px">${head()}<div class="og"><div class="og-in"><div><p class="gst" style="font-size:12px">Trân trọng kính mời</p><p class="gst">Gia đình anh Mạnh</p></div></div>${['l', 'r', 'b', 't'].map((k) => `<div class="og-f og-${k}">${S({ l: 'og-left', r: 'og-right', b: 'og-bottom', t: 'og-top' }[k])}<svg viewBox="0 0 100 100" style="transform:rotate${'tb'.includes(k) ? 'X' : 'Y'}(180deg)"><defs><pattern id="pp${k}" width="12" height="12" patternUnits="userSpaceOnUse"><image href="../../open/origami/flap-pattern.svg" width="12" height="12" opacity=".5"/></pattern></defs><path d="${sym[{ l: 'og-left', r: 'og-right', b: 'og-bottom', t: 'og-top' }[k]].inner.match(/d="([^"]+)"/)[1]}" fill="var(--op-paper-2)"/><path d="${sym[{ l: 'og-left', r: 'og-right', b: 'og-bottom', t: 'og-top' }[k]].inner.match(/d="([^"]+)"/)[1]}" fill="url(#pp${k})"/></svg></div>`).join('')}<div class="og-sticker">${S('og-sticker')}</div></div><p class="pre" style="margin-top:8px">Kính gửi</p><p class="gst">Gia đình anh Mạnh</p></div>${MID ? '' : cta}`],
   'double-door': ['luc-bao', 'Cửa đôi · gate', `<div class="dd"><div class="col">${head()}</div><div class="dd-light"></div><div class="dd-d dd-l"><i class="dd-c mk"></i><i class="dd-ring mk"></i></div><div class="dd-d dd-r"><i class="dd-c mk"></i><i class="dd-ring mk"></i></div></div><div class="col" style="z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
   'flower-gate': ['hong-phan', 'Cổng hoa (vector) · gate', `<div class="fg"><i class="fg-arch l mk"></i><i class="fg-arch r mk"></i><div class="fg-cl l"><i class="lf mk"></i><i class="bl mk"></i><i class="dp mk"></i><i class="ln mk"></i></div><div class="fg-cl r"><i class="lf mk"></i><i class="bl mk"></i><i class="dp mk"></i><i class="ln mk"></i></div></div><div class="col" style="z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
   scroll: ['son-do', 'Cuộn thư · object', `<div class="col" style="justify-content:flex-start;padding-top:40px">${head()}<div class="sc"><div class="sc-rod">${S('sc-rod')}</div><div class="sc-paper">${guest}<p class="gst" style="font-size:11px;color:var(--c-muted)">tới dự lễ thành hôn</p></div><div class="sc-rod">${S('sc-rod')}</div><div class="sc-ribbon" style="top:-14px">${S('sc-ribbon')}</div></div></div>${MID ? '' : cta}`],
-  'card-3d': ['bien-dao', 'Thiệp 3D xoay · object', `<div class="col"><div class="c3"><div class="c3-shadow"></div><div class="c3-card"><i class="c3-frame mk"></i>${head()}<span style="width:40px;height:1px;background:var(--c-accent)"></span>${guest}${MID ? '' : '<i class="c3-sheen"></i>'}</div></div></div>${MID ? '' : cta}`],
+  'card-3d': ['bien-dao', 'Thiệp 3D xoay · object', `<div class="col"><div class="c3"><div class="c3-shadow"></div><div class="c3-rot"><div class="c3-card"><i class="c3-frame mk"></i>${head()}<span style="width:40px;height:1px;background:var(--c-accent)"></span>${guest}${MID ? '' : '<i class="c3-sheen"></i>'}</div><div class="c3-back">M &amp; L</div></div></div></div>${MID ? '' : cta}`],
   'light-gather': ['dem-nhung', 'Hạt sáng tụ thành tên · gate (canvas)', `<canvas class="lg" width="260" height="520" style="position:absolute;inset:0"></canvas><div class="col" style="justify-content:flex-start;padding-top:70px;gap:8px">${head(false)}<p class="nm lg-names" style="opacity:${MID ? '.12' : '1'}">Minh Anh<span class="a">&amp;</span>Thuỳ Linh</p>${guest.replace('class="gst"', 'class="gst" style="color:var(--c-text)"')}</div>${MID ? '' : cta}`],
   'gift-box': ['pastel-han', 'Mở hộp quà · object', `<div class="col" style="justify-content:flex-start;padding-top:30px">${head()}<div class="gb"><div class="gb-card"><p class="gst" style="font-size:12px">Chúng mình<br>sắp cưới!</p></div>${S('gb-body')}${S('gb-lid', 'lid')}${S('gb-bow', 'lid')}</div>${guest}</div>${MID ? '' : cta}`],
   'moon-gate': ['sen-cham', 'Cửa trăng · gate', `<div class="mg-photo"><b>M &amp; L</b></div><div class="mg-h l"><i class="mg-lat"></i><i class="mg-ring"></i></div><div class="mg-h r"><i class="mg-lat"></i><i class="mg-ring"></i></div><div class="mg-lotus"><i class="f mk"></i><i class="ln mk"></i></div><div class="col" style="justify-content:flex-end;padding-bottom:84px;z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
   book: ['muc-giay', 'Thiệp gấp đôi (lật trang) · object', `<div class="col" style="justify-content:flex-start;padding-top:28px">${head()}<div class="bk"><div class="bk-page"><p class="gst" style="font-size:11px;color:var(--c-muted)">Trân trọng kính mời</p><p class="gst">Gia đình anh Mạnh</p><p class="gst" style="font-size:11px;color:var(--c-muted)">tới dự lễ thành hôn</p></div><div class="bk-cover"><div class="bk-front"><i class="bk-frame mk"></i><span class="bk-mono">M · L</span><span class="bk-title">Thiệp mời</span></div><div class="bk-back"></div></div></div></div>${MID ? '' : cta}`],
-  'ink-spread': ['mau-nuoc', 'Mực loang · gate', `<div class="ik-cover"></div><div class="col">${head()}${guest}</div>${MID ? `<div class="ik" style="--x:170px;--y:330px;--s:.62"><i class="core mk"></i><i class="rim mk"></i></div><div class="ik" style="--x:70px;--y:150px;--s:.22"><i class="core mk"></i><i class="rim mk"></i></div>` : cta}`],
+  'ink-spread': ['mau-nuoc', 'Mực loang · gate', `${MID ? '<div class="ik-landing">Minh Anh &amp; Thuỳ Linh</div>' : ''}<div class="ik-coverwrap" style="--mx:${170 - 161}px;--my:${330 - 161}px;--ms:322px"><div class="ik-cover"></div><div class="col">${head()}${guest}</div>${MID ? '' : cta}</div>${MID ? `<div class="ik" style="--x:170px;--y:330px;--s:.62"><i class="rim mk"></i></div>` : ''}`],
   polaroid: ['pastel-han', 'Ảnh polaroid · object', `<div class="col" style="justify-content:flex-start;padding-top:28px">${head()}<div class="pl"><i class="pl-tape mk"></i><div class="pl-in"><div class="pl-front"><div class="pl-photo"><i class="dev1"></i><i class="dev2"></i></div><p class="pl-cap">Minh Anh &amp; Thuỳ Linh</p></div><div class="pl-back"><p class="pre" style="position:relative">Kính gửi</p><p class="gst" style="position:relative">Gia đình anh Mạnh</p></div></div></div></div>${MID ? '' : cta}`],
 };
 const grid = document.getElementById('grid');
@@ -243,25 +255,27 @@ for (const c of document.querySelectorAll('canvas.lg')) {
   const ph = c.parentElement; const nm = ph.querySelector('.lg-names');
   const g = c.getContext('2d');
   const R = ph.getBoundingClientRect(); const r = nm.getBoundingClientRect();
-  const off = new OffscreenCanvas(260, 520); const o = off.getContext('2d');
+  const off = document.createElement('canvas'); off.width = 260; off.height = 520; const o = off.getContext('2d', { willReadFrequently: true });
   const cs = getComputedStyle(nm);
   o.font = `${cs.fontSize} ${cs.fontFamily}`; o.textAlign = 'center'; o.textBaseline = 'middle'; o.fillStyle = '#000';
   const lines = ['Minh Anh', '&', 'Thuỳ Linh']; const lh = r.height / 3;
   lines.forEach((t, i) => { o.font = `${i === 1 ? parseFloat(cs.fontSize) * 0.6 : parseFloat(cs.fontSize)}px ${cs.fontFamily}`; o.fillText(t, r.left - R.left + r.width / 2, r.top - R.top + lh * (i + 0.5)); });
   const data = o.getImageData(0, 0, 260, 520).data; const pts = [];
   for (let y = 0; y < 520; y += 2) for (let x = 0; x < 260; x += 2) if (data[(y * 260 + x) * 4 + 3] > 128) pts.push([x, y]);
+  for (let i = pts.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pts[i], pts[j]] = [pts[j], pts[i]]; }
   let s = 7; const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
   g.globalCompositeOperation = 'lighter';
-  const N = 420;
+  const N = MID ? Math.min(420, pts.length) : 120;
   for (let i = 0; i < N; i++) {
-    const [tx, ty] = pts[Math.floor(rnd() * pts.length)] ?? [130, 200];
+    const [tx, ty] = pts[i % pts.length] ?? [130, 200];
     const sx = rnd() * 260, sy = rnd() * 520;
     const k = MID ? 0.86 + rnd() * 0.14 : 0;
     const x = sx + (tx - sx) * k, y = sy + (ty - sy) * k;
-    const rr = 0.8 + rnd() * 1.2;
-    const grd = g.createRadialGradient(x, y, 0, x, y, rr * 3);
-    grd.addColorStop(0, 'rgba(255,244,214,.95)'); grd.addColorStop(.35, 'rgba(243,212,140,.55)'); grd.addColorStop(1, 'rgba(243,212,140,0)');
-    g.fillStyle = grd; g.fillRect(x - rr * 3, y - rr * 3, rr * 6, rr * 6);
+    const rr = MID ? 0.7 + rnd() * 0.6 : 0.8 + rnd() * 1.2;
+    if (!MID && x > 40 && x < 220 && y > 100 && y < 260) continue; // né khối tên lúc chờ (vùng dịu)
+    const grd = g.createRadialGradient(x, y, 0, x, y, rr * 2.4);
+    grd.addColorStop(0, `rgba(255,244,214,${MID ? .9 : .7})`); grd.addColorStop(.4, 'rgba(243,212,140,.35)'); grd.addColorStop(1, 'rgba(243,212,140,0)');
+    g.fillStyle = grd; g.fillRect(x - rr * 2.4, y - rr * 2.4, rr * 4.8, rr * 4.8);
   }
 }
 window.__ready = true;

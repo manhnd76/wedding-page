@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg">
-<!-- origami: tờ giấy vuông 100×100, 4 cánh tam giác chồng mũi qua tâm 2 đơn vị. Mặt trước .og-face (--op-paper) + nếp .og-crease; mặt sau dùng mask flap-pattern.svg tô --c-accent trên nền --op-paper-2 -->
+<!-- origami: tờ giấy vuông 100×100, 4 cánh tam giác chồng mũi qua tâm 2 đơn vị. Mặt trước .og-face (‐‐op-paper) + nếp .og-crease; mặt sau dùng mask flap-pattern.svg tô ‐‐c-accent trên nền ‐‐op-paper-2 -->
 <symbol id="og-top" viewBox="0 0 100 100"><path d="M0 0H100L50 52Z" class="og-face"/><path d="M50 0V50M50 52 30 18" class="og-crease"/></symbol>
 <symbol id="og-right" viewBox="0 0 100 100"><path d="M100 0V100L48 50Z" class="og-face"/><path d="M100 50H50M48 50 82 30" class="og-crease"/></symbol>
 <symbol id="og-bottom" viewBox="0 0 100 100"><path d="M0 100H100L50 48Z" class="og-face"/><path d="M50 100V50M50 48 70 82" class="og-crease"/></symbol>
