@@ -81,8 +81,8 @@ Quy tắc:
 - Tối đa 2 FE cùng lúc. Designer/solution không chạy e2e; chụp ảnh dùng `vite dev` cổng riêng.
 - File dùng chung dễ đụng (`src/shared/capabilities.ts`, trình chọn hiệu ứng admin, plugin `inject-config-og`, `fx.css`): theo bản đồ sở hữu trong `solution-v4a-2bc.md`; chỉ thêm dòng, không sắp xếp lại.
 
-### Tạm dừng (2026-10-09, người duyệt yêu cầu)
-- **v4a-1**: FE-1 XONG, đã merge vào branch phiên (commit 23a5238 + merge 4156011). Unit 802/802, build xanh, e2e đợt 9/9; full e2e 45/46 (A07 đã sửa, chạy lại riêng xanh) -> **còn chạy lại full e2e 1 lần**. Admin JS 75.39/80 KB (vượt mục tiêu +1 KB). Tiếp: ui-ux-designer review bước 4 (danh sách trong `frontend-report-v4a-1.md` mục "Việc cho designer").
+### Tạm dừng (2026-10-09, người duyệt yêu cầu) -> từ nay chỉ 1 FE, không song song
+- **v4a-1**: **CODE XONG**, đã merge vào branch phiên (commit 23a5238 + merge 4156011). Unit 802/802, build xanh, e2e đợt 9/9, **full e2e 46/46** (orchestrator chạy lại 2026-10-09 sau sửa A07). Còn: designer review (bước 4) -> sửa nếu có (≤ 3 vòng) -> Cổng 3. Admin JS 75.39/80 KB (vượt mục tiêu +1 KB). Tiếp: ui-ux-designer review bước 4 (danh sách trong `frontend-report-v4a-1.md` mục "Việc cho designer").
 - **v4a-2b**: FE-2 TẠM DỪNG, commit WIP `ceeb24c` trên branch cục bộ `wt/v4a-2b` (worktree `/home/user/wp-v4a-2b`, CHƯA push — mất nếu container bị thu hồi). Tiến độ + bước tiếp: `frontend-report-v4a-2b.md` trong worktree, mục "Trạng thái khi tạm dừng". Còn: build lại + đo, fixture tổ hợp nặng, e2e các nhóm còn lại + full 1 lần, ghi chú phát hành, vùng dịu `.env-addr/.cv-plaque` (cần `geometry.ts` của 2c — orchestrator quyết). Khi làm tiếp: merge branch phiên (đã có v4a-1) vào `wt/v4a-2b` trước.
 - **v4a-2c**, **v4a-2a**: chưa bắt đầu (2a đã mở khoá vì v4a-1 đã merge).
 

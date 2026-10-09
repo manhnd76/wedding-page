@@ -123,3 +123,9 @@
 - `solution-v4a-2a.md`: người duyệt đồng ý cả 4 giả định — ghim gói chưa bật -> bỏ ghim + cảnh báo (theo tự động); hoạ tiết ở cấp Nhẹ giữ như hiện nay (hiện ngay, không vẽ nét); cho sửa 1 hunk `diff.ts` bỏ dòng "xoá {}"; micro thêm ≤ +0.6 KB JS ban đầu (ngoài +2.5 KB reveal).
 - Orchestrator: cho 2a sửa 1 hunk mỗi file `checklist.ts`, `icons.ts`, `.size-limit.cjs`; **2a tách nhánh SAU khi v4a-1 merge** (chung `resolve.ts`, `merge.ts`, `labels.ts`, `schema-meta.ts`, `ops.ts`).
 - Thứ tự: Bước 0 -> FE-1 v4a-1 ‖ FE-2 v4a-2b -> slot trống: v4a-2c, rồi v4a-2a (sau merge v4a-1).
+
+## Sau tạm dừng (2026-10-09)
+- v4a-1 code xong (merge vào branch phiên, full e2e 46/46); chờ designer review.
+- Người duyệt cho phép **push branch `wt/v4a-2b`** lên GitHub (giữ WIP v4a-2b).
+- **Từ nay chỉ chạy 1 frontend-developer, không song song.** Thứ tự: hoàn tất v4a-2b -> (designer review v4a-1, v4a-2b) -> v4a-2c -> v4a-2a.
+- Vì không còn song song: FE v4a-2b được sửa 1 hunk `SOFT_SELECTOR` trong `geometry.ts` (thuộc 2c) cho vùng dịu `.env-addr`/`.cv-plaque`.
