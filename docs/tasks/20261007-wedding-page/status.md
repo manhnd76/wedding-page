@@ -66,7 +66,7 @@ Thứ tự đã chốt (decisions 2026-10-09): v4a-1 -> v4a-2 (tách 2a/2b/2c, l
 `request.md` · `decisions.md` (nguồn sự thật) · `solution.md` (Rev 4 + v4a/B1–B3) · `design.md` (Bản sửa 5) · `backlog.md` · review: `design-review-v1.md`, `design-review-admin-v2.md`, `design-review-envelopes.md` · report: `frontend-report*.md`, `design-report-v4a-1.md`.
 
 ## 8. Chạy song song (2026-10-09)
-**Hiện tại:** Bước 0 (khung chung, `solution-v4a-2bc.md` mục 0) đang làm trên branch phiên, report `frontend-report-v4a-step0.md`; song song: solution-designer v4a-1 (`solution.md` Rev 5), solution-designer v4a-2a (`solution-v4a-2a.md`), ui-ux-designer B (asset 2b/2c). Sau Bước 0 + Cổng 1 v4a-1: FE-1 (v4a-1) + FE-2 (v4a-2b) song song; FE-3 (v4a-2c) / v4a-2a khi có slot.
+**Hiện tại (2026-10-09):** Bước 0 XONG (commit 095684e, e2e 37/37). FE-1 làm v4a-1 trong worktree `/home/user/wp-v4a-1` (branch cục bộ `wt/v4a-1`, report `frontend-report-v4a-1.md`), FE-2 làm v4a-2b trong `/home/user/wp-v4a-2b` (`wt/v4a-2b`, report `frontend-report-v4a-2b.md`). Worktree chỉ có trong container — nếu container mất thì tạo lại từ branch phiên. Trước đó: song song: solution-designer v4a-1 (`solution.md` Rev 5), solution-designer v4a-2a (`solution-v4a-2a.md`), ui-ux-designer B (asset 2b/2c). Sau Bước 0 + Cổng 1 v4a-1: FE-1 (v4a-1) + FE-2 (v4a-2b) song song; FE-3 (v4a-2c) / v4a-2a khi có slot.
 
 | Đợt | Phụ thuộc | Đợt 1 (giao ngay) | Đợt 2 | Đợt 3 |
 |---|---|---|---|---|
@@ -80,6 +80,11 @@ Quy tắc:
 - Mỗi FE một git worktree (cần `npm ci` riêng) trên branch `wt/<đợt>`; orchestrator merge vào branch phiên sau cổng duyệt, lần lượt.
 - Tối đa 2 FE cùng lúc. Designer/solution không chạy e2e; chụp ảnh dùng `vite dev` cổng riêng.
 - File dùng chung dễ đụng (`src/shared/capabilities.ts`, trình chọn hiệu ứng admin, plugin `inject-config-og`, `fx.css`): theo bản đồ sở hữu trong `solution-v4a-2bc.md`; chỉ thêm dòng, không sắp xếp lại.
+
+### Tạm dừng (2026-10-09, người duyệt yêu cầu) -> từ nay chỉ 1 FE, không song song
+- **v4a-1**: **CODE XONG**, đã merge vào branch phiên (commit 23a5238 + merge 4156011). Unit 802/802, build xanh, e2e đợt 9/9, **full e2e 46/46** (orchestrator chạy lại 2026-10-09 sau sửa A07). Còn: designer review (bước 4) -> sửa nếu có (≤ 3 vòng) -> Cổng 3. Admin JS 75.39/80 KB (vượt mục tiêu +1 KB). Tiếp: ui-ux-designer review bước 4 (danh sách trong `frontend-report-v4a-1.md` mục "Việc cho designer").
+- **v4a-2b**: FE-2 TẠM DỪNG, commit WIP `ceeb24c` trên branch cục bộ `wt/v4a-2b` (worktree `/home/user/wp-v4a-2b`, CHƯA push — mất nếu container bị thu hồi). Tiến độ + bước tiếp: `frontend-report-v4a-2b.md` trong worktree, mục "Trạng thái khi tạm dừng". Còn: build lại + đo, fixture tổ hợp nặng, e2e các nhóm còn lại + full 1 lần, ghi chú phát hành, vùng dịu `.env-addr/.cv-plaque` (cần `geometry.ts` của 2c — orchestrator quyết). Khi làm tiếp: merge branch phiên (đã có v4a-1) vào `wt/v4a-2b` trước.
+- **v4a-2c**, **v4a-2a**: chưa bắt đầu (2a đã mở khoá vì v4a-1 đã merge).
 
 | Agent | `PW_PREVIEW_PORT` | `PW_DEV_PORT` | Cổng chụp ảnh (`vite dev`) |
 |---|---|---|---|

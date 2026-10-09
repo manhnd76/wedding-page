@@ -5,6 +5,7 @@
  * Mọi giá trị hiển thị bằng nhãn tiếng Việt (`@shared/labels`, A07). Mobile: toast [Hoàn tác] [Xem ↗] (A05).
  */
 import { useEffect, useState } from 'preact/hooks';
+import type { ComponentType } from 'preact';
 import { PRESETS, type ThemePreset } from '@shared/theme/presets';
 import { THEME_TAGS, type ThemeId, type ThemeTag } from '@shared/config/enums';
 import { CAPABILITIES, isSupported, type CapabilityKey } from '@shared/capabilities';
@@ -21,9 +22,19 @@ import type { RouteProps } from '../editor';
 import { useStore } from '../../state/store';
 import { THEME_GROUP_LABEL, changeTheme, customizedGroups, resetGroup, type ThemeGroup } from '../../draft/ops';
 import { Details, Modal, Select } from '../../ui/ui';
+import { MOTIF_PLACEMENT_LABEL, MOTIF_SET_LABEL } from '@shared/labels';
+import type { MotifPanelProps } from '../motif-panel';
+import './theme.css';
 
 const TAG_LABEL: Record<ThemeTag, string> = { 'co-dien': 'Cổ điển', 'truyen-thong': 'Truyền thống', 'hien-dai': 'Hiện đại', 'thien-nhien': 'Thiên nhiên', toi: 'Tối' };
-const MOOD: Partial<Record<ThemeId, string>> = { 'tram-vang': 'cổ điển ấm áp', 'son-do': 'truyền thống Á Đông', 'dem-nhung': 'sang trọng, nền tối' };
+const MOOD: Record<ThemeId, string> = {
+  'tram-vang': 'cổ điển ấm áp', 'hong-phan': 'lãng mạn, nhẹ nhàng', 'luc-bao': 'cổ điển thanh lịch', 'son-do': 'truyền thống Á Đông',
+  'muc-giay': 'tối giản hiện đại, kiểu tạp chí', 'hoai-co': 'thư tay hoài cổ, tem thư', 'sen-cham': 'Á Đông thanh lịch',
+  'mau-nuoc': 'tươi nhẹ, màu nước', 'dat-nung': 'phong cách Boho, mộc mạc', 'pastel-han': 'trẻ trung kiểu Hàn', 'dem-nhung': 'sang trọng, nền tối',
+  'bien-dao': 'biển, nắng chiều',
+};
+const motifText = (set: string, pl: readonly string[]) =>
+  set === 'none' ? MOTIF_SET_LABEL.none : `${MOTIF_SET_LABEL[set as keyof typeof MOTIF_SET_LABEL]} (${pl.map((p) => MOTIF_PLACEMENT_LABEL[p as keyof typeof MOTIF_PLACEMENT_LABEL]).join(' + ')})`;
 const LABELS: Record<'ornamentSet' | 'texture' | 'photoFrame' | 'divider', Record<string, string>> = {
   ornamentSet: ORNAMENT_LABEL, texture: TEXTURE_LABEL, photoFrame: PHOTO_FRAME_LABEL, divider: DIVIDER_LABEL,
 };
@@ -41,7 +52,7 @@ function ThemeCard(p: { preset: ThemePreset; names: [string, string]; checked: b
   } as Record<string, string>;
   return (
     <div role="radio" aria-checked={p.checked} tabIndex={p.tabIndex} class={`tcard${p.checked ? ' is-on' : ''}`} style={vars}
-      aria-label={`${p.preset.name}, ${MOOD[p.preset.id] ?? ''}, ${p.preset.mode === 'dark' ? 'nền tối' : 'nền sáng'}`}
+      aria-label={`${p.preset.name}, ${MOOD[p.preset.id]}, ${p.preset.mode === 'dark' ? 'nền tối' : 'nền sáng'}`}
       onClick={p.onPick} onKeyDown={p.onKey} data-testid={`theme-${p.preset.id}`}>
       <div class={`tcard-face tex-${p.preset.texture}`}>
         <p class="tcard-names"><span>{p.names[0]}</span><span class="amp">&amp;</span><span>{p.names[1]}</span></p>
@@ -63,6 +74,13 @@ export default function ThemeRoute({ store, go, peek }: RouteProps) {
   const draft = useStore(store, (s) => s.draft);
   const [tag, setTag] = useState<ThemeTag | 'all'>('all');
   const [ask, setAsk] = useState<ThemeId | null>(null);
+  // panel Hoạ tiết nền: chunk lười riêng, chỉ tải khi bấm [Đổi] (solution Rev 5 mục 10.6)
+  const [motifOpen, setMotifOpen] = useState(false);
+  const [MotifPanel, setMotifPanel] = useState<ComponentType<MotifPanelProps> | null>(null);
+  const toggleMotif = () => {
+    setMotifOpen((o) => !o);
+    if (!MotifPanel) void import('../motif-panel').then((m) => setMotifPanel(() => m.default));
+  };
   const list = supported().filter((p) => tag === 'all' || p.tags.includes(tag));
   const c = draft.content.couple;
   const names: [string, string] = [c.groom.shortName || c.groom.fullName || 'Minh Anh', c.bride.shortName || c.bride.fullName || 'Thuỳ Linh'];
@@ -98,7 +116,7 @@ export default function ThemeRoute({ store, go, peek }: RouteProps) {
   const groupValue = (g: ThemeGroup): string => {
     const v: Record<ThemeGroup, string> = {
       colors: '', fonts: '', ornament: ORNAMENT_LABEL[r.ornamentSet], texture: TEXTURE_LABEL[r.texture],
-      photoFrame: PHOTO_FRAME_LABEL[r.photoFrame], divider: DIVIDER_LABEL[r.divider], openStyle: OPEN_STYLE_LABEL[r.openStyle],
+      photoFrame: PHOTO_FRAME_LABEL[r.photoFrame], divider: DIVIDER_LABEL[r.divider], motif: motifText(r.motif.set, r.motif.placements), openStyle: OPEN_STYLE_LABEL[r.openStyle],
       burst: BURST_LABEL[r.burstOnOpen], particles: r.particles.types.map((t) => PARTICLE_LABEL[t]).join(', '), reveal: REVEAL_LABEL[r.reveal.style],
     };
     return v[g];
@@ -149,7 +167,7 @@ export default function ThemeRoute({ store, go, peek }: RouteProps) {
         ))}
         {list.length === 0 && <p class="muted">Chưa có theme nào thuộc nhóm này trong bản hiện tại.</p>}
       </div>
-      <p class="note">Bản hiện tại có {supported().length}/12 theme; các theme còn lại sẽ được bật ở bản sau.</p>
+      {supported().length < 12 && <p class="note">Bản hiện tại có {supported().length}/12 theme; các theme còn lại sẽ được bật ở bản sau.</p>}
 
       <h2>Thành phần của theme</h2>
       <table class="comp">
@@ -167,12 +185,21 @@ export default function ThemeRoute({ store, go, peek }: RouteProps) {
             );
           })}
           <tr>
+            <th scope="row">{THEME_GROUP_LABEL.motif}</th>
+            <td>{custom.includes('motif') ? <span class="badge badge--warn">Đã chỉnh riêng ●</span> : 'Theo theme'} · {groupValue('motif')}</td>
+            <td>
+              {custom.includes('motif') && <button type="button" class="btn btn-link" onClick={() => store.update((x) => resetGroup(x, 'motif'), '', 'hero')}>Đặt lại theo theme</button>}
+              <button type="button" class="btn btn-link" aria-expanded={motifOpen} aria-controls="motif-panel" onClick={toggleMotif} data-testid="motif-open">Đổi</button>
+            </td>
+          </tr>
+          <tr>
             <th scope="row">Hiệu ứng gợi ý</th>
             <td>{suggestText}</td>
             <td><button type="button" class="btn btn-link" onClick={() => go('effects')}>Sang tab Hiệu ứng</button></td>
           </tr>
         </tbody>
       </table>
+      {motifOpen && <div id="motif-panel">{MotifPanel ? <MotifPanel store={store} draft={draft} resolved={r} peek={peek} /> : <p class="muted">Đang tải…</p>}</div>}
 
       <h2>Màu chủ đạo</h2>
       <div class="color-row">

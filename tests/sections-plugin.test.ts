@@ -3,8 +3,11 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { mergeWithDefaults } from '@shared/config/merge';
 import { planSections } from '@shared/sections/meta';
-import { buildState } from '../scripts/vite-plugins/inject-config-og';
+import { buildState, previewAssets, previewAssetsJson } from '../scripts/vite-plugins/inject-config-og';
+import { DIVIDER_SPRITES } from '@shared/theme/parts';
 import { FONT_PRESET_MAP, FONT_REGISTRY } from '@shared/fonts/registry';
+import { OPEN_STYLES, SCRIPT_FONTS, THEME_IDS } from '@shared/config/enums';
+import { CAPABILITIES, isSupported } from '@shared/capabilities';
 import { buildIcs, eventEnd, googleCalendarUrl } from '@shared/ics';
 import { EXCLUSION_MARGIN, SpawnLimiter, approach, insideAny, visibleZones, weightedDensity } from '@guest/effects/particles/geometry';
 
@@ -89,16 +92,53 @@ describe('plugin inject-config-og: sửa config.json -> HTML đổi đúng', () 
     });
   }
   it('giá trị chưa hỗ trợ -> fallback + chỉ cảnh báo, build không lỗi', () => {
-    const s = st((c) => { c.theme.preset = 'bien-dao'; c.cover.openStyle = 'origami'; c.fonts.script = 'moon-dance'; c.sections.divider = 'zigzag'; });
-    expect(s.resolved.preset).toBe('tram-vang');
-    // v4a-2b bật đủ 17 kiểu mở -> origami không còn fallback (3 cảnh báo còn lại: theme, font, divider)
-    expect(s.resolved.openStyle).toBe('origami');
-    expect(s.fonts.some((f) => f.family === 'Great Vibes')).toBe(true);
-    expect(s.warnings.length).toBe(3);
+    // v4a-1 bật đủ 12 theme + 28 font: tự chọn giá trị chưa có module (nguyên tắc 3.1#5 solution-v4a-2bc.md)
+    const theme = THEME_IDS.find((v) => !isSupported('theme', v));
+    const open = OPEN_STYLES.find((v) => !isSupported('openStyle', v));
+    const script = SCRIPT_FONTS.find((v) => !isSupported('font', v));
+    const s = st((c) => {
+      if (theme) c.theme.preset = theme;
+      if (open) c.cover.openStyle = open;
+      if (script) c.fonts.script = script;
+      c.sections.divider = 'zigzag';
+    });
+    if (theme) expect(s.resolved.preset).toBe(CAPABILITIES.theme.fallback);
+    if (open) expect(s.resolved.openStyle).toBe(CAPABILITIES.openStyle.fallback);
+    if (script) expect(s.fonts.some((f) => f.family === 'Great Vibes')).toBe(true);
+    expect(s.warnings.length).toBe(1 + [theme, open, script].filter(Boolean).length);
   });
   it('config JSON chỉ chứa giá trị đã merge (đủ field)', () => {
     const s = st((c) => { delete c.effects; });
     expect(s.config.effects.intensity).toBe('medium');
+  });
+});
+
+describe('plugin inject-config-og: v4a-1 (divider sprite, preview-assets, --motif-cap)', () => {
+  const st = (patch: (c: Record<string, any>) => void = () => {}) => buildState(ROOT, withSample(patch));
+  it('tram-vang + divider cloud -> dividerUrl sprite riêng (không phải ornament của bộ đang chọn)', () => {
+    const s = st((c) => { c.theme.preset = 'tram-vang'; c.sections.divider = 'cloud'; });
+    expect(s.resolved.ornamentSet).toBe('classic-line');
+    expect(s.resolved.dividerUrl).toMatch(/^\/ornaments\/divider-cloud\.[0-9a-f]{8}\.svg$/);
+    expect(s.divider.url).toBe(s.resolved.dividerUrl);
+  });
+  it('divider ornament / wave / torn-paper -> không có dividerUrl', () => {
+    for (const d of ['ornament', 'wave', 'torn-paper']) {
+      const s = st((c) => { c.sections.divider = d; });
+      expect(s.resolved.dividerUrl, d).toBeUndefined();
+      expect(s.divider.url).toBe('');
+    }
+  });
+  it('previewAssetsJson: 11 ornament, 8 divider, 28 font', () => {
+    const j = JSON.parse(previewAssetsJson(previewAssets(ROOT))) as { fonts: Record<string, unknown[]>; ornaments: Record<string, string>; dividers: Record<string, string> };
+    expect(Object.keys(j.ornaments)).toHaveLength(11);
+    expect(Object.keys(j.dividers).sort()).toEqual([...DIVIDER_SPRITES].sort());
+    expect(Object.keys(j.fonts)).toHaveLength(28);
+    for (const u of Object.values(j.dividers)) expect(u).toMatch(/^\/ornaments\/divider-[a-z-]+\.[0-9a-f]{8}\.svg$/);
+  });
+  it('son-do -> styleText chứa --motif-cap, #wp-resolved có motif', () => {
+    const s = st((c) => { c.theme.preset = 'son-do'; });
+    expect(s.styleText).toContain('--motif-cap:0.6');
+    expect(s.resolved.motif).toMatchObject({ set: 'dong-son', placements: ['title', 'band'], intensity: 'light', cap: 0.6 });
   });
 });
 

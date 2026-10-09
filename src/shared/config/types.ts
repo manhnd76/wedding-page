@@ -4,6 +4,9 @@ import type {
   ParticleScope, ParticleType, PhotoFrame, RevealAtom, RevealStyle, ScriptFontId, SectionType,
   Texture, ThemeId, WishFly,
 } from './enums.ts';
+// [v4a-1] >>>
+import type { MotifIntensity, MotifMotion, MotifPlacement, MotifSet } from './enums.ts';
+// [v4a-1] <<<
 
 /** Ảnh trong config (solution 5.5). `null` = chưa có ảnh. */
 export type ImageRef = {
@@ -58,6 +61,13 @@ export interface WeddingConfig {
     texture: ThemeOr<Texture>;
     photoFrame: ThemeOr<PhotoFrame>;
     // [v4a-1] >>>
+    /** B2 hoạ tiết nền (solution Rev 5 mục 10.1); `motion` không thuộc nhóm "Theo theme" */
+    motif: {
+      set: ThemeOr<MotifSet | 'none'>;
+      placements: ThemeOr<MotifPlacement[]>;
+      intensity: ThemeOr<MotifIntensity>;
+      motion: MotifMotion;
+    };
     // [v4a-1] <<<
   };
   fonts: {

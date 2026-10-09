@@ -7,6 +7,7 @@ import { CAPABILITIES, isSupported, type CapabilityKey } from '@shared/capabilit
 import {
   BURSTS_ON_OPEN, DIVIDERS, HEADING_FONTS, OPEN_STYLES, ORNAMENT_SETS, PARTICLE_TYPES, PHOTO_FRAMES, REVEAL_ATOMS, REVEAL_STYLES, TEXTURES, THEME_IDS,
 } from '@shared/config/enums';
+import { MOTIF_SETS } from '@shared/config/enums';
 
 const cfg = (o: Record<string, unknown> = {}) => mergeWithDefaults(o).config;
 const raw = (o: Record<string, unknown> = {}) => resolveTheme(cfg(o), { applyCapabilities: false });
@@ -163,5 +164,35 @@ describe('capabilities v1 (fallback + cảnh báo)', () => {
       '--c-line', '--c-line-strong', '--c-overlay', '--c-success', '--c-danger', '--ff-heading', '--ff-script', '--ff-body', '--fs-k'];
     for (const k of keys) expect(v[k], k).toBeTruthy();
     expect(v['--ff-script']).toContain('Great Vibes');
+  });
+});
+
+// v4a-1 (solution-v4a-2bc.md 3.2: khối describe motif riêng)
+describe('v4a-1: hoạ tiết nền B2 (theme.motif)', () => {
+  it('mặc định Trầm Vàng: tắt hoạ tiết, cap .05', () => {
+    expect(resolveTheme(cfg()).motif).toEqual({ set: 'none', placements: [], intensity: 'medium', motion: 'auto', cap: 0.05 });
+  });
+  it('4 theme bật mặc định (decisions 2026-10-09)', () => {
+    const on = THEME_IDS.filter((id) => resolveTheme(cfg({ theme: { preset: id } })).motif.set !== 'none');
+    expect(on.sort()).toEqual(['bien-dao', 'dem-nhung', 'sen-cham', 'son-do']);
+  });
+  it('config chọn bộ thắng preset; "theme" theo preset', () => {
+    expect(resolveTheme(cfg({ theme: { preset: 'son-do', motif: { set: 'chu-hy' } } })).motif.set).toBe('chu-hy');
+    expect(resolveTheme(cfg({ theme: { preset: 'son-do' } })).motif.set).toBe('dong-son');
+  });
+  it('bộ chưa có capability -> fallback none + cảnh báo (chỉ khi do config chọn)', () => {
+    const unsupported = MOTIF_SETS.find((s) => !isSupported('motifSet', s));
+    if (!unsupported) return; // v4a-1 bật đủ 7 bộ
+    const r = resolveTheme(cfg({ theme: { motif: { set: unsupported } } }));
+    expect(r.motif.set).toBe('none');
+    expect(r.warnings.some((w) => w.includes(unsupported))).toBe(true);
+  });
+  it('primaryColor/overrides.accent -> cap tính lại từ token cuối cùng', () => {
+    const a = resolveTheme(cfg({ theme: { preset: 'son-do' } })).motif.cap;
+    const b = resolveTheme(cfg({ theme: { preset: 'son-do', overrides: { accent: '#3B1A14' } } })).motif.cap;
+    expect(b).toBeLessThan(a);
+  });
+  it('applyCapabilities: false giữ nguyên giá trị', () => {
+    expect(raw({ theme: { motif: { set: 'la-canh' } } }).motif.set).toBe('la-canh');
   });
 });

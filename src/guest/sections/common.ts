@@ -4,6 +4,12 @@ import { assetUrl } from '@shared/assets';
 import { ctx } from '../context';
 import { css, h, nonEmpty } from '../dom';
 import { ornament } from '../icons';
+import { isDividerSprite } from '@shared/theme/parts';
+// CSS lõi của thành phần theme (solution Rev 5 mục 10.4): vẫn vào CSS ban đầu, không sửa main.ts
+import '../styles/dividers.css';
+import '../styles/frames.css';
+import '../styles/textures.css';
+import '../styles/ornaments.css';
 
 export interface SectionShellOpts {
   eyebrow?: string;
@@ -57,9 +63,14 @@ export function img(ref: NonNullable<ImageRef>, o: { eager?: boolean; cls?: stri
   return el;
 }
 
-/** Ảnh trong khung theo theme (photoFrame) - giữ aspect-ratio cố định, placeholder dominantColor. */
+/**
+ * Ảnh trong khung theo theme (photoFrame) - giữ aspect-ratio cố định, placeholder dominantColor.
+ * `stamp`: bọc thêm `.frame-wrap--stamp` (bóng ở phần tử cha vì mask cắt bóng). `polaroid`: ảnh thứ chẵn theo thứ tự
+ * trên trang được bootstrap gắn `tilt-r` sau khi render (không inline style).
+ */
 export function framed(ref: ImageRef, o: { ratio: string; fallbackText?: string; cls?: string; eager?: boolean }): HTMLElement {
-  const fig = h('figure', { class: `frame frame--${ctx.resolved.photoFrame}${o.cls ? ` ${o.cls}` : ''}`, 'data-rv': 'image' });
+  const kind = ctx.resolved.photoFrame;
+  const fig = h('figure', { class: `frame frame--${kind}${o.cls ? ` ${o.cls}` : ''}`, 'data-rv': 'image' });
   css(fig, { '--ar': o.ratio });
   if (ref?.src) {
     if (ref.dominantColor) css(fig, { '--ph': ref.dominantColor });
@@ -68,7 +79,7 @@ export function framed(ref: ImageRef, o: { ratio: string; fallbackText?: string;
     fig.classList.add('is-empty');
     fig.appendChild(h('span', { class: 'frame-mono', 'aria-hidden': 'true' }, o.fallbackText ?? ''));
   }
-  return fig;
+  return kind === 'stamp' ? h('div', { class: 'frame-wrap--stamp' }, fig) : fig;
 }
 
 /**
@@ -80,10 +91,10 @@ export function divider(kind: string, next?: HTMLElement | null, prev?: Element 
   const toneOf = (el: Element | null | undefined) =>
     el?.classList.contains('tone-surface') ? 'var(--c-surface)' : el?.classList.contains('tone-bg') || el?.classList.contains('sec-footer') ? 'var(--c-bg)' : null;
   css(d, { '--div-bg': toneOf(next) ?? toneOf(prev) ?? 'var(--c-bg)' });
-  if (kind === 'ornament' || kind === 'cloud' || kind === 'deco-fan') {
-    const o = ornament(ctx.resolved.ornamentUrl ?? '', 'divider', 'orn div-orn');
-    if (o) { o.setAttribute('data-rv', 'ornament'); d.appendChild(o); }
-  }
+  // 'ornament' = divider của bộ hoạ tiết; divider có hình = sprite riêng (design 1.6.7b); wave/torn-paper chỉ CSS
+  const url = kind === 'ornament' ? ctx.resolved.ornamentUrl : isDividerSprite(kind) ? ctx.resolved.dividerUrl : '';
+  const o = url ? ornament(url, 'divider', 'orn div-orn') : null;
+  if (o) { o.setAttribute('data-rv', 'ornament'); d.appendChild(o); }
   return d;
 }
 

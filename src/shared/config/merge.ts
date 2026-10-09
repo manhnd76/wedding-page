@@ -6,6 +6,10 @@ import {
   TEXTURES, THEME_IDS, WISH_FLY, isHex, isOneOf,
 } from './enums.ts';
 import type { SectionItem, WeddingConfig } from './types.ts';
+// [v4a-1] imports >>>
+import { MOTIF_INTENSITIES, MOTIF_MOTIONS, MOTIF_SETS } from './enums.ts';
+import { sanitizeMotifPlacements } from '../theme/parts.ts';
+// [v4a-1] imports <<<
 
 type Obj = Record<string, unknown>;
 
@@ -71,6 +75,19 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
   fix('theme.texture', themeOr(TEXTURES, t.texture), () => t.texture, (v) => (t.texture = v), 'theme');
   fix('theme.photoFrame', themeOr(PHOTO_FRAMES, t.photoFrame), () => t.photoFrame, (v) => (t.photoFrame = v), 'theme');
   // [v4a-1] >>>
+  // B2 hoạ tiết nền (solution Rev 5 mục 10.1): config cũ không có `theme.motif` -> deepMerge điền "theme"
+  if (!isObj(t.motif)) t.motif = { ...d.theme.motif };
+  const mo = t.motif;
+  fix('theme.motif.set', mo.set === 'none' || themeOr(MOTIF_SETS, mo.set), () => mo.set, (v) => (mo.set = v), 'theme');
+  if (mo.placements !== 'theme') {
+    const clean = sanitizeMotifPlacements(mo.placements);
+    if (!clean.length || JSON.stringify(clean) !== JSON.stringify(mo.placements)) {
+      warnings.push(`config.theme.motif.placements không hợp lệ (${JSON.stringify(mo.placements)}) -> ${clean.length ? JSON.stringify(clean) : '"theme"'}`);
+    }
+    mo.placements = clean.length ? clean : 'theme';
+  }
+  fix('theme.motif.intensity', themeOr(MOTIF_INTENSITIES, mo.intensity), () => mo.intensity, (v) => (mo.intensity = v), 'theme');
+  fix('theme.motif.motion', isOneOf(MOTIF_MOTIONS, mo.motion), () => mo.motion, (v) => (mo.motion = v), 'auto');
   // [v4a-1] <<<
 
   const f = cfg.fonts;

@@ -53,6 +53,8 @@ export const CAPABILITIES = {
     'playfair-display',
   ),
   // [v4a-1] keys >>>
+  /** B2 hoạ tiết nền (solution Rev 5 mục 10.1): gốc chỉ `none`; bộ bật trong `caps/v4a-1.ts` */
+  motifSet: cap('motifSet', ['none'], 'none'),
   // [v4a-1] keys <<<
 
   // [v4a-2a] keys >>>

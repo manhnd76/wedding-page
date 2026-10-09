@@ -35,6 +35,17 @@ export const DIVIDERS = [
 export type Divider = (typeof DIVIDERS)[number];
 
 // [v4a-1] >>>
+/** B2 hoạ tiết nền (design 1.7, solution Rev 5 mục 10.1). `none` không nằm trong danh sách bộ. */
+export const MOTIF_SETS = ['dong-son', 'may-cat-tuong', 'song-nuoc', 'hoa-sen', 'chu-hy', 'art-deco', 'la-canh'] as const;
+export type MotifSet = (typeof MOTIF_SETS)[number];
+export const MOTIF_PLACEMENTS = ['pattern', 'corners', 'title', 'band', 'hero'] as const;
+export type MotifPlacement = (typeof MOTIF_PLACEMENTS)[number];
+export const MOTIF_INTENSITIES = ['light', 'medium', 'strong'] as const;
+export type MotifIntensity = (typeof MOTIF_INTENSITIES)[number];
+export const MOTIF_MOTIONS = ['auto', 'off'] as const;
+export type MotifMotion = (typeof MOTIF_MOTIONS)[number];
+/** `--mtf-level` theo độ đậm (design 1.7.4). */
+export const MOTIF_LEVEL: Record<MotifIntensity, number> = { light: 0.1, medium: 0.18, strong: 0.28 };
 // [v4a-1] <<<
 
 export const FONT_PRESETS = ['co-dien', 'thanh-lich', 'am-ap', 'bien-tap', 'truyen-thong'] as const;
