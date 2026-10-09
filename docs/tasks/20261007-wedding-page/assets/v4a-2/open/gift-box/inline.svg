@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- gift-box: hộp quà 240×240 phẳng-line. .gb-box (--op-box), .gb-side (--op-box-deep), .gb-rib (--op-ribbon), .gb-line (nét --c-primary-decor 1.4). Nơ 2 vòng có pathLength=100 (tuột bằng stroke-dashoffset 0→100) -->
+<symbol id="gb-body" viewBox="0 0 240 240"><path d="M42 116H198V214Q198 220 192 220H48Q42 220 42 214Z" class="gb-box"/><path d="M42 116H198V128H42Z" class="gb-side"/><path d="M108 116H132V220H108Z" class="gb-rib"/><path d="M42 116H198V214Q198 220 192 220H48Q42 220 42 214Z" class="gb-line" fill="none"/></symbol>
+<symbol id="gb-lid" viewBox="0 0 240 240"><path d="M32 84H208Q212 84 212 88V112Q212 116 208 116H32Q28 116 28 112V88Q28 84 32 84Z" class="gb-box"/><path d="M106 84H134V116H106Z" class="gb-rib"/><path d="M28 108H212V112Q212 116 208 116H32Q28 116 28 112Z" class="gb-side"/><path d="M32 84H208Q212 84 212 88V112Q212 116 208 116H32Q28 116 28 112V88Q28 84 32 84Z" class="gb-line" fill="none"/></symbol>
+<symbol id="gb-bow" viewBox="0 0 240 240"><path d="M120 82C98 52 66 50 70 70S104 88 120 82Z" class="gb-bowl" pathLength="100"/><path d="M120 82C142 52 174 50 170 70S136 88 120 82Z" class="gb-bowl" pathLength="100"/><path d="M120 82C112 94 104 104 92 110M120 82C128 94 136 104 148 110" class="gb-tail" pathLength="100"/><circle cx="120" cy="82" r="7" class="gb-knot"/></symbol>
+<symbol id="gb-tag" viewBox="0 0 72 40"><path d="M10 2H70V38H10L1 20Z" class="gb-tagp"/><circle cx="12" cy="20" r="2.4" class="gb-hole"/></symbol>
+</svg>
