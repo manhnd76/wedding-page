@@ -30,9 +30,9 @@ h2 { font-size: 1.15rem; margin: .5rem 0 .75rem; }
 .btn-sm { min-height: 44px; padding: 0 .7rem; }
 .mt { margin-top: .75rem; }
 details { margin: .75rem 0 0; }
-summary { min-height: 44px; display: flex; align-items: center; gap: .4rem; font-weight: 600; color: var(--a-primary); list-style: none; cursor: pointer; }
+summary { min-height: 44px; display: block; padding-block: .6rem; font-weight: 600; color: var(--a-primary); list-style: none; cursor: pointer; }
 summary::-webkit-details-marker { display: none; }
-summary::before { content: "▸"; transition: transform .16s; }
+summary::before { content: "▸"; display: inline-block; margin-right: .4rem; transition: transform .16s; }
 details[open] summary::before { transform: rotate(90deg); }
 summary .cnt { font-weight: 400; color: var(--a-muted); }
 .rows { list-style: none; margin: .25rem 0 0; padding: 0; display: grid; gap: 8px; }

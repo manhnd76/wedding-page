@@ -443,7 +443,7 @@ Mở "Từng phần":
   [Bỏ chọn riêng ở mọi phần (1)]
   2 phần đang tắt hoặc chưa có nội dung không có trong danh sách.
 ```
-Mobile (< 768px, 360px): mỗi phần là 1 khối 2 dòng. Dòng 1: số + tên (+ badge "Chọn riêng" / "Phần thông tin"). Dòng 2: `select` cao 48px chiếm phần còn lại + nút "▶ Xem" 44×44 có chữ. Các khối cách nhau 8px. Chip gói chính cuộn ngang được (`chips--scroll` như guest) hoặc xuống dòng. Mock: `assets/v4a-2a/admin-reveal-mock.html`, ảnh `screenshots/v4a-2a/admin-reveal-mobile.png` và `admin-reveal-desktop.png`.
+Mobile (< 768px, 360px): mỗi phần là 1 khối 2 dòng. Dòng 1: số + tên (+ badge "Chọn riêng" / "Phần thông tin"). Dòng 2: `select` cao 48px chiếm phần còn lại + nút "▶ Xem" 44×44 có chữ. Các khối cách nhau 8px. Chip gói chính cuộn ngang được (`chips--scroll` như guest) hoặc xuống dòng. Mock: `assets/v4a-2a/admin-reveal-mock.html`, ảnh `screenshots/v4a-2a/admin-reveal-mobile.png` (360×740, phần đầu), `admin-reveal-mobile-full.png`, `admin-reveal-desktop.png` (700px). Khi chụp thấy cột form 640px quá hẹp cho bố cục một hàng (tên 220px + select + Xem làm select chỉ còn khoảng 300px), nên **desktop cũng dùng bố cục 2 dòng như mobile** (select rộng hết khối). Sơ đồ một hàng ở trên chỉ minh hoạ nội dung. `summary` không dùng `display:flex` (bản đầu của mock bị tách "Từng / phần" thành 2 dòng ở 360px).
 
 **Chi tiết:**
 - "Cách áp dụng": `Segmented` (radiogroup), ghi `effects.reveal.mode`. Đổi thì gửi `fx:replay` `reveal` (xem thử 3 phần). Câu trợ giúp đổi theo mode và theo gói chính (liệt kê đúng bộ hài hoà sau khi lọc capabilities). Mode `uniform`: "Mọi phần dùng Mềm mại. Có thể chọn riêng vài phần bên dưới."
@@ -490,3 +490,73 @@ Pháo hoa đếm ngược: [Mỗi lần cuộn tới … ▾]                   
 - "Cách áp dụng" là radiogroup có `legend`. Select từng dòng có nhãn đầy đủ (`aria-label="Kiểu hiện của phần Hai bên gia đình"`). Nút Xem có `aria-label="Xem thử kiểu hiện phần Hai bên gia đình"` và chữ "Xem" hiển thị (không chỉ icon). Vùng chạm ≥ 44px (select 48px).
 - `summary` của "Từng phần" có số liệu, cập nhật khi đổi. Khi bấm badge `Hiện: …` ở "Các phần & thứ tự" thì focus đúng select đích.
 - Admin đang bật giảm chuyển động: giữ quy tắc 8.13 (preview vẫn phát khi bấm, có ghi chú).
+
+## 6. Tiêu chí chấp nhận (cho FE và designer review)
+
+**Unit (vitest)**
+1. `revealPlan` ra **đúng** bảng ví dụ ở 2.4 cho Trầm Vàng, Đêm Nhung, Đất Nung, Sen Chàm (thứ tự mặc định, loveStory tắt). Thêm ca loveStory bật với Đất Nung: couple letter, families soft, announcement letter, loveStory playful, album soft, thankyou letter.
+2. Không có 2 section expressive liền kề (bỏ qua functional) cùng gói trong mọi hoán vị thứ tự (property test với 200 thứ tự ngẫu nhiên, seed cố định) × 6 gói chính.
+3. Ghim thắng auto. Mode `uniform` → mọi phần chưa ghim = A. Gói đồng hành không có trong capabilities thì bị loại khỏi bộ, không lỗi. Khoá `sections` lạ hoặc giá trị lạ bị sanitize bỏ.
+4. Bảng nguyên tử theo cấp: thêm các ca vào `atomFor` (script → wipe; > 40 grapheme → split-words; > 20 từ → fade-up; `lowEnd` split-chars → split-words; ảnh lồng trong khối → photo-settle; `blur-in` ở Vừa/mobile/phần tử thứ 4 → mask-up; reduced → fade-fast; Nhẹ → gentle).
+5. `MATRIX.scrollProgress` mới, `DEGRADE_ORDER` kết thúc bằng `revealLite`.
+
+**E2E chọn lọc (1 file `reveal-b1.spec.ts`, không chụp lại những gì unit đã phủ)**
+1. Trầm Vàng mặc định: thuộc tính `data-rvp` của các section khớp cột Trầm Vàng ở 2.4.
+2. **Không lộ dấu ở trạng thái ẩn:** heading `mask-up` với chuỗi `ẦẪỂỖỮ Thuỳ Ngọc` (theme luc-bao, cấp Vừa), chụp vùng heading trước khi `is-in` → không có pixel mực (so với nền, ngưỡng 2%).
+3. **Không clip ở trạng thái cuối:** sau khi mọi section đã hiện thì không còn `.rv-ln`/`.rv-vis` trong DOM, và mọi `[data-rva=wipe]` có `clip-path` computed = `none`.
+4. Reduced-motion (emulate): không có `.rv-w`/`.rv-c`/`.rv-ln`, không có `filter` nào trên heading.
+5. `fx:replay` `reveal:families` → nhận `fx:done`; `reveal` (tour) → `fx:done` trong ≤ 9s.
+6. CLS < 0.05 khi cuộn hết trang ở cấp Nhiều với gói `letter` và `editorial` (PerformanceObserver `layout-shift`).
+
+**Ngân sách** (size-limit): theo bảng 2.8.
+
+**Designer review (bước 4)** chụp: 4 theme ở 2.4 × khung 375px × lúc giữa reveal của couple/announcement/album/thankyou; heading tiếng Việt có dấu chồng ở 4 gói mới; admin "Từng phần" ở 360px. Lưu ảnh lỗi (nếu có) vào `screenshots/design-review-v4a-2a/<ID>.png` theo CLAUDE.md.
+
+## 7. Bàn giao
+
+**Cho solution-designer (bước 2):**
+- Chốt Phụ lục A (schema `mode`, `sections`; hằng số `revealTier`/`revealAffinity`/`HARMONY`; enum; capabilities; MATRIX; `DEGRADE_ORDER`; postMessage `reveal:<id>`).
+- Quyết định nơi đặt `revealPlan` (đề xuất `src/shared/reveal-plan.ts`, thuần, guest + admin dùng chung, không đưa vào `ResolvedTheme`).
+- Ghi 8 điểm R2A-01..08 vào `solution.md` / chỉ định FE sửa (R2A-01, 02, 03, 05 làm thay đổi hành vi).
+- Bản đồ file sở hữu khi chạy song song với v4a-2b/2c: các file dùng chung (`capabilities.ts`, `routes/effects.tsx`, `fx.css`, `labels.ts`, `bootstrap.ts`) chỉ **thêm dòng**, theo `solution-v4a-2bc.md`.
+
+**Cho frontend-developer (bước 3), file dự kiến đụng:** `src/shared/{reveal-plan.ts (mới), sections/meta.ts, config/{enums,types,defaults,merge}.ts, capabilities.ts, labels.ts}`; `src/guest/effects/{reveal.ts, reveal-split.ts (mới, lười), intensity.ts, perf-probe.ts, service.ts}`; `src/guest/{bootstrap.ts (replay), styles/fx.css, styles/sections.css, sections/countdown.ts (+ odometer lười), sections/events.ts (icon lịch), sections/gift.ts, sections/basic.ts (sparkle), floating/floating.ts (ripple), icons.ts}`; micro lười `photo-tilt.ts`, `heart-tap.ts`; admin `routes/effects.tsx`, `routes/sections.tsx` (badge + link), `draft/ops.ts`, `draft/checklist.ts`, `editor/preview.tsx`. Ảnh tham chiếu: `screenshots/v4a-2a/*.png` (không cần chụp lại để tái hiện R2A-01: mở `assets/v4a-2a/reveal-lab.html`).
+
+## 8. Câu hỏi cho người duyệt (giả định mặc định trong ngoặc)
+
+1. **Mặc định "Xen kẽ tự động"** cho thiệp mới **và** config đã lưu trước đó (không có `mode`): trang sẽ tự đổi từ một kiểu sang xen kẽ sau khi nâng cấp. *(Giả định: đồng ý, vì chưa có config nào được publish.)*
+2. Ở chế độ tự động, **các phần thông tin** (Sự kiện, Đếm ngược, Lịch trình, Mừng cưới, Lời chúc, Xác nhận, Chân trang) và **Ảnh bìa** luôn giữ gói chính, chỉ các phần nổi bật mới đổi kiểu. *(Giả định: đồng ý.)*
+3. "Chọn riêng" chỉ chọn **cả gói** cho một phần, không chỉnh từng vai trò (tiêu đề/khối/ảnh) trong một phần. *(Giả định: chỉ gói, cho đơn giản.)*
+4. Ô "Ghi đè cho cả trang theo vai trò" (nâng cao, đã có trong schema nhưng admin chưa có UI): làm ở đợt này hay để v4b? *(Giả định: để v4b; schema giữ nguyên, runtime vẫn tôn trọng nếu config có giá trị.)*
+5. Rút ngắn **vệt sáng trên nút** (2 lần trong 4 giây thay vì 3 lần cách 4 giây) và **lấp lánh quanh "&"** (2 đợt trong 5 giây thay vì mỗi 6 giây × 3) để đạt WCAG 2.2.2. *(Giả định: đồng ý.)*
+6. **Thanh tiến độ đọc** chỉ hiện khi admin bật (mặc định tắt), kể cả ở cấp Nhiều, thay vì cấp Nhiều tự bật. *(Giả định: đồng ý.)*
+7. Kiểu đếm ngược **"Đồng hồ cơ"** và **"Trượt số"**: ô giây ở cấp Vừa chỉ mờ dần (như "Lật số" hiện tại), cấp Nhiều mới quay/trượt. *(Giả định: đồng ý.)*
+
+---
+
+## Phụ lục A: schema đề xuất (để solution-designer chốt)
+
+**Config (thêm vào `effects.reveal`):**
+| Field | Kiểu / enum | Mặc định | Ghi chú |
+|---|---|---|---|
+| `effects.reveal.mode` **(mới)** | `"auto"` · `"uniform"` | `"auto"` | Nhãn: "Xen kẽ tự động" / "Giống nhau mọi phần" |
+| `effects.reveal.sections` **(mới)** | `{ [sectionId: string]: RevealStyle }` | `{}` | Khoá = `sections.items[].id`. Không có khoá = theo mode. Ghim **bằng** gói chính vẫn có nghĩa (khoá section đó ở A trong chế độ auto) |
+| `effects.reveal.style` | giữ | `"theme"` | là "gói chính" A |
+| `effects.reveal.heading/block/image/ornament` | giữ | `null` | Ưu tiên: dưới ghim, trên auto/uniform (2.2) |
+
+**Sanitize (`merge.ts`):** `mode` lạ → `"auto"`. `sections` không phải object → `{}`. Bỏ khoá không có trong `sections.items`, bỏ giá trị ngoài `REVEAL_STYLES`. Giữ ghim của section đang tắt (bật lại thì vẫn còn). Runtime: giá trị ngoài `capabilities.revealStyle` → `capOr` fallback + cảnh báo (như `style`).
+
+**Tương thích / migration:** không bump `schemaVersion`. Config thiếu field thì merge mặc định (`mode:"auto"`, `sections:{}`), xem Q1. Import v0 (`effects.scrollReveal.*`) vẫn bỏ qua như hiện tại.
+
+**Hằng số trong code (không nằm trong config):**
+- `SECTION_META[type].revealTier: "opening" | "expressive" | "functional"` và `revealAffinity: RevealStyle[]` (bảng 2.3).
+- `REVEAL_HARMONY: Record<RevealStyle, [RevealStyle, RevealStyle]>` (bảng 2.4).
+- Hệ số thời lượng gói (`cinematic` 1.25) nằm trong CSS `[data-rvp]`.
+- Giới hạn: `blur-in` ≤ 3/trang, `wipe` ≤ 3 cùng lúc (máy yếu 2, chờ ≤ 600ms), `split-chars` ≤ 40 grapheme, `split-words` ≤ 20 từ, stagger `--i` ≤ 8, mask-up stagger dòng 90ms (≤ 4 dòng).
+
+**enums.ts:** `REVEAL_MODES = ['auto', 'uniform']`.
+**capabilities.ts** (chỉ thêm dòng): `revealStyle` += `editorial`, `letter`, `playful`, `cinematic`. `revealAtom` += `mask-up`, `wipe`, `blur-in`, `split-words`, `split-chars`, `parallax-layers`. `countdownStyle` += `slide`, `odometer`.
+**intensity.ts:** `MATRIX.scrollProgress = row(false, false, 'config', 'config', 'config')` (R2A-05). **perf-probe.ts:** `DEGRADE_ORDER` thêm `'revealLite'` ở cuối.
+**labels.ts:** `REVEAL_MODE_LABEL`. Nhãn diff `effects.reveal.sections.<id>` → "Kiểu hiện · <tên phần>". `effects.reveal.mode` → "Cách áp dụng hiện nội dung".
+**postMessage (solution 4.3):** `target` thêm `reveal:<sectionId>`. Ánh xạ `micro:*` theo §5.4 (`photoTilt` → `couple`, `buttonShine` → nút CTA đầu tiên).
+**ops.ts / checklist.ts:** nhóm `reveal` gồm cả `mode` + `sections` (§5.2). Cảnh báo tổ hợp nặng xét "có phần nào dùng `cinematic`".
