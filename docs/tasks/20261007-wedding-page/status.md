@@ -1,16 +1,12 @@
-# Status - 20261007-wedding-page (bản bàn giao 2026-10-09)
+# Status - 20261007-wedding-page (bản bàn giao 2026-10-09, cuối phiên cloud)
 
-> **Phiên mới (local hoặc cloud) bắt đầu ở đây.** Orchestrator: đọc file này + `CLAUDE.md` + `decisions.md`, **review lại plan với người duyệt trước khi giao bất kỳ việc nào**. Định nghĩa agent nằm trong `.claude/agents/` (orchestrator chạy làm main agent: `claude --agent orchestrator`; trên cloud nếu không chọn được agent thì yêu cầu Claude đóng vai theo `.claude/agents/orchestrator.md`).
+> **Phiên mới (local hoặc cloud) bắt đầu ở đây.** Orchestrator: đọc file này + `CLAUDE.md` + `decisions.md`, **review lại plan với người duyệt trước khi giao bất kỳ việc nào**. Định nghĩa agent nằm trong `.claude/agents/` (orchestrator chạy làm main agent: `claude --agent orchestrator`; trên cloud không chọn được agent thì yêu cầu Claude đóng vai theo `.claude/agents/orchestrator.md`).
 
 ## 1. Đang ở đâu
-- Giai đoạn hiện tại: **v4a-1** (9 theme còn lại + asset + B2 hoạ tiết nền).
-  - Bước 1 ui-ux-designer: **XONG** (asset + spec, xem mục 3).
-  - Bước 2 solution-designer: **XONG** (`solution.md` Rev 5 mục 10), Cổng 1 đã duyệt 2026-10-09.
-  - Bước 3 FE-1: chờ Bước 0 xong.
-  - Bước 3 frontend-developer, bước 4 designer review: chưa.
-- (2026-10-09) Đã commit: e2e chạy được trên cloud + sửa A12 tận gốc (`useStore` giữ selector cũ -> ô nhập đọc/ghi nhầm mục khi dời thẻ; preview `cover.ts` kéo focus khỏi admin; focus chờ render trong `form.tsx`). E2E cloud 34/34.
-- Vòng lặp sửa đã dùng (v4a-1): 0/3.
-- **(2026-10-09) Chạy song song** — xem mục 8.
+- Branch làm việc: **`claude/keen-albattani-k0ds71`** (1 branch duy nhất, đã push; `main` chưa đụng — đưa vào `main` bằng PR khi người duyệt yêu cầu). Branch phụ `wt/v4a-2b` đã push (đã merge hết vào branch phiên, có thể xoá). Worktree `/home/user/wp-v4a-1`, `/home/user/wp-v4a-2b` chỉ tồn tại trong container cloud cũ — không cần nữa.
+- **Không có agent nào đang chạy. Không có việc dở trong code** (working tree sạch).
+- **Từ nay chỉ chạy 1 frontend-developer tại một thời điểm** (người duyệt, 2026-10-09).
+- Việc kế tiếp đề xuất (chờ người duyệt đồng ý): **ui-ux-designer review gộp v4a-1 + v4a-2b** (bước 4) -> FE sửa (≤ 3 vòng mỗi đợt) -> Cổng 3 -> rồi **v4a-2c** -> **v4a-2a**.
 
 ## 2. Roadmap
 | Giai đoạn | Nội dung | Trạng thái | Commit |
@@ -19,78 +15,70 @@
 | v2 | Admin Preact, GitHubAdapter, nháp IndexedDB, backup/restore, link khách | Xong | ce58f31 |
 | v2.1 | Sửa review v1, phong bì ngang, 6 mẫu phong thư, tự cuộn | Xong | f0a6465 |
 | v2.2 | Sửa UX admin A01–A24 | Xong | 55b8b69 |
-| v2.3 | Cổng login mật khẩu (hash), token GitHub chỉ hỏi khi Xuất bản/Khôi phục, sửa E01–E11 | Xong | 7c476e9 |
+| v2.3 | Cổng login mật khẩu (hash), token GitHub chỉ hỏi khi cần, sửa E01–E11 | Xong | 7c476e9 |
 | (người duyệt) | `_redirects` cho Cloudflare: `/invite/*  /  200` | Xong | 60f385c |
-| **v4a-1** | 9 theme + ornament/texture/photoFrame/divider + **B2** hoạ tiết nền vector | **Đang làm** (bước 1/4 xong) | - |
-| v4a-2a | **B1** reveal theo section + 4 gói reveal + micro | Thiết kế + kế hoạch XONG, Cổng 1 đã duyệt; FE sau khi v4a-1 merge | - |
-| v4a-2b | 13 kiểu mở + **E12** | Kế hoạch + asset XONG, Cổng 1 đã duyệt; FE-2 sau Bước 0 | - |
-| v4a-2c | 16 hạt + 4 burst | Kế hoạch + sprite XONG, Cổng 1 đã duyệt; FE khi có slot | - |
-| v4a-3 | **B3** mascot theo scroll/nghiêng máy | **Dời sau v4b** (decisions 2026-10-09) | - |
-| v3 | Apps Script RSVP/lời chúc + micro liên quan | Chưa (người duyệt chọn làm SAU v4a) | - |
+| (hạ tầng) | E2E chạy trên cloud + cổng tham số hoá; sửa A12 tận gốc (`useStore`, focus preview) | Xong | 42c34ef, 710e778 |
+| (hạ tầng) | **Bước 0** khung chung cho các đợt v4a (caps theo đợt, open-styles, burst registry, setOverCover, tách admin Hiệu ứng, plugin/size-limit, helper e2e, vùng đánh dấu) | Xong | 095684e |
+| **v4a-1** | 9 theme + ornament/texture/photoFrame/divider + **B2** hoạ tiết nền + 14 font + sửa texture/divider | **Code xong** — chờ designer review | 23a5238 (merge 4156011) |
+| **v4a-2b** | 13 kiểu mở + **E12** | **Code xong** — chờ designer review + kiểm tay máy thật | f4c7b3b |
+| v4a-2c | 16 hạt + 4 burst | Thiết kế + sprite + kế hoạch XONG, Cổng 1 đã duyệt — **chưa code** | - |
+| v4a-2a | **B1** reveal theo section + 4 gói reveal + 10 micro | Thiết kế + kế hoạch XONG, Cổng 1 đã duyệt — **chưa code** (đã mở khoá vì v4a-1 đã merge) | - |
+| v3 | Apps Script RSVP/lời chúc + micro liên quan | Chưa (sau v4a; ngày cưới còn > 2 tháng) | - |
 | v4b | Tối ưu bundle, a11y, ma trận thiết bị/webview, CSP cuối, README deploy | Chưa | - |
+| v4a-3 | **B3** mascot theo scroll/nghiêng máy | **Dời sau v4b** | - |
 
-Thứ tự đã chốt (decisions 2026-10-09): v4a-1 -> v4a-2 (tách 2a/2b/2c, làm song song được) -> v4a-3 -> v3 -> v4b. Ngày cưới còn > 2 tháng -> giữ v3 sau v4a; B3 dời sau v4b. Mỗi đợt: designer -> solution-designer -> frontend -> designer review -> commit.
+Thứ tự: v4a-1 ✔code -> v4a-2b ✔code -> (designer review 2 đợt) -> v4a-2c -> v4a-2a -> v3 -> v4b -> v4a-3. Mỗi đợt: designer -> solution-designer -> frontend -> designer review -> commit.
 
-## 3. Kết quả bước 1 v4a-1 (ui-ux-designer)
-- Asset: `assets/v4a-1/` — 8 ornament sprite, 9 divider + `dividers.css`, 9 photo frame (`frames.css` + `wash-mask.svg`), 7 texture + `textures.css`, B2: 7 bộ motif (trống đồng Đông Sơn, mây cát tường, sóng nước, sen, song hỷ, art-deco, cành lá) + `motifs.css`, generator `_generator/*.mjs`.
-- Spec: `design.md` "Bản sửa 5": §1.6.7 (asset 9 theme), §1.7 (B2), Phụ lục C (schema đề xuất `theme.motif.{set, placements, intensity, motion}`), §8.2/8.2b (login mới), §3.2 (SVG phong bì khớp code).
-- Tiến độ chi tiết + bàn giao cho bước 2/3: `design-report-v4a-1.md`.
-- **2 lỗi designer phát hiện khi đọc code v2.3 (chưa xác minh bằng build) -> đưa vào phạm vi FE v4a-1:**
-  1. Texture `body::before` bị nền section đục che -> chuyển sang `.sec::before` + `.sec{isolation:isolate}`.
-  2. Divider `cloud`/`deco-fan` vẽ theo ornament set hiện tại -> trộn với set khác thì sai hình; tách divider thành file riêng.
-- Ảnh xem thử ở `screenshots/v4a-1/` (thư mục gitignore — chỉ có trên máy local).
+## 3. Trạng thái từng đợt v4a
+
+### v4a-1 — code xong
+- Kiểm tra (orchestrator chạy lại): typecheck sạch · unit 802/802 · build + size-limit xanh · e2e đợt 9/9 · **full e2e 46/46**.
+- Kích thước sau v4a-1 (gzip): guest JS ban đầu 32.97 KB · CSS 12.96 KB · Admin JS ban đầu 75.39 KB (vượt mục tiêu +1 KB của kế hoạch, dưới trần 80). Font cover: cả 12 theme ≤ 180 KB (Trầm Vàng sát ngưỡng ~177.8 KB vì tính thêm body 400).
+- 9 lệch kế hoạch nhỏ có lý do: `frontend-report-v4a-1.md` mục "Lệch spec".
+- **Còn:** bước 4 designer review — danh sách ở `frontend-report-v4a-1.md` mục "Việc cho designer" (12 theme + dấu chồng, Prata nghiêng giả ở `sen-cham`, Moon Dance/Birthstone; độ đậm texture trên build, vignette velvet; `watercolor-wash` "khối" ở 412px; nền divider/"&" trên giấy có texture; 4 theme bật motif mặc định; panel Hoạ tiết nền + thẻ texture trong admin). Vòng sửa đã dùng: 0/3.
+
+### v4a-2b — code xong
+- Kiểm tra (orchestrator chạy lại): typecheck sạch · unit 866/866 · build xanh · **full e2e 111/111** (72 test của đợt).
+- Kích thước sau v4a-2b (orchestrator đo, config mẫu): guest JS ban đầu **34.36 KB** · CSS **13.32 KB** · Admin JS ban đầu **75.62 KB**; open-kit 2.31 KB; mỗi kiểu mở 0.57–2.41 KB JS, ≤ 0.94 KB CSS; skin phong bì sau E12 ≤ 1.26 KB.
+- **Ghi chú phát hành:** config để "Theo theme" đổi kiểu mở sau deploy ở 11/12 theme (chỉ Trầm Vàng giữ Phong bì; vd Son Đỏ -> Cuộn thư, Đêm Nhung -> Hạt sáng tụ thành tên, Hồng Phấn -> Cổng hoa, Biển Đảo -> Thiệp 3D xoay). Muốn giữ phong bì: chọn cố định "Phong bì".
+- Lệch kế hoạch (`frontend-report-v4a-2b.md`): asset mask ở `src/guest/cover/theme-assets/`; hạt/burst của 2c đang dùng loại thay thế (`gold`->`gold-dust`, `red-paper`->`petal-rose` đỏ, `confetti` vẽ tại chỗ) -> xem lại sau 2c; JS ban đầu +0.58 KB (chỉ tiêu +0.5).
+- **Còn:** designer review — `scroll`/`book` hiện tên khách trước khi chạm; `ink-spread` "ăn" chữ trên cover (đúng design §2.12 nhưng khác tiêu chí không clip chữ); cánh `lace` nhạt trên theme sáng; `double-door` mở 105° (ảnh mẫu ~70°); `card-3d` nghiêng theo con trỏ desktop; hạt thay thế. Kiểm tay máy thật (mục 5). Vòng sửa đã dùng: 0/3.
+
+### v4a-2c — chưa code
+- Spec: `design-v4a-2bc.md` §4 (16 hạt, mở rộng `ParticleKind`), §5 (4 burst, cờ `twinkle`/`scaleIn`/`back`); asset `assets/v4a-2/particles/`, `assets/v4a-2/burst/`. Kế hoạch: `solution-v4a-2bc.md` mục 2, 3, 4, 5.
+- Khi làm: thay các hạt/burst tạm mà v4a-2b đang dùng bằng module thật; `SOFT_SELECTOR` trong `geometry.ts` đã có thêm `.env-addr`/`.cv-plaque` (v4a-2b sửa, được phép).
+- Không cần worktree (chỉ 1 FE): làm thẳng trên branch phiên, e2e cổng mặc định 4173/5175.
+
+### v4a-2a — chưa code
+- Spec: `design-v4a-2a.md` (B1 xen kẽ tự động, 4 gói, kiểu nguyên tử, 10 micro, 8 lỗi spec R2A-01..08). Kế hoạch: `solution-v4a-2a.md` (schema `effects.reveal.mode` + `effects.reveal.sections`, `reveal-plan.ts`, ngân sách JS +2.5 KB reveal + ≤ 0.6 KB micro).
+- Được sửa thêm 1 hunk mỗi file: `checklist.ts`, `icons.ts`, `.size-limit.cjs`, `diff.ts`; `ops.ts` sửa được vì v4a-1 đã merge.
+- Admin JS ban đầu đang 75.62/80 KB -> UI mới đặt trong `fx/reveal-block.tsx` (route lazy), "Các phần & thứ tự" chỉ thêm nhãn.
 
 ## 4. Chờ người duyệt
-- Câu hỏi B2 (giả định của designer trong ngoặc):
-  1. Motif mặc định BẬT chỉ cho `son-do` (trống đồng), `sen-cham` (sen), `dem-nhung` (art-deco), `bien-dao` (sóng); TẮT cho 8 theme còn lại kể cả Trầm Vàng? (đồng ý)
-  2. Trống đồng xoay rất chậm (1 vòng/240s ở mức Vừa), chữ Hỷ không bao giờ xoay? (đồng ý)
-  3. Chưa áp motif cho màn cover/phong bì ở đợt này? (để sau)
-- Sau khi trả lời: giao solution-designer chốt schema Phụ lục C + cập nhật dòng v4a-1 trong `solution.md`.
+- Đồng ý bước kế tiếp: designer review gộp v4a-1 + v4a-2b (mục 1).
+- (Sau review) xác nhận các điểm designer nêu cho `scroll`/`book`/`ink-spread`/`double-door`.
 
 ## 5. Cần kiểm tra tay (người duyệt)
 - Kết nối + Xuất bản GitHub thật, site Cloudflare Pages cập nhật sau publish.
 - QR VietQR quét bằng ≥ 2 app ngân hàng với tài khoản thật (không commit STK thật).
 - Điện thoại thật: Safari iOS (nhạc + nút gạt im lặng, nén ảnh admin), Android tầm thấp, webview Zalo/Facebook/Messenger; tự cuộn; tương phản theme tối; seal phong bì trên desktop.
+- **(v4a-2b)** `light-gather` ≥ 45 fps ở mức Vừa trên Android tầm trung; Safari iOS: 3D backface (origami, double-door, card-3d, book, polaroid, wax-seal), `clip-path` WAAPI (scroll, moon-gate, polaroid), `-webkit-mask-composite` (ink-spread).
+- **(v4a-1)** 12 theme trên máy thật: font tiếng Việt, texture, hoạ tiết nền 4 theme.
 - Lighthouse mobile trên Cloudflare Pages.
 
 ## 6. Rủi ro / ghi chú
-- Commit 55b8b69 chứa mật khẩu admin dạng rõ trong `decisions.md` và đã push — người duyệt chấp nhận, không sửa lịch sử. Nên để repo private hoặc đổi mật khẩu bằng `npm run admin:hash`.
-- Hash mật khẩu nằm trong bundle admin (dò offline được); lớp bảo mật thật là GitHub fine-grained token. "Ghi nhớ token" mặc định BẬT (người duyệt chọn). Khuyến nghị Cloudflare Access cho `/admin/*` (chunk admin chưa gom vào `dist/admin/`).
-- E2E dùng Chrome cài sẵn (`channel: 'chrome'`); môi trường cloud có thể không có Chrome -> e2e có thể không chạy được, cần `npx playwright install chromium` + `PW_CHANNEL` phù hợp.
-- Chạy nhiều FE song song (khi người duyệt yêu cầu): 2 FE + 1 designer, mỗi FE một worktree; phải tham số hoá cổng e2e 4173/5175 trước (`playwright.config.ts` đang cố định cổng, `reuseExistingServer: true`).
-- Quy ước agent (CLAUDE.md): ghi tiến độ report liên tục; designer lưu ảnh bằng chứng; FE chỉ chạy full e2e 1 lần cuối.
-- Không đổi branch khi dev server đang chạy (lần trước làm dev server lỗi resolve import).
-- Generator asset `assets/v4a-1/_generator/*.mjs` đang dùng đường dẫn tuyệt đối Windows (`E:/claudecode/wedding-page/...`) -> trên cloud/máy khác phải sửa thành đường dẫn tương đối trước khi chạy lại (asset SVG đã sinh sẵn, không cần chạy lại nếu không đổi).
+- **Admin JS ban đầu 75.62/80 KB** — mọi UI admin mới (2c, 2a) phải vào chunk lazy.
+- Commit 55b8b69 chứa mật khẩu admin dạng rõ trong `decisions.md` và đã push — người duyệt chấp nhận. Nên để repo private hoặc đổi mật khẩu bằng `npm run admin:hash`.
+- Hash mật khẩu nằm trong bundle admin (dò offline được); lớp bảo mật thật là GitHub fine-grained token. "Ghi nhớ token" mặc định BẬT. Khuyến nghị Cloudflare Access cho `/admin/*`.
+- **E2E trên cloud**: không có Chrome -> `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium`. Máy 4 nhân bị tự hạ cấp hiệu ứng -> test đo thời lượng mức "Vừa" phải giả lập máy khoẻ (`strongDevice()` trong `tests/e2e/fx-helpers.ts`). Full e2e hiện ~10 phút.
+- Quy ước agent (CLAUDE.md): ghi tiến độ report liên tục; designer lưu ảnh bằng chứng (`screenshots/` bị gitignore — chỉ còn trong container đã tạo ra); FE chỉ chạy full e2e 1 lần cuối.
+- Không đổi branch khi dev server đang chạy.
+- Generator `assets/v4a-1/_generator/*.mjs` dùng đường dẫn tuyệt đối Windows; generator `assets/v4a-2/_generator/*.mjs` dùng đường dẫn tương đối.
+- Song song (đã dừng): nếu bật lại thì theo bản đồ sở hữu file `solution-v4a-2bc.md` mục 3 + bảng cổng: orchestrator 4173/5175, FE-1 4273/5275, FE-2 4373/5375, FE-3 4473/5475; designer chụp ảnh 5181/5182.
 
 ## 7. Tài liệu
-`request.md` · `decisions.md` (nguồn sự thật) · `solution.md` (Rev 4 + v4a/B1–B3) · `design.md` (Bản sửa 5) · `backlog.md` · review: `design-review-v1.md`, `design-review-admin-v2.md`, `design-review-envelopes.md` · report: `frontend-report*.md`, `design-report-v4a-1.md`.
-
-## 8. Chạy song song (2026-10-09)
-**Hiện tại (2026-10-09):** Bước 0 XONG (commit 095684e, e2e 37/37). FE-1 làm v4a-1 trong worktree `/home/user/wp-v4a-1` (branch cục bộ `wt/v4a-1`, report `frontend-report-v4a-1.md`), FE-2 làm v4a-2b trong `/home/user/wp-v4a-2b` (`wt/v4a-2b`, report `frontend-report-v4a-2b.md`). Worktree chỉ có trong container — nếu container mất thì tạo lại từ branch phiên. Trước đó: song song: solution-designer v4a-1 (`solution.md` Rev 5), solution-designer v4a-2a (`solution-v4a-2a.md`), ui-ux-designer B (asset 2b/2c). Sau Bước 0 + Cổng 1 v4a-1: FE-1 (v4a-1) + FE-2 (v4a-2b) song song; FE-3 (v4a-2c) / v4a-2a khi có slot.
-
-| Đợt | Phụ thuộc | Đợt 1 (giao ngay) | Đợt 2 | Đợt 3 |
-|---|---|---|---|---|
-| v4a-1 | Câu hỏi B2 + 14 font (chờ người duyệt) | - | solution -> FE-1 | designer review |
-| v4a-2a | Thiết kế B1 | ui-ux-designer A: `design-v4a-2a.md` | solution -> (cổng) | FE (slot trống đầu tiên) |
-| v4a-2b | Asset kiểu mở + E12 | ui-ux-designer B: `assets/v4a-2/` + `design-v4a-2bc.md` | FE-2 | designer review |
-| v4a-2c | Sprite hạt/burst | (chung designer B) | FE (sau FE-1 hoặc FE-2) | designer review |
-| kế hoạch kỹ thuật 2b/2c + bản đồ file sở hữu cho FE song song | - | solution-designer: `solution-v4a-2bc.md` | - | - |
-
-Quy tắc:
-- Mỗi FE một git worktree (cần `npm ci` riêng) trên branch `wt/<đợt>`; orchestrator merge vào branch phiên sau cổng duyệt, lần lượt.
-- Tối đa 2 FE cùng lúc. Designer/solution không chạy e2e; chụp ảnh dùng `vite dev` cổng riêng.
-- File dùng chung dễ đụng (`src/shared/capabilities.ts`, trình chọn hiệu ứng admin, plugin `inject-config-og`, `fx.css`): theo bản đồ sở hữu trong `solution-v4a-2bc.md`; chỉ thêm dòng, không sắp xếp lại.
-
-### Tạm dừng (2026-10-09, người duyệt yêu cầu) -> từ nay chỉ 1 FE, không song song
-- **v4a-1**: **CODE XONG**, đã merge vào branch phiên (commit 23a5238 + merge 4156011). Unit 802/802, build xanh, e2e đợt 9/9, **full e2e 46/46** (orchestrator chạy lại 2026-10-09 sau sửa A07). Còn: designer review (bước 4) -> sửa nếu có (≤ 3 vòng) -> Cổng 3. Admin JS 75.39/80 KB (vượt mục tiêu +1 KB). Tiếp: ui-ux-designer review bước 4 (danh sách trong `frontend-report-v4a-1.md` mục "Việc cho designer").
-- **v4a-2b**: **CODE XONG** (2026-10-09), merge vào branch phiên; unit 866/866, build xanh, full e2e 111/111. Còn: designer review (danh sách trong `frontend-report-v4a-2b.md`) + kiểm tay máy thật (light-gather ≥ 45 fps, Safari iOS 3D/clip-path/mask-composite, webview). Ghi chú phát hành: 11/12 theme đổi kiểu mở khi để "Theo theme". (Lịch sử: FE-2 TẠM DỪNG, commit WIP `ceeb24c` trên branch cục bộ `wt/v4a-2b` (worktree `/home/user/wp-v4a-2b`, CHƯA push — mất nếu container bị thu hồi). Tiến độ + bước tiếp: `frontend-report-v4a-2b.md` trong worktree, mục "Trạng thái khi tạm dừng". Còn: build lại + đo, fixture tổ hợp nặng, e2e các nhóm còn lại + full 1 lần, ghi chú phát hành, vùng dịu `.env-addr/.cv-plaque` (cần `geometry.ts` của 2c — orchestrator quyết). Khi làm tiếp: merge branch phiên (đã có v4a-1) vào `wt/v4a-2b` trước.)
-- **v4a-2c**, **v4a-2a**: chưa bắt đầu (2a đã mở khoá vì v4a-1 đã merge).
-
-| Agent | `PW_PREVIEW_PORT` | `PW_DEV_PORT` | Cổng chụp ảnh (`vite dev`) |
-|---|---|---|---|
-| main / orchestrator | 4173 | 5175 | - |
-| FE-1 | 4273 | 5275 | - |
-| FE-2 | 4373 | 5375 | - |
-| FE-3 | 4473 | 5475 | - |
-| ui-ux-designer A | - | - | 5181 |
-| ui-ux-designer B | - | - | 5182 |
+- Nguồn sự thật: `decisions.md` · `request.md` · `backlog.md`.
+- Giải pháp: `solution.md` (Rev 5; mục 10 = v4a-1) · `solution-v4a-2bc.md` (Bước 0, v4a-2b, v4a-2c, bản đồ sở hữu file) · `solution-v4a-2a.md`.
+- Thiết kế: `design.md` (Bản sửa 5) · `design-v4a-2a.md` · `design-v4a-2bc.md` · asset `assets/v4a-1/`, `assets/v4a-2/`, `assets/v4a-2a/`.
+- Report: `frontend-report-v4a-step0.md`, `frontend-report-v4a-1.md`, `frontend-report-v4a-2b.md`, `design-report-v4a-1.md`, `design-report-v4a-2a.md`, `design-report-v4a-2bc.md`, các `frontend-report*.md` cũ.
+- Review: `design-review-v1.md`, `design-review-admin-v2.md`, `design-review-envelopes.md`.
