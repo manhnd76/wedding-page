@@ -56,6 +56,7 @@ Thứ tự đã chốt (decisions 2026-10-09): v4a-1 -> v4a-2 -> v4a-3 -> v3 -> 
 - Chạy nhiều FE song song (khi người duyệt yêu cầu): 2 FE + 1 designer, mỗi FE một worktree; phải tham số hoá cổng e2e 4173/5175 trước (`playwright.config.ts` đang cố định cổng, `reuseExistingServer: true`).
 - Quy ước agent (CLAUDE.md): ghi tiến độ report liên tục; designer lưu ảnh bằng chứng; FE chỉ chạy full e2e 1 lần cuối.
 - Không đổi branch khi dev server đang chạy (lần trước làm dev server lỗi resolve import).
+- Generator asset `assets/v4a-1/_generator/*.mjs` đang dùng đường dẫn tuyệt đối Windows (`E:/claudecode/wedding-page/...`) -> trên cloud/máy khác phải sửa thành đường dẫn tương đối trước khi chạy lại (asset SVG đã sinh sẵn, không cần chạy lại nếu không đổi).
 
 ## 7. Tài liệu
 `request.md` · `decisions.md` (nguồn sự thật) · `solution.md` (Rev 4 + v4a/B1–B3) · `design.md` (Bản sửa 5) · `backlog.md` · review: `design-review-v1.md`, `design-review-admin-v2.md`, `design-review-envelopes.md` · report: `frontend-report*.md`, `design-report-v4a-1.md`.
