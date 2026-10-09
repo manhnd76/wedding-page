@@ -106,3 +106,4 @@
 - **Font v4a-1**: thêm đủ 14 gói `@fontsource` cho 6 theme mới (newsreader, birthstone, manrope, old-standard-tt, josefin-sans, prata, allura, eb-garamond, nunito, style-script, lexend, crimson-pro, moon-dance, spectral); kiểm subset tiếng Việt + font ban đầu ≤ 180 KB.
 - **Ngày cưới còn > 2 tháng** -> giữ thứ tự v4a -> v3 -> v4b.
 - **B3 (mascot) dời sau v4b**; chốt nhân vật + giấy phép khi tới lượt.
+- **Git**: giữ **1 nhánh** `claude/keen-albattani-k0ds71` cho phiên cloud. Agent con không commit/push; chỉ orchestrator commit + push sau khi kiểm tra/duyệt. FE song song dùng worktree + nhánh cục bộ `wt/<đợt>` (không push), orchestrator merge lần lượt vào nhánh phiên. Không đụng `main`; đưa vào `main` bằng PR khi người duyệt yêu cầu.
