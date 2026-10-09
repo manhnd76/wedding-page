@@ -30,6 +30,9 @@ try { const { statSync, readdirSync } = await import('node:fs'); if (statSync(EX
 const browser = await chromium.launch({ executablePath: exe });
 const pg = await browser.newPage({ viewport: { width: +w, height: +h }, deviceScaleFactor: 1 });
 pg.on('console', (m) => { if (m.type() === 'error') console.log('console:', m.text()); });
+pg.on('pageerror', (e) => console.log('pageerror:', e.message));
+pg.on('requestfailed', (r) => console.log('reqfail:', r.url()));
+pg.on('response', (r) => { if (r.status() >= 400) console.log('404:', r.url()); });
 await pg.goto(`http://127.0.0.1:${port}/_generator/${page}${query ? '?' + query : ''}`);
 await pg.waitForFunction(() => window.__ready === true, null, { timeout: 15000 }).catch(() => console.log('(không thấy __ready, chụp luôn)'));
 await mkdir(SHOTS, { recursive: true });
