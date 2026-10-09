@@ -1,6 +1,6 @@
 import type {
   BodyFontId, BurstOnOpen, Divider, EnvelopeStyle, HeadingFontId, OpenStyle, OrnamentSet, ParticleType, PhotoFrame,
-  RevealStyle, ScriptFontId, Texture, ThemeId, ThemeTag,
+  RevealStyle, ScriptFontId, Texture, ThemeId, ThemeTag, MotifIntensity, MotifPlacement, MotifSet,
 } from '../config/enums.ts';
 
 export interface ThemeTokens {
@@ -27,9 +27,17 @@ export interface ThemePreset {
     /** mẫu phong bì gợi ý (design-review-v1 4.4) - chỉ dùng khi kiểu mở resolve ra `envelope` */
     envelopeStyle: EnvelopeStyle;
   };
+  /** B2 hoạ tiết nền mặc định (design 1.7.7, solution Rev 5 mục 10.1); `placements` luôn 1-2 phần tử */
+  motif: { set: MotifSet | 'none'; placements: MotifPlacement[]; intensity: MotifIntensity };
+  /** bộ hoạ tiết "Hợp theme này" (★ trong panel admin) */
+  motifSuggest: MotifSet[];
   densityFactor?: number;
   hidden?: boolean;
 }
+
+/** Theme mặc định tắt hoạ tiết: admin chọn 1 bộ mà để Vị trí/Độ đậm "Theo theme" -> dải viền + vừa (Còn mở #11). */
+const MOTIF_OFF = { set: 'none', placements: ['band'], intensity: 'medium' } as const satisfies ThemePreset['motif'];
+const off = (): ThemePreset['motif'] => ({ ...MOTIF_OFF, placements: [...MOTIF_OFF.placements] });
 
 /** Token trạng thái dùng chung (design 1.6.2). */
 export const STATUS_TOKENS = {
@@ -49,6 +57,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'playfair-display', script: 'great-vibes', body: 'be-vietnam-pro' },
     ornamentSet: 'classic-line', texture: 'paper', photoFrame: 'arch', divider: 'ornament',
     suggest: { openStyle: 'envelope', burstOnOpen: 'petals', particles: { types: ['petal-rose'], color: 'theme' }, revealStyle: 'soft', envelopeStyle: 'classic' },
+    motif: off(), motifSuggest: ['la-canh'],
   },
   'hong-phan': {
     id: 'hong-phan', name: 'Hồng Phấn', tags: ['co-dien', 'hien-dai'], mode: 'light',
@@ -56,6 +65,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'lora', script: 'dancing-script', body: 'quicksand' },
     ornamentSet: 'romantic', texture: 'paper', photoFrame: 'arch-double', divider: 'leaf-branch',
     suggest: { openStyle: 'flower-gate', burstOnOpen: 'petals', particles: { types: ['petal-rose', 'heart'], color: 'theme' }, revealStyle: 'soft', envelopeStyle: 'lace' },
+    motif: off(), motifSuggest: ['la-canh'],
   },
   'luc-bao': {
     id: 'luc-bao', name: 'Lục Bảo', tags: ['co-dien'], mode: 'light',
@@ -63,6 +73,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'cormorant-garamond', script: 'pinyon-script', body: 'mulish' },
     ornamentSet: 'classic-line', texture: 'linen', photoFrame: 'rect-offset', divider: 'double-line',
     suggest: { openStyle: 'double-door', burstOnOpen: 'gold', particles: { types: ['leaf-eucalyptus', 'sparkle'], color: 'theme' }, revealStyle: 'editorial', envelopeStyle: 'classic' },
+    motif: off(), motifSuggest: ['la-canh', 'art-deco'],
   },
   'son-do': {
     id: 'son-do', name: 'Son Đỏ (Song Hỷ)', tags: ['truyen-thong'], mode: 'light',
@@ -70,6 +81,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'noto-serif-display', script: 'charm', body: 'be-vietnam-pro' },
     ornamentSet: 'traditional', texture: 'paper', photoFrame: 'circle-moon', divider: 'cloud',
     suggest: { openStyle: 'scroll', burstOnOpen: 'red-paper', particles: { types: ['petal-peach', 'red-paper'], color: 'theme' }, revealStyle: 'soft', envelopeStyle: 'song-hy' },
+    motif: { set: 'dong-son', placements: ['title', 'band'], intensity: 'light' }, motifSuggest: ['may-cat-tuong', 'chu-hy'],
   },
   'muc-giay': {
     id: 'muc-giay', name: 'Mực & Giấy', tags: ['hien-dai'], mode: 'light',
@@ -77,6 +89,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'newsreader', script: 'birthstone', body: 'manrope' },
     ornamentSet: 'minimal', texture: 'grain-fine', photoFrame: 'soft-rect', divider: 'dots',
     suggest: { openStyle: 'book', burstOnOpen: 'none', particles: { types: ['ink-dot'], color: 'theme' }, revealStyle: 'editorial', envelopeStyle: 'minimal' },
+    motif: off(), motifSuggest: ['art-deco'],
     densityFactor: 0.5,
   },
   'hoai-co': {
@@ -85,6 +98,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'old-standard-tt', script: 'pinyon-script', body: 'josefin-sans' },
     ornamentSet: 'deco', texture: 'paper-aged', photoFrame: 'stamp', divider: 'double-line',
     suggest: { openStyle: 'wax-seal', burstOnOpen: 'petals', particles: { types: ['petal-dried', 'dust-mote'], color: 'theme' }, revealStyle: 'letter', envelopeStyle: 'kraft' },
+    motif: off(), motifSuggest: ['art-deco', 'la-canh'],
   },
   'sen-cham': {
     id: 'sen-cham', name: 'Sen Chàm', tags: ['truyen-thong'], mode: 'light',
@@ -92,6 +106,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'prata', script: 'allura', body: 'mulish' },
     ornamentSet: 'lotus', texture: 'rice-paper', photoFrame: 'circle-moon', divider: 'lotus',
     suggest: { openStyle: 'moon-gate', burstOnOpen: 'petals', particles: { types: ['petal-lotus'], color: 'theme' }, revealStyle: 'gentle', envelopeStyle: 'classic' },
+    motif: { set: 'hoa-sen', placements: ['title', 'corners'], intensity: 'light' }, motifSuggest: ['song-nuoc', 'dong-son'],
     densityFactor: 0.5,
   },
   'mau-nuoc': {
@@ -100,6 +115,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'eb-garamond', script: 'alex-brush', body: 'nunito' },
     ornamentSet: 'watercolor', texture: 'watercolor-wash', photoFrame: 'wash-mask', divider: 'brush-stroke',
     suggest: { openStyle: 'ink-spread', burstOnOpen: 'petals', particles: { types: ['leaf-green', 'petal-watercolor'], color: 'multi' }, revealStyle: 'soft', envelopeStyle: 'lace' },
+    motif: off(), motifSuggest: ['la-canh'],
   },
   'dat-nung': {
     id: 'dat-nung', name: 'Đất Nung', tags: ['thien-nhien'], mode: 'light',
@@ -107,6 +123,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'fraunces', script: 'style-script', body: 'lexend' },
     ornamentSet: 'boho', texture: 'kraft', photoFrame: 'arch', divider: 'torn-paper',
     suggest: { openStyle: 'origami', burstOnOpen: 'confetti', particles: { types: ['pampas', 'petal-dried'], color: 'theme' }, revealStyle: 'playful', envelopeStyle: 'kraft' },
+    motif: off(), motifSuggest: ['la-canh'],
   },
   'pastel-han': {
     id: 'pastel-han', name: 'Pastel Hàn', tags: ['hien-dai'], mode: 'light',
@@ -114,6 +131,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'crimson-pro', script: 'moon-dance', body: 'quicksand' },
     ornamentSet: 'korean', texture: 'grain-fine', photoFrame: 'polaroid', divider: 'dots',
     suggest: { openStyle: 'polaroid', burstOnOpen: 'confetti', particles: { types: ['petal-sakura', 'bubble'], color: 'multi' }, revealStyle: 'playful', envelopeStyle: 'lace' },
+    motif: off(), motifSuggest: ['la-canh'],
   },
   'dem-nhung': {
     id: 'dem-nhung', name: 'Đêm Nhung', tags: ['toi', 'co-dien'], mode: 'dark',
@@ -121,6 +139,7 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'playfair-display', script: 'imperial-script', body: 'mulish' },
     ornamentSet: 'luxe', texture: 'velvet', photoFrame: 'deco-cut', divider: 'deco-fan',
     suggest: { openStyle: 'light-gather', burstOnOpen: 'gold', particles: { types: ['gold-dust', 'firefly'], color: 'theme' }, revealStyle: 'cinematic', envelopeStyle: 'velvet' },
+    motif: { set: 'art-deco', placements: ['corners', 'band'], intensity: 'medium' }, motifSuggest: [],
   },
   'bien-dao': {
     id: 'bien-dao', name: 'Biển Đảo', tags: ['thien-nhien'], mode: 'light',
@@ -128,5 +147,6 @@ export const PRESETS: Record<ThemeId, ThemePreset> = {
     fonts: { heading: 'spectral', script: 'dancing-script', body: 'nunito' },
     ornamentSet: 'tropical', texture: 'sand', photoFrame: 'scallop', divider: 'wave-ocean',
     suggest: { openStyle: 'card-3d', burstOnOpen: 'confetti', particles: { types: ['plumeria', 'bubble'], color: 'theme' }, revealStyle: 'playful', envelopeStyle: 'minimal' },
+    motif: { set: 'song-nuoc', placements: ['band'], intensity: 'medium' }, motifSuggest: [],
   },
 };

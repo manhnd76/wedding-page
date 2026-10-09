@@ -7,6 +7,9 @@ import { FONT_PRESET_MAP } from '../fonts/registry.ts';
 import { contrast } from './contrast.ts';
 import { deriveFromPrimary, rgba } from './derive.ts';
 import { PRESETS, STATUS_TOKENS, type ThemePreset } from './presets.ts';
+import type { MotifIntensity, MotifMotion, MotifPlacement, MotifSet } from '../config/enums.ts';
+import { motifCap } from './motif-cap.ts';
+import { sanitizeMotifPlacements } from './parts.ts';
 
 export interface ResolvedTokens {
   primary: string; onPrimary: string; accent: string; accent2: string; primaryDecor: string;
@@ -36,6 +39,16 @@ export function inkOn(paper: string): string {
   return contrast('#1F1A17', paper) >= contrast('#FFFFFF', paper) ? '#1F1A17' : '#FFFFFF';
 }
 
+/** B2 hoạ tiết nền đã resolve (solution Rev 5 mục 10.1). `set = none` -> `placements = []`. */
+export interface ResolvedMotif {
+  set: MotifSet | 'none';
+  placements: MotifPlacement[];
+  intensity: MotifIntensity;
+  motion: MotifMotion;
+  /** opacity tối đa khi nằm sau chữ (`--motif-cap`, design 1.7.5) - tính từ token cuối cùng */
+  cap: number;
+}
+
 export interface RevealPack { heading: RevealAtom; block: RevealAtom; image: RevealAtom; ornament: RevealAtom; stagger: number }
 
 export interface ResolvedTheme {
@@ -53,6 +66,9 @@ export interface ResolvedTheme {
   envelope: ResolvedEnvelope;
   particles: { types: ParticleType[]; color: string; densityFactor: number };
   reveal: RevealPack & { style: RevealStyle };
+  motif: ResolvedMotif;
+  /** URL sprite divider riêng (plugin build / preview gắn khi divider thuộc `DIVIDER_SPRITES`) */
+  dividerUrl?: string;
   /** cảnh báo fallback (giá trị do config chọn mà bản hiện tại chưa có) */
   warnings: string[];
 }
@@ -149,6 +165,19 @@ export function resolveTheme(config: WeddingConfig, opts: ResolveOptions = {}): 
     return caps ? (capOr('revealAtom', v, warnings, pack[r]) as RevealAtom) : v;
   };
 
+  // ---- hoạ tiết nền B2 (config khác "theme" thắng, ngược lại preset)
+  const mc = config.theme.motif ?? { set: 'theme', placements: 'theme', intensity: 'theme', motion: 'auto' };
+  const motifSet = pick('motifSet', mc.set, preset.motif.set);
+  let placements = sanitizeMotifPlacements(mc.placements === 'theme' ? preset.motif.placements : mc.placements);
+  if (!placements.length) placements = sanitizeMotifPlacements(preset.motif.placements);
+  const motif: ResolvedMotif = {
+    set: motifSet,
+    placements: motifSet === 'none' ? [] : placements,
+    intensity: mc.intensity === 'theme' ? preset.motif.intensity : mc.intensity,
+    motion: mc.motion === 'off' ? 'off' : 'auto',
+    cap: motifCap(tokens),
+  };
+
   return {
     preset: presetId,
     mode,
@@ -158,6 +187,7 @@ export function resolveTheme(config: WeddingConfig, opts: ResolveOptions = {}): 
     ornamentSet, texture, photoFrame, divider, openStyle, burstOnOpen, envelope,
     particles: { types, color, densityFactor: preset.densityFactor ?? 1 },
     reveal: { style, heading: role('heading'), block: role('block'), image: role('image'), ornament: role('ornament'), stagger: pack.stagger },
+    motif,
     warnings,
   };
 }
@@ -172,5 +202,6 @@ export function themeCssVars(r: ResolvedTheme, stacks: { heading: string; script
     '--c-success': t.success, '--c-danger': t.danger,
     '--ff-heading': stacks.heading, '--ff-script': stacks.script, '--ff-body': stacks.body,
     '--fs-k': String(r.fontScale),
+    '--motif-cap': String(r.motif?.cap ?? 0),
   };
 }

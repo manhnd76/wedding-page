@@ -275,6 +275,10 @@ const EXTRA_LABELS: Record<string, string> = {
   'effects.autoScroll': 'Tự động cuộn', 'effects.autoScroll.enabled': 'Tự cuộn sau khi mở thiệp', 'effects.autoScroll.speed': 'Tốc độ tự cuộn',
   'effects.autoScroll.startDelayMs': 'Tự cuộn bắt đầu sau', 'effects.autoScroll.mode': 'Dừng ngắn ở mỗi phần', 'effects.autoScroll.dwellMs': 'Thời gian dừng ở mỗi phần', 'content.album.images': 'Ảnh album', publish: 'Xuất bản',
   // [v4a-1] >>>
+  'theme.motif': 'Hoạ tiết nền', 'theme.motif.set': 'Hoạ tiết nền › Bộ', 'theme.motif.placements': 'Hoạ tiết nền › Vị trí',
+  'theme.motif.intensity': 'Hoạ tiết nền › Độ đậm', 'theme.motif.motion': 'Hoạ tiết nền › Chuyển động',
+  // diff tách mảng theo phần tử (admin/draft/diff.ts) -> nhãn từng vị trí
+  'theme.motif.placements[0]': 'Hoạ tiết nền › Vị trí 1', 'theme.motif.placements[1]': 'Hoạ tiết nền › Vị trí 2',
   // [v4a-1] <<<
 
   // [v4a-2a] >>>

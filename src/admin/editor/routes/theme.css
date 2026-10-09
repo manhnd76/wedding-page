@@ -1,0 +1,13 @@
+/* Route Theme (lười): texture thẻ xem trước cho 7 texture mới (v4a-1, design 8.12) - dùng chính tile SVG của guest. */
+.tcard-face { position: relative; isolation: isolate; }
+.tcard-face[class*="tex-"]::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: .1; background-size: 120px 120px; }
+.tex-paper-aged::before { background-image: linear-gradient(90deg, rgba(90, 60, 30, .9), transparent 12%, transparent 88%, rgba(90, 60, 30, .9)), url("../../../guest/theme-assets/textures/paper-aged.svg"); background-size: 100% 100%, 120px 120px; background-repeat: no-repeat, repeat; }
+.tex-linen::before { background-image: url("../../../guest/theme-assets/textures/linen.svg"); }
+.tex-kraft::before { background-image: url("../../../guest/theme-assets/textures/kraft.svg"); opacity: .14; }
+.tex-rice-paper::before { background-image: url("../../../guest/theme-assets/textures/rice-paper.svg"); background-size: 200px 200px; }
+.tex-grain-fine::before { background-image: url("../../../guest/theme-assets/textures/grain-fine.svg"); opacity: .06; }
+.tex-sand::before { background-image: url("../../../guest/theme-assets/textures/sand.svg"); }
+.tex-watercolor-wash::before { inset: -10% -20% auto auto; width: 75%; aspect-ratio: 1; opacity: .5; background: var(--tc-accent);
+  -webkit-mask: url("../../../guest/theme-assets/textures/watercolor-wash.svg") center / contain no-repeat; mask: url("../../../guest/theme-assets/textures/watercolor-wash.svg") center / contain no-repeat; }
+/* tex-paper / tex-velvet nằm ở admin.css (v2): giữ, không tạo ::before */
+.tcard-face.tex-paper::before, .tcard-face.tex-velvet::before, .tcard-face.tex-none::before { content: none; }

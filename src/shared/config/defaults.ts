@@ -14,6 +14,7 @@ export const DEFAULT_CONFIG: WeddingConfig = {
     preset: 'tram-vang', primaryColor: null, overrides: {},
     ornamentSet: 'theme', texture: 'theme', photoFrame: 'theme',
     // [v4a-1] >>>
+    motif: { set: 'theme', placements: 'theme', intensity: 'theme', motion: 'auto' },
     // [v4a-1] <<<
   },
   fonts: { preset: 'theme', heading: 'theme', script: 'theme', body: 'theme', scaleStep: 0 },

@@ -1,0 +1,8 @@
+/*
+ * Ornament `watercolor` (design 1.6.7a, solution Rev 5 mục 10.5e): vệt màu nước là path `.wash` (đặc, không nét) trong
+ * sprite dùng qua <use> -> CSS ngoài không chọn được `.wash`. Dùng thuộc tính kế thừa (như svg-draw ở fx.css):
+ * trước khi reveal, fill-opacity 0 (vệt ẩn, nét vẽ dần bằng stroke-dashoffset); khi .is-in vệt hiện dần.
+ * `html[data-orn]` do bootstrap gán. Không sửa fx.css: lặp lại danh sách transition + fill-opacity.
+ */
+[data-orn="watercolor"] svg[data-rva="svg-draw"] { transition: stroke-dashoffset 1500ms var(--ease-inout), opacity 600ms, fill-opacity var(--dur-reveal) var(--ease-out); }
+[data-orn="watercolor"] svg[data-rva="svg-draw"]:not(.is-in) { fill-opacity: 0; }

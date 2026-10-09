@@ -8,6 +8,9 @@ import type {
   BurstOnOpen, CountdownStyle, Divider, EnvelopeStyle, FontId, OpenStyle, OrnamentSet, ParticleType, PhotoFrame,
   RevealAtom, RevealStyle, Texture, ThemeId,
 } from '../config/enums.ts';
+// [v4a-1] imports >>>
+import type { MotifSet } from '../config/enums.ts';
+// [v4a-1] imports <<<
 
 export interface CapsAddon {
   theme?: readonly ThemeId[];
@@ -24,6 +27,8 @@ export interface CapsAddon {
   countdownStyle?: readonly CountdownStyle[];
   font?: readonly FontId[];
   // [v4a-1] >>>
+  /** B2 hoạ tiết nền: bộ đã có asset + module (`none` luôn có) */
+  motifSet?: readonly (MotifSet | 'none')[];
   // [v4a-1] <<<
 
   // [v4a-2a] >>>
