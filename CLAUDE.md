@@ -2,6 +2,9 @@
 
 Stack của dự án này (thay cho CLAUDE.md global - decisions.md "Quyết định stack FE"): Vite multi-page + TypeScript strict; guest = vanilla TS + CSS variables (không framework); admin = Preact + TS (v2). Không backend, không DB; RSVP/lời chúc qua Google Apps Script (v3).
 
+## Bắt đầu phiên mới
+- Đọc `docs/tasks/20261007-wedding-page/status.md` (bàn giao: đang ở đâu, roadmap, việc chờ duyệt) trước khi làm gì. Định nghĩa agent: `.claude/agents/` (orchestrator là main agent).
+
 ## Lệnh
 - Build: `npm run build` (typecheck + vite build + size-limit)
 - Unit test: `npm test` (vitest, `tests/**/*.test.ts`)

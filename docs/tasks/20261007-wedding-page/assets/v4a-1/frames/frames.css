@@ -1,0 +1,81 @@
+/*
+ * Khung ảnh theme.photoFrame (design 1.6.6, v5 / v4a-1) - ui-ux-designer.
+ * Áp cho <figure class="frame frame--<id>"> (src/guest/sections/common.ts framed()). Chỉ cắt ẢNH, không áp lên khối chữ.
+ * An toàn CSP: chỉ là rule trong stylesheet; không inline style. Ảnh mask là file cùng origin (img-src 'self').
+ * Selector dạng `.frame.frame--x` (0,2,0) để thắng `.person-photo`/`.fam-photo` (box-shadow lệch 6px) khi khung tự vẽ viền.
+ * --sec-bg: màu nền section đang chứa ảnh (đề xuất thêm global: .tone-bg{--sec-bg:var(--c-bg)} .tone-surface{--sec-bg:var(--c-surface)}).
+ * Đã có từ v1 (giữ nguyên): arch, circle-moon, deco-cut.
+ */
+
+/* arch-double (Hồng Phấn): vòm + vành ngoài cách 6px + chỉ trắng trong cách 6px */
+.frame.frame--arch-double { border-radius: var(--arch); margin: 7px; box-shadow: 0 0 0 6px var(--sec-bg, var(--c-bg)), 0 0 0 7px var(--c-accent); }
+.frame--arch-double::after { content: ""; position: absolute; inset: 6px; border-radius: inherit; border: 1px solid rgba(255, 255, 255, .6); pointer-events: none; }
+
+/* rect-offset (Lục Bảo): passe-partout - khung chữ nhật 1px lệch 10px xuống phải */
+.frame.frame--rect-offset { border-radius: 2px; margin: 0 10px 10px 0; box-shadow: 10px 10px 0 -1px var(--sec-bg, var(--c-bg)), 10px 10px 0 0 var(--c-accent); }
+
+/* soft-rect (Mực & Giấy): bo 14px, viền mảnh, bóng rất nhẹ */
+.frame.frame--soft-rect { border-radius: var(--r-md); box-shadow: 0 0 0 1px var(--c-line), 0 12px 28px -18px rgba(0, 0, 0, .35); }
+
+/* oval (Pastel Hàn) */
+.frame.frame--oval { border-radius: 50%; margin: 6px; box-shadow: 0 0 0 5px var(--sec-bg, var(--c-bg)), 0 0 0 6px var(--c-accent); }
+
+/* polaroid (Hoài Cổ, Pastel Hàn): giấy ảnh trắng ngà 10/10/38px, nghiêng ±2° theo chỉ số (JS gắn class, không inline style) */
+.frame.frame--polaroid { overflow: visible; border-radius: 2px; padding: 10px 10px 38px; background: #fffdf9;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .1), 0 12px 24px -12px rgba(0, 0, 0, .3); rotate: -2deg; }
+.frame.frame--polaroid.tilt-r { rotate: 1.6deg; }
+.frame--polaroid img { border-radius: 1px; }
+/* chú thích tuỳ chọn ở dải dưới: KHÔNG dùng script < 28px (design 2.1) -> heading italic 15px, màu mực cố định trên giấy ảnh */
+.frame--polaroid figcaption { position: absolute; left: 10px; right: 10px; bottom: 9px; font: italic 400 15px/1.4 var(--ff-heading); color: #3a332e; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-block: .1em; }
+@media (prefers-reduced-motion: reduce) { .frame.frame--polaroid { transition: none; } }
+
+/* stamp (Hoài Cổ): tem thư - giấy trắng 11px quanh ảnh, mép răng cưa = lỗ bán nguyệt r 4px mỗi ~11px.
+   5 lớp mask hợp (add): lõi đặc thụt r + 4 dải mép có lỗ (repeat round -> số lỗ nguyên, 4 góc đều có lỗ). */
+.frame.frame--stamp {
+  --st-r: 4px; --st-s: 11px;
+  --st-hole: radial-gradient(circle closest-side, #0000 calc(100% - .5px), #000);
+  border-radius: 0; padding: calc(var(--st-r) + 7px); background: #fffdf8;
+  -webkit-mask:
+    linear-gradient(#000 0 0) 50% 50% / calc(100% - 2 * var(--st-r)) calc(100% - 2 * var(--st-r)) no-repeat,
+    var(--st-hole) 50% calc(-1 * var(--st-r)) / var(--st-s) calc(2 * var(--st-r)) round no-repeat,
+    var(--st-hole) 50% calc(100% + var(--st-r)) / var(--st-s) calc(2 * var(--st-r)) round no-repeat,
+    var(--st-hole) calc(-1 * var(--st-r)) 50% / calc(2 * var(--st-r)) var(--st-s) no-repeat round,
+    var(--st-hole) calc(100% + var(--st-r)) 50% / calc(2 * var(--st-r)) var(--st-s) no-repeat round;
+          mask:
+    linear-gradient(#000 0 0) 50% 50% / calc(100% - 2 * var(--st-r)) calc(100% - 2 * var(--st-r)) no-repeat,
+    var(--st-hole) 50% calc(-1 * var(--st-r)) / var(--st-s) calc(2 * var(--st-r)) round no-repeat,
+    var(--st-hole) 50% calc(100% + var(--st-r)) / var(--st-s) calc(2 * var(--st-r)) round no-repeat,
+    var(--st-hole) calc(-1 * var(--st-r)) 50% / calc(2 * var(--st-r)) var(--st-s) no-repeat round,
+    var(--st-hole) calc(100% + var(--st-r)) 50% / calc(2 * var(--st-r)) var(--st-s) no-repeat round;
+}
+.frame--stamp img { border-radius: 0; }
+/* bóng của tem: đặt ở phần tử cha (mask cắt mất filter/box-shadow của chính nó) */
+.frame-wrap--stamp { filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .14)); }
+
+/* scallop (Biển Đảo): mép lượn vỏ sò - lõi thụt r + chuỗi hình tròn r ở 4 mép (repeat round) */
+.frame.frame--scallop {
+  --sc-r: 7px;
+  --sc-dot: radial-gradient(circle closest-side, #000 calc(100% - .5px), #0000);
+  border-radius: 0;
+  -webkit-mask:
+    linear-gradient(#000 0 0) 50% 50% / calc(100% - 2 * var(--sc-r)) calc(100% - 2 * var(--sc-r)) no-repeat,
+    var(--sc-dot) 50% 0 / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) round no-repeat,
+    var(--sc-dot) 50% 100% / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) round no-repeat,
+    var(--sc-dot) 0 50% / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) no-repeat round,
+    var(--sc-dot) 100% 50% / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) no-repeat round;
+          mask:
+    linear-gradient(#000 0 0) 50% 50% / calc(100% - 2 * var(--sc-r)) calc(100% - 2 * var(--sc-r)) no-repeat,
+    var(--sc-dot) 50% 0 / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) round no-repeat,
+    var(--sc-dot) 50% 100% / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) round no-repeat,
+    var(--sc-dot) 0 50% / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) no-repeat round,
+    var(--sc-dot) 100% 50% / calc(2 * var(--sc-r)) calc(2 * var(--sc-r)) no-repeat round;
+}
+
+/* wash-mask (Hoa Lá Màu Nước): mép ảnh loang - mask SVG (file frames/wash-mask.svg -> đưa vào src/guest/theme-assets/frames/) */
+.frame.frame--wash-mask { border-radius: 0; background: transparent;
+  -webkit-mask: url("./wash-mask.svg") 50% 50% / 100% 100% no-repeat; mask: url("./wash-mask.svg") 50% 50% / 100% 100% no-repeat; }
+
+/* Mask không được hỗ trợ (rất hiếm: WebView < Chrome 4x): ảnh hiện chữ nhật bo 14px - vẫn dùng được. */
+@supports not ((mask-image: none) or (-webkit-mask-image: none)) {
+  .frame.frame--stamp, .frame.frame--scallop, .frame.frame--wash-mask { border-radius: var(--r-md); }
+}

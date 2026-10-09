@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Divider cloud (mây cát tường), tách độc lập từ ornament traditional#divider để dùng với bộ họa tiết bất kỳ. -->
+<symbol id="divider" viewBox="0 0 160 24"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+<path pathLength="100" d="M10 15H56M104 15h46"/><path pathLength="100" d="M4 15h4v-5h-5v3h2"/><path pathLength="100" d="M156 15h-4v-5h5v3h-2"/>
+<path pathLength="100" d="M58 19H102C106 19 106 13 101.5 13C102.5 7 95 5 92 9.5C91 2.5 80 1.5 78.5 8.5C75 5 68 6.5 69 12.5C64 11 60.5 15 62.5 17.5"/>
+<path pathLength="100" d="M78.5 8.5C82 9 82.5 13.5 79 14C76.7 14.4 76 11.8 77.8 11.2"/><path pathLength="100" d="M92 9.5C95 10.5 94.6 14.6 91.6 14.6C89.8 14.6 89.4 12.4 90.8 11.9"/></g></symbol>
+</svg>
