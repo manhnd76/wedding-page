@@ -70,6 +70,8 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
   fix('theme.ornamentSet', themeOr(ORNAMENT_SETS, t.ornamentSet), () => t.ornamentSet, (v) => (t.ornamentSet = v), 'theme');
   fix('theme.texture', themeOr(TEXTURES, t.texture), () => t.texture, (v) => (t.texture = v), 'theme');
   fix('theme.photoFrame', themeOr(PHOTO_FRAMES, t.photoFrame), () => t.photoFrame, (v) => (t.photoFrame = v), 'theme');
+  // [v4a-1] >>>
+  // [v4a-1] <<<
 
   const f = cfg.fonts;
   fix('fonts.preset', themeOr(FONT_PRESETS, f.preset), () => f.preset, (v) => (f.preset = v), 'theme');
@@ -104,6 +106,8 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
       r[role] = null;
     }
   }
+  // [v4a-2a] >>>
+  // [v4a-2a] <<<
   const as = e.autoScroll;
   fix('effects.autoScroll.mode', isOneOf(AUTO_SCROLL_MODES, as.mode), () => as.mode, (v) => (as.mode = v), 'flow');
   as.speed = clampInt(as.speed, AUTO_SCROLL_LIMITS.speed[0], AUTO_SCROLL_LIMITS.speed[1], 45);

@@ -1,0 +1,13 @@
+/* Hoạt ảnh thu nhỏ của gallery kiểu mở (design 8.13): chạy khi hover/focus/đang chọn; reduced-motion tắt.
+   Tải cùng chunk route Hiệu ứng (import từ open-block.tsx). */
+.omini { position: relative; width: 96px; height: 120px; border-radius: 6px; background: #f3efe6; overflow: hidden; perspective: 300px; }
+.omini i, .omini b { position: absolute; inset: 22% 14%; border-radius: 4px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.omini b { inset: 22% 14% auto; height: 40%; background: #c9a86a; transform-origin: top; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.omini--card-flip b, .omini--fade-zoom b, .omini--none b { display: none; }
+.ocard:hover .omini--envelope b, .ocard:focus-visible .omini--envelope b, .ocard.is-on .omini--envelope b { animation: o-flap 1.4s ease-in-out infinite alternate; }
+.ocard:hover .omini--card-flip i, .ocard:focus-visible .omini--card-flip i, .ocard.is-on .omini--card-flip i { animation: o-flip 1.6s ease-in-out infinite alternate; }
+.ocard:hover .omini--fade-zoom i, .ocard:focus-visible .omini--fade-zoom i, .ocard.is-on .omini--fade-zoom i { animation: o-fade 1.4s ease-in-out infinite alternate; }
+@keyframes o-flap { to { transform: rotateX(180deg); } }
+@keyframes o-flip { to { transform: rotateY(180deg); } }
+@keyframes o-fade { to { transform: scale(1.08); opacity: .1; } }
+@media (prefers-reduced-motion: reduce) { .ocard .omini * { animation: none !important; } }

@@ -3,7 +3,8 @@
  *  - đọc public/content/config.json -> migrate -> merge -> resolveTheme (cùng code với guest)
  *  - inline vào index.html: #wp-config, #wp-resolved, <style id="wp-theme"> (CSS vars + @font-face 3 family),
  *    data-mode/data-theme, <title>, meta/OG, preload font cover + ornament sprite + ảnh hero,
- *    modulepreload cho module openStyle + loại hạt đang dùng
+ *    modulepreload cho module openStyle + loại hạt đang dùng; với kiểu mở đang dùng: + chunk `open-kit` nó import,
+ *    `<link rel="stylesheet">` CSS riêng của kiểu, `<link rel="preload" as="image">` ảnh import trong module
  *  - emit font woff2 (@fontsource) + ornament sprite có hash
  *  - ghi dist/_headers (CSP style-src kèm sha256 của <style> inline)
  *  - ghi .wp-build/budget.json cho size-limit
@@ -39,6 +40,18 @@ const hash8 = (buf: Buffer | string) => createHash('sha256').update(buf).digest(
 const jsonForHtml = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
 const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const IMAGE_RE = /\.(webp|avif|png|jpe?g|gif|svg)$/i;
+
+/** Chunk trong bundle (chỉ các trường plugin dùng; `viteMetadata` do Vite gắn). */
+interface BundleChunk {
+  type: string; fileName: string; name?: string; facadeModuleId?: string | null; isEntry?: boolean;
+  imports?: string[]; moduleIds?: string[];
+  viteMetadata?: { importedCss?: Set<string>; importedAssets?: Set<string> };
+}
+const normId = (id: string | null | undefined) => (id ?? '').replace(/\\/g, '/');
+/** Chunk helper dùng chung của kiểu mở (vite.config.ts gom `src/guest/cover/open-kit/**`). */
+export const isOpenKitChunk = (ch: BundleChunk) =>
+  ch.name === 'open-kit' || (ch.moduleIds ?? []).some((m) => normId(m).includes('/cover/open-kit/'));
 
 
 /** File woff2 (vietnamese + latin) của 1 family; null nếu thiếu package. */
@@ -149,7 +162,7 @@ export function injectConfigOg(): Plugin {
     return buildState(root, raw, fail);
   }
 
-  function headTags(s: State, bundle?: Record<string, { type: string; fileName: string; facadeModuleId?: string | null }>): string {
+  function headTags(s: State, bundle?: Record<string, BundleChunk>): string {
     const c = s.config;
     const r = s.resolved;
     const out: string[] = [];
@@ -183,10 +196,21 @@ export function injectConfigOg(): Plugin {
         ...(r.openStyle === 'envelope' ? [`/cover/skins/${r.envelope.style}.ts`] : []),
         ...r.particles.types.map((t) => `/particles/types/${t}.ts`),
       ];
+      const extra: string[] = [];
       for (const ch of Object.values(bundle)) {
-        const id = (ch.facadeModuleId ?? '').replace(/\\/g, '/');
-        if (ch.type === 'chunk' && want.some((w) => id.endsWith(w))) out.push(`<link rel="modulepreload" href="/${ch.fileName}">`);
+        const id = normId(ch.facadeModuleId);
+        if (ch.type !== 'chunk' || !want.some((w) => id.endsWith(w))) continue;
+        out.push(`<link rel="modulepreload" href="/${ch.fileName}">`);
+        if (!id.includes('/cover/styles/')) continue;
+        // kiểu mở đang dùng: chunk open-kit nó import, CSS riêng, ảnh import trong module (solution-v4a-2bc.md 0.7b)
+        for (const imp of ch.imports ?? []) {
+          const c = bundle[imp];
+          if (c?.type === 'chunk' && isOpenKitChunk(c)) extra.push(`<link rel="modulepreload" href="/${c.fileName}">`);
+        }
+        ch.viteMetadata?.importedCss?.forEach((css) => extra.push(`<link rel="stylesheet" href="/${css}">`));
+        ch.viteMetadata?.importedAssets?.forEach((a) => { if (IMAGE_RE.test(a)) extra.push(`<link rel="preload" href="/${a}" as="image">`); });
       }
+      out.push(...new Set(extra));
     }
     out.push(`<style id="wp-theme">${s.styleText}</style>`);
     out.push(`<script type="application/json" id="wp-config">${jsonForHtml(c)}</script>`);
@@ -256,6 +280,9 @@ export function injectConfigOg(): Plugin {
       const skins: string[] = [];
       const particle: string[] = [];
       const lazy: string[] = [];
+      const openKit: string[] = [];
+      const openCss: string[] = [];
+      const burst: string[] = [];
       const chunks = Object.values(bundle).filter((c) => c.type === 'chunk');
       const byName = new Map(chunks.map((c) => [c.fileName, c]));
       const visit = (name: string) => {
@@ -295,17 +322,23 @@ export function injectConfigOg(): Plugin {
       const r = state.resolved;
       for (const ch of chunks) {
         if (ch.type !== 'chunk' || ch.isEntry || !guestAll.has(ch.fileName)) continue;
-        const id = (ch.facadeModuleId ?? '').replace(/\\/g, '/');
-        if (id.includes('/cover/skins/') && !id.endsWith('/kit.ts')) {
+        const id = normId(ch.facadeModuleId);
+        if (isOpenKitChunk(ch as BundleChunk)) {
+          // helper kiểu mở dùng chung: ≤ 3 KB; vào JS ban đầu qua `visit` khi kiểu đang dùng import nó
+          openKit.push(ch.fileName);
+        } else if (id.includes('/cover/skins/') && !id.endsWith('/kit.ts')) {
           // mẫu phong bì (skin): ≤ 1.5 KB/mẫu; mẫu đang dùng nằm trong JS ban đầu (vẽ trước khi khách chạm)
           skins.push(ch.fileName);
           if (r.openStyle === 'envelope' && id.endsWith(`/cover/skins/${r.envelope.style}.ts`)) visit(ch.fileName);
         } else if (id.includes('/cover/styles/')) {
           open.push(ch.fileName);
+          (ch as BundleChunk).viteMetadata?.importedCss?.forEach((css) => openCss.push(css));
           if (id.endsWith(`/cover/styles/${r.openStyle}.ts`)) visit(ch.fileName);
         } else if (id.includes('/particles/types/')) {
           particle.push(ch.fileName);
           if (r.particles.types.some((t) => id.endsWith(`/particles/types/${t}.ts`))) visit(ch.fileName);
+        } else if (id.includes('/effects/burst/') && !/\/burst\/(fireworks[^/]*|registry)\.ts$/.test(id)) {
+          burst.push(ch.fileName);
         } else if (!initialJs.has(ch.fileName)) lazy.push(ch.fileName);
       }
       // admin (solution 9.1: "Admin JS ban đầu ≤ 150 KB"; route nặng lazy)
@@ -318,6 +351,9 @@ export function injectConfigOg(): Plugin {
       }
       budget = {
         initialJs: [...initialJs], initialCss: [...initialCss], openStyle: open, envelopeSkin: skins, particle, lazy: lazy.filter((x) => !initialJs.has(x)),
+        openKit, openStyleCss: [...new Set(openCss)], burst,
+        // chunk motif của v4a-1 (solution.md Rev 5 mục 10): v4a-1 điền phân loại; Bước 0 chỉ giữ khoá
+        motif: [], motifCss: [],
         adminInitialJs: [...adminInitial], adminInitialCss: [...adminCss],
         adminLazy: [...adminAll].filter((x) => !adminInitial.has(x) && !guestAll.has(x)),
       };

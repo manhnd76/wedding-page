@@ -274,6 +274,11 @@ const EXTRA_LABELS: Record<string, string> = {
   'cover.envelope.color': 'Màu phong bì', 'cover.envelope.guestOnFront': 'Ghi tên khách trên phong bì', 'cover.envelope.liner': 'Lót hoa văn trong nắp',
   'effects.autoScroll': 'Tự động cuộn', 'effects.autoScroll.enabled': 'Tự cuộn sau khi mở thiệp', 'effects.autoScroll.speed': 'Tốc độ tự cuộn',
   'effects.autoScroll.startDelayMs': 'Tự cuộn bắt đầu sau', 'effects.autoScroll.mode': 'Dừng ngắn ở mỗi phần', 'effects.autoScroll.dwellMs': 'Thời gian dừng ở mỗi phần', 'content.album.images': 'Ảnh album', publish: 'Xuất bản',
+  // [v4a-1] >>>
+  // [v4a-1] <<<
+
+  // [v4a-2a] >>>
+  // [v4a-2a] <<<
 };
 
 /** Nhãn dễ đọc cho 1 đường dẫn config (diff). Vd `content.thankyou.heading` -> "Lời cảm ơn › Tiêu đề". */

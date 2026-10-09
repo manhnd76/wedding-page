@@ -23,10 +23,20 @@ export default defineConfig({
     cssCodeSplit: true,
     modulePreload: { polyfill: true },
     sourcemap: false,
+    // SVG trong theme-assets (ornament/divider/frame/texture/motif) luôn ra file riêng, không inline data URI
+    // (solution.md Rev 5 mục 10, Còn mở #18); file khác theo mặc định của Vite.
+    assetsInlineLimit: (file) => (/[\\/]theme-assets[\\/]/.test(file) ? false : undefined),
     rollupOptions: {
       input: {
         main: r('./index.html'),
         admin: r('./admin/index.html'),
+      },
+      output: {
+        // helper dùng chung của các kiểu mở (src/guest/cover/open-kit/**) -> đúng 1 chunk `open-kit`
+        // (solution-v4a-2bc.md 0.6). Không kéo theo phụ thuộc (anim.ts, dom.ts... đã ở entry).
+        codeSplitting: {
+          groups: [{ name: 'open-kit', test: /[\\/]src[\\/]guest[\\/]cover[\\/]open-kit[\\/]/, includeDependenciesRecursively: false }],
+        },
       },
     },
   },

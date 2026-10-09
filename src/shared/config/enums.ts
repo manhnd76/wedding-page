@@ -34,6 +34,9 @@ export const DIVIDERS = [
 ] as const;
 export type Divider = (typeof DIVIDERS)[number];
 
+// [v4a-1] >>>
+// [v4a-1] <<<
+
 export const FONT_PRESETS = ['co-dien', 'thanh-lich', 'am-ap', 'bien-tap', 'truyen-thong'] as const;
 export type FontPresetId = (typeof FONT_PRESETS)[number];
 
@@ -101,6 +104,9 @@ export const REVEAL_ATOMS = [
   'rise-tilt', 'blur-in', 'split-words', 'split-chars', 'svg-draw', 'parallax-layers',
 ] as const;
 export type RevealAtom = (typeof REVEAL_ATOMS)[number] | 'none';
+
+// [v4a-2a] >>>
+// [v4a-2a] <<<
 
 export const WISH_FLY = ['paper-plane', 'bubble', 'heart'] as const;
 export type WishFly = (typeof WISH_FLY)[number];

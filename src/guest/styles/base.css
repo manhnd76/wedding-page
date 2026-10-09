@@ -142,3 +142,9 @@ html.is-autoscroll { scroll-behavior: auto; }
 /* Trước khi chạm mở: landing chưa layout -> chỉ tải font của cover (ngân sách font ban đầu ≤ 180 KB).
    Bỏ ngay lúc chạm (animation mở chạy trên compositor nên layout landing không làm giật). */
 .landing-wait #main { display: none; }
+
+/* [v4a-1] >>> */
+/* [v4a-1] <<< */
+
+/* [v4a-2a] >>> */
+/* [v4a-2a] <<< */

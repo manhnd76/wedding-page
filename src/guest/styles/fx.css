@@ -3,6 +3,8 @@
 /* đang gõ: ẩn hẳn lớp hạt (canvas đứng yên có thể trùng ô nhập khi bàn phím đẩy trang) */
 .is-typing .fx-canvas { opacity: 0; }
 .cover-on .fx-canvas { opacity: 0; }
+/* hạt trên cover (kiểu mở có hạt, E12 - solution-v4a-2bc.md 0.4): field.setOverCover(true) */
+.cover-on .fx-canvas.is-over-cover { opacity: 1; z-index: calc(var(--z-cover) + 1); }
 
 [data-rva] { transition: opacity var(--rv-d, 700ms) var(--ease-out), transform var(--rv-d, 700ms) var(--ease-out); transition-delay: calc(var(--i, 0) * var(--stagger)); }
 [data-rva="fade"]:not(.is-in) { opacity: 0; }

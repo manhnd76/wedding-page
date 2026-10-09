@@ -13,6 +13,8 @@ export const DEFAULT_CONFIG: WeddingConfig = {
   theme: {
     preset: 'tram-vang', primaryColor: null, overrides: {},
     ornamentSet: 'theme', texture: 'theme', photoFrame: 'theme',
+    // [v4a-1] >>>
+    // [v4a-1] <<<
   },
   fonts: { preset: 'theme', heading: 'theme', script: 'theme', body: 'theme', scaleStep: 0 },
   effects: {
@@ -22,7 +24,11 @@ export const DEFAULT_CONFIG: WeddingConfig = {
     guestToggle: true,
     particles: { enabled: true, types: 'theme', color: 'theme', scope: 'all', wind: true },
     burst: { onOpen: 'theme', onRsvp: true, countdownFireworks: 'every-view' },
-    reveal: { style: 'theme', heading: null, block: null, image: null, ornament: null },
+    reveal: {
+      style: 'theme', heading: null, block: null, image: null, ornament: null,
+      // [v4a-2a] >>>
+      // [v4a-2a] <<<
+    },
     parallax: true,
     kenBurns: true,
     micro: { buttonShine: true, photoTilt: true, wishFly: 'paper-plane', scrollProgress: false, coupleHeartTap: false },

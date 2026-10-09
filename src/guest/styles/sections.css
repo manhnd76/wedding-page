@@ -267,3 +267,9 @@ p { text-wrap: pretty; }
 .ft-vendor { margin-top: 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .ft-logo { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 .small .ic { display: inline-block; vertical-align: -2px; }
+
+/* [v4a-1] >>> */
+/* [v4a-1] <<< */
+
+/* [v4a-2a] >>> */
+/* [v4a-2a] <<< */

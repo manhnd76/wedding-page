@@ -57,6 +57,8 @@ export interface WeddingConfig {
     ornamentSet: ThemeOr<OrnamentSet>;
     texture: ThemeOr<Texture>;
     photoFrame: ThemeOr<PhotoFrame>;
+    // [v4a-1] >>>
+    // [v4a-1] <<<
   };
   fonts: {
     preset: ThemeOr<FontPresetId>;
@@ -81,6 +83,8 @@ export interface WeddingConfig {
     reveal: {
       style: ThemeOr<RevealStyle>;
       heading: RevealAtom | null; block: RevealAtom | null; image: RevealAtom | null; ornament: RevealAtom | null;
+      // [v4a-2a] >>>
+      // [v4a-2a] <<<
     };
     parallax: boolean;
     kenBurns: boolean;

@@ -77,6 +77,12 @@ export const FONT_PRESET_LABEL: Record<FontPresetId | 'theme', string> = {
   theme: 'Theo theme', 'co-dien': 'Cổ điển', 'thanh-lich': 'Thanh lịch', 'am-ap': 'Ấm áp', 'bien-tap': 'Biên tập', 'truyen-thong': 'Truyền thống',
 };
 
+// [v4a-1] >>>
+// [v4a-1] <<<
+
+// [v4a-2a] >>>
+// [v4a-2a] <<<
+
 /** Giá trị enum theo đường dẫn config (diff, nhãn chung). */
 const BY_PATH: Record<string, Record<string, string>> = {
   'theme.preset': THEME_LABEL,
@@ -105,6 +111,11 @@ const BY_PATH: Record<string, Record<string, string>> = {
   'content.couple.order': { 'groom-first': 'Chú rể trước', 'bride-first': 'Cô dâu trước' },
   'content.album.layout': { masonry: 'So le', grid: 'Lưới', carousel: 'Băng chuyền' },
   'fonts.preset': FONT_PRESET_LABEL,
+  // [v4a-1] >>>
+  // [v4a-1] <<<
+
+  // [v4a-2a] >>>
+  // [v4a-2a] <<<
 };
 
 /** Nhãn của 1 giá trị enum tại `path`; "theme" -> "Theo theme". Không biết -> undefined. */

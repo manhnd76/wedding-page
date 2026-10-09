@@ -160,7 +160,11 @@ export async function bootstrap(): Promise<void> {
   const nextSec = main.querySelectorAll<HTMLElement>('.sec')[1];
   if (cue) { if (nextSec?.id) cue.href = `#${nextSec.id}`; else cue.remove(); }
 
+  // [v4a-2a] >>>
+  // [v4a-2a] <<<
   prepareReveal(main, ctx.resolved.reveal, ctx.fx.state);
+  // [v4a-1] >>>
+  // [v4a-1] <<<
 
   const cfgMusic = ctx.config.music;
   const music = new MusicPlayer(cfgMusic.enabled && cfgMusic.src ? assetUrl(cfgMusic.src, ctx.base) : null, {
