@@ -65,6 +65,8 @@ Thứ tự đã chốt (decisions 2026-10-09): v4a-1 -> v4a-2 (tách 2a/2b/2c, l
 `request.md` · `decisions.md` (nguồn sự thật) · `solution.md` (Rev 4 + v4a/B1–B3) · `design.md` (Bản sửa 5) · `backlog.md` · review: `design-review-v1.md`, `design-review-admin-v2.md`, `design-review-envelopes.md` · report: `frontend-report*.md`, `design-report-v4a-1.md`.
 
 ## 8. Chạy song song (2026-10-09)
+**Hiện tại:** Bước 0 (khung chung, `solution-v4a-2bc.md` mục 0) đang làm trên branch phiên, report `frontend-report-v4a-step0.md`; song song: solution-designer v4a-1 (`solution.md` Rev 5), solution-designer v4a-2a (`solution-v4a-2a.md`), ui-ux-designer B (asset 2b/2c). Sau Bước 0 + Cổng 1 v4a-1: FE-1 (v4a-1) + FE-2 (v4a-2b) song song; FE-3 (v4a-2c) / v4a-2a khi có slot.
+
 | Đợt | Phụ thuộc | Đợt 1 (giao ngay) | Đợt 2 | Đợt 3 |
 |---|---|---|---|---|
 | v4a-1 | Câu hỏi B2 + 14 font (chờ người duyệt) | - | solution -> FE-1 | designer review |
