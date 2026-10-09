@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 28" width="672" height="112">
+<!-- confetti: xem thử 4 biến thể (ô 24×24 tâm 0,0; màu mẫu #C9A86A/#8A6A3B). Dữ liệu thật: bursts.json -->
+<g transform="translate(14 14)"><title>v1 w=0.4</title><path d="M-4.9 -3H4.9Q5.5 -3 5.5 -2.4V2.4Q5.5 3 4.9 3H-4.9Q-5.5 3 -5.5 2.4V-2.4Q-5.5 -3 -4.9 -3Z" fill="#C9A86A"/></g>
+<g transform="translate(42 14)"><title>v1 mặt sau</title><path d="M-4.9 -3H4.9Q5.5 -3 5.5 -2.4V2.4Q5.5 3 4.9 3H-4.9Q-5.5 3 -5.5 2.4V-2.4Q-5.5 -3 -4.9 -3Z" fill="#91794c"/></g>
+<g transform="translate(70 14)"><title>v2 w=0.2</title><path d="M-3 -3.5H3Q3.5 -3.5 3.5 -3V3Q3.5 3.5 3 3.5H-3Q-3.5 3.5 -3.5 3V-3Q-3.5 -3.5 -3 -3.5Z" fill="#C9A86A"/></g>
+<g transform="translate(98 14)"><title>v2 mặt sau</title><path d="M-3 -3.5H3Q3.5 -3.5 3.5 -3V3Q3.5 3.5 3 3.5H-3Q-3.5 3.5 -3.5 3V-3Q-3.5 -3.5 -3 -3.5Z" fill="#91794c"/></g>
+<g transform="translate(126 14)"><title>v3 w=0.2</title><circle cx="0" cy="0" r="4" fill="#C9A86A"/></g>
+<g transform="translate(154 14)"><title>v4 w=0.2</title><path d="M-1.5-9C3-6-3-2 1.5 1S-3 6 1.5 9" fill="none" stroke="#C9A86A" stroke-width="2.4" stroke-linecap="round"/></g>
+</svg>

@@ -107,3 +107,8 @@
 - **Ngày cưới còn > 2 tháng** -> giữ thứ tự v4a -> v3 -> v4b.
 - **B3 (mascot) dời sau v4b**; chốt nhân vật + giấy phép khi tới lượt.
 - **Git**: giữ **1 nhánh** `claude/keen-albattani-k0ds71` cho phiên cloud. Agent con không commit/push; chỉ orchestrator commit + push sau khi kiểm tra/duyệt. FE song song dùng worktree + nhánh cục bộ `wt/<đợt>` (không push), orchestrator merge lần lượt vào nhánh phiên. Không đụng `main`; đưa vào `main` bằng PR khi người duyệt yêu cầu.
+
+## Cổng 1 v4a-2b/2c + duyệt thiết kế v4a-2a (2026-10-09)
+- `solution-v4a-2bc.md`: người duyệt đồng ý cả 14 giả định. Riêng thứ tự: **Bước 0 làm trước MỌI đợt song song (kể cả v4a-1)**, trên branch phiên; sau đó FE-1 (v4a-1) + FE-2 (v4a-2b) song song, FE-3 (v4a-2c) khi có slot.
+- Chấp nhận config "Theo theme" đổi kiểu mở/burst sau deploy (ghi chú phát hành); `light-gather` canvas riêng + chính sách FPS (≥ 45 fps kiểm tay máy thật).
+- `design-v4a-2a.md` (B1): đồng ý cả 7 giả định — "Xen kẽ tự động" mặc định cả config cũ; Ảnh bìa + phần thông tin giữ gói chính; ghim theo section chỉ chọn cả gói; UI ghi đè vai trò cấp trang để v4b; rút ngắn `btn-shine`/`name-sparkle` (WCAG 2.2.2); thanh tiến độ đọc chỉ khi admin bật; ô giây đồng hồ chỉ quay ở mức Nhiều. Sửa 8 lỗi spec R2A-01..08 theo designer.
