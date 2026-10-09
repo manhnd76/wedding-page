@@ -5,7 +5,8 @@
 ## 1. Đang ở đâu
 - Giai đoạn hiện tại: **v4a-1** (9 theme còn lại + asset + B2 hoạ tiết nền).
   - Bước 1 ui-ux-designer: **XONG** (asset + spec, xem mục 3).
-  - Bước 2 solution-designer: **ĐANG LÀM** (2026-10-09) — người duyệt đã trả lời B2 + đồng ý thêm 14 font.
+  - Bước 2 solution-designer: **XONG** (`solution.md` Rev 5 mục 10), Cổng 1 đã duyệt 2026-10-09.
+  - Bước 3 FE-1: chờ Bước 0 xong.
   - Bước 3 frontend-developer, bước 4 designer review: chưa.
 - (2026-10-09) Đã commit: e2e chạy được trên cloud + sửa A12 tận gốc (`useStore` giữ selector cũ -> ô nhập đọc/ghi nhầm mục khi dời thẻ; preview `cover.ts` kéo focus khỏi admin; focus chờ render trong `form.tsx`). E2E cloud 34/34.
 - Vòng lặp sửa đã dùng (v4a-1): 0/3.
