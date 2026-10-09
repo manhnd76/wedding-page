@@ -193,3 +193,97 @@ Ký hiệu: `t` tính từ lúc chạm (ms); `.cv-actions` luôn rút 0–120ms 
 | ink-spread | 2 mask | 8.1 KB | 2.8 KB | - | |
 | polaroid | 2 mask | 2.4 KB | 0.86 KB | - | |
 FE chạy SVGO (giữ `viewBox`, `id`, `pathLength`, `fill-opacity`, `fill-rule`, `clip-path`) trước khi đưa vào `public/`.
+
+---
+
+## 3. E12 - mức "Nhiều" riêng cho 6 mẫu phong thư (thay dòng E12 "chấp nhận để v4" ở `design-review-envelopes.md`)
+
+### 3.0 Điều kiện kỹ thuật (áp dụng cả mức Nhiều của 13 kiểu mở + burst trong cover của `flower-gate`/`gift-box`/`origami`/`light-gather` Nhẹ)
+Đọc code v2.3 thấy canvas hạt **hiện không thể chạy trong lúc mở thiệp** (lý do E12 bị hoãn):
+1. `context.ts` `fxBlocked()` trả `true` khi `!ctx.opened` → `ensureRunning()` không chạy rAF.
+2. `fx.css`: `.cover-on .fx-canvas { opacity: 0 }` và `z-index: var(--z-petals)` (20) < `--z-cover` (80).
+3. `getField()` chỉ được gọi trong `afterOpen()`.
+
+Đề xuất (thay đổi nhỏ, không đổi schema):
+- Khi kiểu mở cần hạt (mức đang chạy có burst - bảng §2 và §3.1), `prepare()` gọi sẵn `getField()` (tải chunk field + loại hạt cần cho burst) để lúc chạm đã có canvas.
+- Trong handler mở: `ctx.coverFx = true` + `field.raiseOverCover(true)` → canvas thêm class `fx-canvas--over` (`z-index: calc(var(--z-cover) + 1)`, không bị luật `.cover-on` làm mờ); `fxBlocked()` thành `(!ctx.opened && !ctx.coverFx) || …`. Khi cover gỡ xong: `raiseOverCover(false)`, `ctx.coverFx = false`; burst đang bay tiếp tục dưới z thường.
+- **Hạt nền không được sinh trước `start()`**: thêm cờ `bgStarted` (hiện `step()` sẽ sinh hạt nền ngay khi rAF chạy nếu `target() > 0`).
+- Vùng dịu thêm `.env-addr` và `.cv-plaque` khi cover đang mở (hạt qua tên khách alpha ≤ .3, như R03). Ảnh: `screenshots/v4a-2/burst-e12.png` (vùng chấm).
+- Máy yếu / mức Vừa: không có phần E12 (ma trận §5.10 "đầy đủ + phần Nhiều"). Reduced/Tắt: không có.
+
+### 3.1 Bảng E12 (Nhiều = timeline Vừa của mẫu + phần dưới; tổng thời lượng không đổi, vẫn ≤ 2.4s)
+Gốc phát = tâm seal (`left 50%, top var(--env-tip)` của `.cv-env`, quy ra toạ độ màn bằng `getBoundingClientRect`). Mảnh: `burst/bursts.json` (gold, red-paper) và `envelope-e12/e12.json` (oải hương, cánh hoa ép, chấm sticker).
+| Mẫu | Khi nào (t theo timeline skin) | Mảnh × số | Hướng / tốc độ (px/s) | g · drag · đời | Màu |
+|---|---|---|---|---|---|
+| `classic` | t=90 (2 nửa seal bắt đầu tách) | `gold` 12 (dot 70% / sao 30%) | toả 360°, 60–180 | 40 · 2.6 · 600–800ms, nhấp nháy | sáng `#C9A24A/#B8862F` lõi `#FFF4D6`; tối `#F3D48C` (đúng §3.4 "12 hạt bụi vàng lóe") |
+| `kraft` | t=120 (nơ bắt đầu tuột) | `e12-lavender` 10 | 2 quạt chéo xuống 20–80° và 100–160° (né rơi thẳng lên thẻ tên), 40–140 | 380 · 1.4 · 1000–1300ms, lật, xoay 3 | nụ `#8E7CC3`/`#A895D6`, cuống `#7A8F5C` (cố định, khớp nhánh oải hương của skin) |
+| `song-hy` | t=60 (huy hiệu bắt đầu xoay) | `red-paper` 24 + `gold` sao 8 | quạt lên -160…-20°, 180–420; sao toả 360° 60–160 | 520 · 1.6 · 1100–1400ms (sao 700–900ms) | xác pháo `#C8231F/#E0392B`, mặt sau `#F2B8A2`; sao `#E8C46A` (đúng §3.4c "burst red-paper 24 mảnh") |
+| `lace` | t=60 (cụm hoa nhấc) | `e12-lace-petal` **Vừa 6 / Nhiều 12** | quạt lên -150…-30°, 60–160 | 160 · 1.8 · 1400–1800ms, lật, xoay 1.8 (bay lả) | `accent` / `accent-2` xen kẽ (= `.fl-1/.fl-2`) - §3.4c đã ghi Vừa 6, code v2.3 chưa có: thêm luôn |
+| `minimal` | t=40 (sticker bóc) | `e12-dot` 10 (7 chấm đặc + 3 vòng) | toả 360°, 90–200, **dừng nhanh** (bán kính ≤ 50px = v/drag) | 0 · 4 · 500–650ms, `scaleIn .3→1` 80ms | chấm `accent` (màu sticker), vòng `--env-ink`; tối giản: ít, gọn, không rơi |
+| `velvet` | t=200 (sau vệt sáng, seal bắt đầu tách) | `gold` 16 | toả 360°, 80–220 | 30 · 2.4 · 800–1100ms, nhấp nháy | `#F3D48C/#D9B77E` lõi `#FFF8E6` (đúng §3.4c "16 hạt gold-dust") |
+Không thêm bước animation DOM mới cho E12 (giữ ≤ 1.5 KB gz mỗi skin): phần Nhiều chỉ là 1 lời gọi `field.addBurst()` với tham số trên; dữ liệu mảnh nằm trong chunk burst dùng chung.
+
+---
+
+## 4. 16 hạt nền (bổ sung §5.7)
+
+### 4.1 Định dạng sprite + mở rộng `ParticleKind` (tương thích ngược 5 loại có sẵn)
+- Dữ liệu: `assets/v4a-2/particles/particles.json` - mỗi loại có `variants[{w, layers[], offset?, back?}]`; layer = `{d|circle|radial, fill|stroke: 'c1'|'c2'|'light'|'dark'|'#hex', a?, lw?, clip?}` trong ô 24×24 tâm (0,0). `light = mix(c1,#fff,.4)`, `dark = mix(c1,#000,.28)`. File `<id>.svg` chỉ để xem.
+- Đề xuất 1 helper dùng chung `drawLayers(g, s, layers, c1, c2)` (~0.4 KB gz, nằm trong chunk `field`, xem cài đặt mẫu trong `_generator/preview/particles.html`). **Alpha lớp nhân với alpha hạt** (`globalAlpha = base × a`), không ghi đè - bản thử đầu ghi đè làm `ink-dot` đen kịt thay vì mờ .15.
+- Module mỗi loại chỉ còn dữ liệu: ước lượng gz (dữ liệu + ~140 B khung): sakura 1.39 KB (sát trần - SVGO/làm tròn 1 chữ số nếu vượt), dried 1.23, maple 1.06, plumeria 1.04, watercolor 1.04, pampas 0.84, leaf-green 0.82, eucalyptus 0.79, lotus 0.76, ink-dot 0.66, red-paper 0.50, sparkle 0.48, paper-heart 0.47, bubble 0.42, dust-mote 0.38, snow 0.37 - **tất cả ≤ 1.5 KB** (§9.1).
+- Trường mới trên `ParticleKind` (đều tuỳ chọn):
+| Trường | Ý nghĩa | Engine cần đổi |
+|---|---|---|
+| `variants` (trọng số `w`) | 2–3 hình mỗi loại | sprite key `k{i}.{v}`; `spawnBg` chọn biến thể theo `w` |
+| `back` (theo biến thể hoặc loại) | mặt sau khi lật giả (`paper-heart`, `red-paper`) | khi `flip` và `cos(ph) < 0` vẽ sprite mặt sau |
+| `sway: [min,max]` | biên độ lắc (hiện cố định 10–28) | dùng thay hằng số |
+| `vx: [min,max]` | trôi ngang thêm cho `fall` (hoa khô "fall + drift") | cộng vào `vx` lúc sinh |
+| `alpha: [min,max]` | alpha riêng từng hạt (ink-dot .12–.22, dust-mote .35–.75, watercolor .75–.85) | nhân vào `tA` |
+| `depth: true` | cỡ lớn = nhanh + rõ hơn (tuyết nhiều lớp) | `vy *= .6 + .8·k`, `alpha *= .45 + .55·k`, `k` = vị trí cỡ trong khoảng |
+| `naturalDark` | màu tự nhiên khi theme `mode=dark` | `prepareSprites` chọn theo mode |
+
+### 4.2 Bảng 16 loại (thông số thay cho cột "Chuyển động / Hệ số" còn chung chung ở §5.7)
+| id | Biến thể (trọng số) | motion · size px · speed px/s · sway · spin rad/s · flip | Màu khi `"theme"` | Ghi chú |
+|---|---|---|---|---|
+| `petal-sakura` | cánh khía V .55 · cánh cong .30 · cả bông 5 cánh .15 | fall · 12–20 · 18–36 · 22–40 · 0.9 · có | tự nhiên `#F4B6C2/#FBE3E8` | lắc rộng, rơi chậm (§5.7) |
+| `petal-lotus` | cánh thẳng .6 · cánh khum .4 | fall · 24–36 · 10–20 · 14–26 · 0.35 · có | tự nhiên `#E7A9B6/#FBEFF1` | ửng hồng đầu cánh = 2 lớp thu nhỏ chồng alpha (bản đầu dùng 1 lớp cắt thẳng thành hình "nấm") |
+| `petal-dried` | cánh nhăn .5 · cánh cuộn .3 · mảnh lá khô .2 | fall · 12–20 · 22–40 · 12–24 · 1.1 · có · `vx 6–18` | tự nhiên `#B07A55/#D4A985` | |
+| `petal-watercolor` | 2 hình (seed khác) | fall · 14–24 · 20–40 · 16–30 · 0.8 · có · alpha .75–.85 | `accent` / `accent-2` | **vector** 3 lớp trong suốt + vành sắc tố (thay raster §5.7) |
+| `plumeria` | 1 | fall · 16–24 · 22–40 · 10–22 · 1.4 · không | trắng `#FFFDF6` + nhuỵ `#F6C445` | viền nâu .35 để thấy trên nền sáng |
+| `paper-heart` | 1 + mặt sau | fall · 12–20 · 24–44 · 12–24 · 0.7 · có | `accent` (mặt sau `dark`) | nếp giữa + nửa phải tối .16 |
+| `leaf-green` | bầu dục .5 · lá liễu (c2) .35 · nhánh 3 lá .15 | drift · 14–22 · 16–30 · 8–18 · 0.9 · có | tự nhiên `#8FAE88/#6E8F68` | |
+| `leaf-eucalyptus` | lá tròn .65 · cặp lá .35 | fall · 12–20 · 26–46 · 10–20 · **2.6** · có | tự nhiên `#9DB4A8/#7C978C` | "xoay nhanh" |
+| `leaf-maple` | 5 thuỳ răng cưa (c1) .6 · 3 thuỳ (c2) .4 | drift · 14–24 · 18–34 · 10–22 · 1.2 · có | tự nhiên `#D9662B/#E8A13A` | |
+| `pampas` | bông lau cong .7 · túm nhỏ .3 | drift · 26–40 · 14–26 · 4–10 · 0.25 · không | tự nhiên `#C9B08A/#9C7F55` | đậm hơn màu rơm thật để thấy trên `dat-nung` |
+| `snow` | 1 (radial) | fall · 2–6 · 14–30 · 6–14 · 0 · không · `depth` | trắng + vành `#9FB3C8` .5 (tối: bỏ vành) | tuyết trắng trên giấy sáng gần như vô hình nếu không có vành |
+| `bubble` | 1 | float-up · 10–22 · 16–30 · 8–16 · 0 · không | `accent-2` (viền .75, lòng .08) + `accent` ánh cầu vồng | điểm sáng trắng .9 |
+| `sparkle` | sao 4 cánh .7 · sao 8 tia .3 | twinkle · 8–14 · 4–10 · 2–6 · 0.2 · không | `accent` (tối: `primary`), lõi trắng | không chấm tròn đục (R04) |
+| `ink-dot` | vệt .5 · vệt + giọt .3 · chấm .2 | fall · 6–14 · 6–14 · 3–8 · 0.2 · không · alpha .12–.22 | tự nhiên `#1C1C1A` (tối `#F2E9E1`) | |
+| `dust-mote` | 1 (radial) | drift · 3–8 · 4–10 · 4–10 · 0 · không · alpha .35–.75 | lõi `#FFF6E0` + vành ấm `#C9A876` (tối `#FFE7B0`) | |
+| `red-paper` | chữ nhật xé .45 · dải dài .35 · vuông cong .2 + mặt sau | fall · 8–14 · **60–110** · 8–18 · 3 · có | `#C8231F/#E0392B`, mặt sau `#F2B8A2` | dùng chung với burst `red-paper` |
+Quy tắc màu `"theme"` giữ như code (`themeColors && natural`): loại có `natural` dùng màu tự nhiên; `petal-watercolor`, `paper-heart`, `bubble`, `sparkle` theo token. `"multi"`/hex: theo cấu hình cho mọi loại. Hệ số mật độ giữ đúng cột §5.7. Ảnh: `screenshots/v4a-2/particles-sheet.png` (biến thể + cảnh trên nền theme gợi ý + nền tối, có chữ mẫu để soi độ lấn át).
+
+---
+
+## 5. 4 burst (bổ sung §5.7 bảng Burst)
+Dữ liệu mảnh + tham số phát: `assets/v4a-2/burst/bursts.json` (trường `emit`). Số mảnh Nhẹ/Vừa/Nhiều giữ `BURST_COUNTS` trong `intensity.ts`. Tham số vật lý đã mô phỏng đúng công thức engine (`screenshots/v4a-2/burst-e12.png`).
+| Burst | Mảnh | Phát | Tốc độ · g · drag · đời | Màu |
+|---|---|---|---|---|
+| `confetti` (sau mở) | chữ nhật 11×6 .4 · vuông .2 · tròn .2 · dải xoắn .2; chữ nhật/vuông có mặt sau `dark` | 2 góc dưới (6%,102%) góc -80…-55° và (94%,102%) -125…-100°, mỗi bên 3 nhịp 40ms | `2.0–2.8·vh` · `0.6·vh` · 2.2 · 1500–1800ms; xoay 4–9, lật 3–7 | sáng `[accent, accent-2, primary, mix(accent,#fff,.45)]`; tối `[primary, accent, #F2E9E1, mix(primary,#fff,.3)]` |
+| `confetti` (RSVP "Tôi sẽ đến") | như trên | mép trên nút gửi, -140…-40° | 520–820 · 1100 · 1.6 · 1100–1400ms | như trên; vồng 100–130px, form là vùng loại trừ |
+| `gold` | chấm radial 3–6px .7 · sao 4 cánh 6–10px .3 | tâm (50%, 42%), 360° | 100–420 · 30 · 2.4 · 1100–1400ms, nhấp nháy `.6+.4·sin` | **theo mode**: sáng `#C9A24A/#B8862F` (bụi vàng nhạt biến mất trên nền giấy), tối `#F3D48C/#D9B77E`, lõi `#FFF4D6` |
+| `red-paper` | 3 biến thể xác pháo + mặt sau | 3 đợt: 0ms 40% quạt 20–160° từ (50%,12%) 300–650; 150ms + 300ms mỗi đợt 30% mưa từ mép trên x 12–88% góc 70–110° 150–420 | 520 · 1.6 · 1500–1800ms; xoay 3–6, lật 4–8; `toBg` nếu hạt nền có red-paper | `#C8231F/#E0392B`, mặt sau `#F2B8A2` |
+| `heart-burst` | tim đặc .6 · tim viền .25 · cặp tim nhỏ .15 | giữa mép trên nút "Gửi lời chúc", -150…-30° | 220–380 · 260 · 1.2 · 1000–1200ms; `scaleIn .4→1` 150ms `--ease-pop` | `[primary, accent, mix(primary,#fff,.35)]` (tối: primary vàng, accent, `#F2E9E1`) |
+- Engine burst cần thêm 3 cờ tuỳ chọn trên `BurstParticle`: `twinkle` (gold), `scaleIn` (heart-burst, minimal E12), `back` sprite (confetti/red-paper lật thấy mặt sau). Đợt trễ (`red-paper`, confetti 3 nhịp) làm bằng `setTimeout` gọi `addBurst` (đã tôn trọng trần 120).
+- Màu mảnh confetti: sprite = hình × màu (4 × 4 = 16 sprite ≤ 12px×DPR2) vẽ 1 lần.
+- `heart-burst` không thuộc `BURSTS_ON_OPEN` (đúng enum: chỉ dùng cho lời chúc, §5.7) - không cần sửa enum.
+
+---
+
+## 6. Câu hỏi cho người duyệt (giả định đang dùng trong ngoặc)
+1. `flower-gate` vẽ vector thay 2 ảnh WebP - hoa nét "minh hoạ phẳng", không phải ảnh hoa thật. (Đồng ý: nhẹ hơn ~25 lần, đổi màu theo theme; nếu muốn ảnh hoa thật thì cần ảnh có giấy phép, ≤ 80 KB/ảnh.)
+2. `ink-spread` đổi từ "clip-path circle" sang khoét lỗ hình vệt mực bằng `mask` (mép loang thật, có dự phòng). (Đồng ý.)
+3. `lace` mức **Vừa** cũng rơi 6 cánh hoa như §3.4c đã ghi (code v2.3 chưa có). (Đồng ý, làm cùng E12.)
+4. `light-gather` dùng canvas riêng trong cover (ngoại lệ quy tắc "1 canvas") vì cần 400–700 điểm. (Đồng ý; gỡ cùng cover nên không bao giờ có 2 canvas chạy lâu.)
+5. Các kiểu họ "cổng" (`curtain`, `double-door`, `flower-gate`, `moon-gate`) gom chữ vào 1 biển nổi thay vì đặt chữ thẳng lên cánh cổng. (Đồng ý - tránh chữ bị tách đôi.)
+6. `polaroid`/`moon-gate` khi không có ảnh cover thì dùng ảnh hero; không có cả hai thì nền màu + monogram. (Đồng ý.)
