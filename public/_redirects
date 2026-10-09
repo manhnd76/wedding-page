@@ -1,2 +1,2 @@
 # Link khách dạng path: /invite/<slug> -> trang thiệp (tên khách đọc từ URL ở client)
-/invite/*  /index.html  200
+/invite/*  /  200
