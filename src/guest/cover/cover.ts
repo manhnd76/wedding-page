@@ -4,13 +4,14 @@
  */
 import { graphemes } from '@shared/guest-name';
 import { assetUrl } from '@shared/assets';
-import { ctx } from '../context';
+import { OPEN_META, effectiveOpen } from '@shared/open-styles';
+import { ctx, emit } from '../context';
 import { css, h, multiline, nonEmpty } from '../dom';
 import { icon, ornament } from '../icons';
 import { fx } from '../effects/intensity';
 import { EffectRegistry } from '../effects/registry';
 import type { MusicPlayer } from '../music/player';
-import { fade200, fadeZoom, loadOpenModule, type PlayFn } from './open-registry';
+import { fade200, fadeZoom, loadOpenModule, type OpenModule, type PlayFn } from './open-registry';
 import type { OpenRun } from './anim';
 
 const PREP_DELAY_MS = 300;
@@ -126,9 +127,10 @@ const GUEST_MIN_PX = 15;
  * (tên đã giới hạn 60 ký tự ở guest-name). E08: đánh dấu `.is-multi` khi tên xuống dòng hoặc tách khỏi dòng "Kính gửi".
  */
 export function fitEnvGuest(addr: HTMLElement): { px: number; lines: number } | null {
-  const g = addr.querySelector<HTMLElement>('.env-guest');
+  // v4a-2b: dùng chung cho hộp cỡ cố định của kiểu mở mới (`.op-fit`: mặt sau polaroid, trang book, giấy scroll...)
+  const g = addr.querySelector<HTMLElement>('.env-guest, .cv-guest');
   if (!g || !addr.clientHeight) return null;
-  const pre = addr.querySelector<HTMLElement>('.env-prefix');
+  const pre = addr.querySelector<HTMLElement>('.env-prefix, .cv-prefix');
   g.classList.remove('is-long');
   g.style.removeProperty('font-size');
   addr.classList.remove('is-multi');
@@ -164,10 +166,14 @@ export function mountCover(music: MusicPlayer): CoverHandle {
   const c = ctx.config.cover;
   const r = ctx.resolved;
   const state = ctx.fx.state;
-  const mode = fx('openStyle', state);
-  // reduced/off -> fade 200ms; cấu trúc DOM vẫn theo kiểu đã chọn (tĩnh)
+  // reduced/off -> fade 200ms; cấu trúc DOM vẫn theo kiểu đã chọn (tĩnh). Máy yếu: kiểu Cao -> fade-zoom, Vừa -> bản Nhẹ (1.5)
   const styleId = r.openStyle;
-  const domStyle = styleId === 'envelope' || styleId === 'card-flip' ? styleId : 'plain';
+  const eff = effectiveOpen(styleId, fx('openStyle', state), ctx.fx.lowEnd);
+  const mode = eff.mode;
+  const fam = OPEN_META[styleId]?.family;
+  const domStyle = styleId === 'envelope' || styleId === 'card-flip' ? styleId : fam ? 'op' : 'plain';
+  const isOp = domStyle === 'op';
+  const gate = fam === 'gate' || fam === 'flat';
 
   const bgImg = c.background === 'image' && c.backgroundImage?.src
     ? h('img', { class: 'cv-bg-img', src: assetUrl(c.backgroundImage.src, ctx.base), alt: '', 'aria-hidden': 'true', decoding: 'async' })
@@ -176,24 +182,31 @@ export function mountCover(music: MusicPlayer): CoverHandle {
     icon('heart', 18), h('span', { class: 'cv-cta-label' }, 'Đang chuẩn bị thiệp…'));
   const hint = music.available && ctx.config.music.enabled && nonEmpty(c.musicHint)
     ? h('p', { class: 'cv-hint' }, icon('music', 14), c.musicHint) : null;
-  const st = stage(domStyle);
+  // kiểu mở v4a-2b: entry dựng phần chữ (đọc được trước khi module tải), module dựng lớp hình vào `.op-layers` (cổng) / `.op-stage` (vật thể)
+  const st = isOp ? h('div', { class: gate ? 'op-layers' : 'cv-stage op-stage' }) : stage(domStyle);
   st.setAttribute('role', 'button');
   st.setAttribute('tabindex', '0');
   st.setAttribute('aria-label', c.tapToOpenLabel || 'Mở thiệp');
   const isEnv = domStyle === 'envelope';
   const actions = h('div', { class: 'cv-actions' }, cta, hint);
   // phong bì: tên cặp đôi NGOÀI phong bì, phía trên (LCP, đọc được trước khi skin tải xong)
-  const el = h('div', { class: `cover cover--${domStyle}`, 'data-open': styleId, role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Thiệp mời' },
+  const el = h('div', {
+    class: `cover cover--${domStyle}`, 'data-open': styleId, 'data-op-family': isOp ? fam : null,
+    role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Thiệp mời',
+  },
     bgImg ? h('div', { class: 'cv-bg' }, bgImg) : null,
-    ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--tl', 96, 96),
-    ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--br', 96, 96),
-    h('div', { class: 'cv-inner' },
+    gate ? st : [
+      ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--tl', 96, 96),
+      ornament(r.ornamentUrl ?? '', 'corner', 'orn cv-corner cv-corner--br', 96, 96)],
+    h('div', { class: `cv-inner${fam === 'gate' ? ' cv-plaque' : ''}` },
       h('div', { class: 'cv-head' },
         nonEmpty(c.eyebrow) ? h('p', { class: 'cv-eyebrow' }, c.eyebrow) : null,
         nonEmpty(c.dateText) ? h('p', { class: 'cv-date' }, c.dateText) : null,
-        isEnv ? namesBlock('cv-names') : null),
-      st,
-      actions));
+        isEnv || isOp ? namesBlock('cv-names') : null),
+      gate ? null : st,
+      isOp ? h('div', { class: 'cv-guestline' }, ...guestLines('cv')) : null,
+      gate ? null : actions),
+    gate ? actions : null);
   if (isEnv) applyEnvelopeColors(el);
   document.body.appendChild(el);
   document.documentElement.classList.add('cover-on');
@@ -201,19 +214,22 @@ export function mountCover(music: MusicPlayer): CoverHandle {
 
   // ---- chuẩn bị: font tên (≤1.5s) + module kiểu mở (+ skin phong bì); >300ms hiện "Đang chuẩn bị…", >4s vẫn cho mở
   let play: PlayFn | null = mode === 'fade200' ? fade200 : null;
+  let mod: OpenModule | null = null;
   const fontsReady = waitNameFont().then(() => el.classList.add('is-fonts'));
-  // phong bì cần skin cả khi reduced/Tắt (hình tĩnh) -> luôn tải module envelope
-  const modReady = loadOpenModule(isEnv ? 'envelope' : styleId).then(async (m) => {
-    if (m?.prepare) { try { await m.prepare(el); } catch { /* skin lỗi: vẫn mở được bằng hình CSS */ } }
+  // phong bì / kiểu mở mới cần lớp hình cả khi reduced/Tắt (hình tĩnh) -> luôn tải module của kiểu đã chọn;
+  // light-gather bị hạ cấp (máy yếu) vẫn tải module để chạy nhánh Nhẹ (fade-zoom + 12 hạt lấp lánh)
+  const loadId = eff.id === 'fade-zoom' && styleId === 'light-gather' ? styleId : eff.id;
+  const modReady = loadOpenModule(loadId).then(async (m) => {
+    mod = m;
+    if (m?.prepare) { try { await m.prepare(el, { mode, lowEnd: ctx.fx.lowEnd, preview: !!ctx.preview }); } catch { /* skin lỗi: vẫn mở được bằng hình CSS */ } }
     if (!play) play = m?.play ?? fadeZoom;
   }).finally(() => el.classList.add('is-skin'));
   let ready = false;
-  const addr = el.querySelector<HTMLElement>('.env-addr');
-  const fit = () => { if (addr) fitEnvGuest(addr); };
+  const fit = () => { const box = el.querySelector<HTMLElement>('.env-addr, .op-fit'); if (box) fitEnvGuest(box); };
   let fitRaf = 0;
   const onResize = () => { if (!fitRaf) fitRaf = requestAnimationFrame(() => { fitRaf = 0; if (!el.classList.contains('is-opening')) fit(); }); };
   const fontSet = (document as Document & { fonts?: FontFaceSet }).fonts;
-  if (addr) {
+  if (isEnv || isOp) {
     window.addEventListener('resize', onResize, { passive: true });
     // font tên khách về muộn (sau mốc 4s vẫn cho mở) -> đo lại
     fontSet?.addEventListener?.('loadingdone', onResize);
@@ -239,10 +255,21 @@ export function mountCover(music: MusicPlayer): CoverHandle {
   let resolveOpened!: () => void;
   const opened = new Promise<void>((res) => (resolveOpened = res));
 
+  if (ctx.debug) {
+    (window as unknown as Record<string, unknown>).__wpCover = {
+      style: styleId, level: mode,
+      get effective() { return el.dataset.effective ?? eff.id; },
+      get totalMs() { return run?.totalMs ?? 0; },
+      remainingMs: () => run?.remainingMs() ?? 0,
+    };
+  }
+
   const open = (e?: Event) => {
     e?.preventDefault();
     if (!ready) return;
     if (run) { run.fastForward(); return; } // chạm lần 2 = tua nhanh
+    // điểm chạm (ink-spread loang từ đây); bàn phím (detail = 0) -> không có, module dùng tâm màn
+    const tap = e instanceof MouseEvent && e.detail > 0 ? { x: e.clientX, y: e.clientY } : undefined;
     // 1) nhạc: gọi play() đồng bộ trong cử chỉ
     if (ctx.config.music.enabled && ctx.config.music.autoplayAfterOpen && music.available) void music.playFromGesture();
     // 2) hiện landing bên dưới (đang display:none để chỉ tải font cover) rồi chạy kiểu mở
@@ -256,17 +283,24 @@ export function mountCover(music: MusicPlayer): CoverHandle {
         { duration: mode === 'fade200' ? 1 : 200, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards' });
     }
     const fn = play ?? fadeZoom;
-    run = fn(el, { level: mode === 'full+' ? 'full+' : mode === 'light' ? 'light' : 'full', greeting: c.showOpenedGreeting, timeScale: EffectRegistry.timeScale });
+    run = fn(el, {
+      level: mode === 'full+' ? 'full+' : mode === 'light' ? 'light' : 'full', greeting: c.showOpenedGreeting,
+      timeScale: EffectRegistry.timeScale, tap, lowEnd: ctx.fx.lowEnd,
+    });
     void run.finished.then(() => {
       window.removeEventListener('resize', onResize);
       fontSet?.removeEventListener?.('loadingdone', onResize);
       el.remove();
       document.documentElement.classList.remove('cover-on');
       resolveOpened();
+      try { mod?.dispose?.(); } catch { /* ignore */ }
+      // sau onOpened (ctx.opened = true): hạt trên cover (setOverCover) về lớp thường, bay tiếp không bị ngắt
+      setTimeout(() => emit('cover-gone'), 0);
     });
   };
   // R05: chạm vào nút/phong bì = mở; khi đang mở, chạm BẤT KỲ đâu trên cover = tua nhanh
-  el.addEventListener('click', (e) => { if (run || cta.contains(e.target as Node) || st.contains(e.target as Node)) open(e); });
+  // kiểu cổng toàn màn: chạm bất kỳ đâu trên cover cũng mở
+  el.addEventListener('click', (e) => { if (run || gate || cta.contains(e.target as Node) || st.contains(e.target as Node)) open(e); });
   st.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') open(e); });
   return { el, opened };
 }

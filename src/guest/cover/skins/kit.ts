@@ -7,6 +7,7 @@ import { envelopeGeom, type EnvelopeGeom } from '@shared/envelope';
 import type { EnvelopeStyle } from '@shared/config/enums';
 import { h, svg } from '../../dom';
 import type { Step } from '../anim';
+import type { SparkReq } from '../open-kit/sparks';
 
 export interface EnvParts {
   cover: HTMLElement;
@@ -31,10 +32,21 @@ export interface UnlockPlan {
   flapDur?: number;
 }
 
+/**
+ * E12 (design-v4a-2bc §3.1): hạt lóe trong pha mở khoá ở mức Nhiều (lace: cả mức Vừa). Dữ liệu thuần - `envelope.ts`
+ * import động `open-kit/sparks` để phát (skin không import tĩnh open-kit). `at` theo timeline skin (ms), gốc phát = seal.
+ */
+export type SparkPlan = Omit<SparkReq, 'origin' | 'at'> & { at: number };
+
 export interface EnvelopeSkin {
   build(p: EnvParts, o: SkinOpts): void;
   unlock(p: EnvParts, light: boolean): UnlockPlan;
+  /** không khai báo = 12 bụi vàng lóe ở seal (DEFAULT_RICH) */
+  rich?(level: 'full' | 'full+'): SparkPlan[];
 }
+
+/** Mặc định E12 (`classic`): 12 hạt vàng toả 360° tại mốc 2 nửa seal bắt đầu tách. */
+export const DEFAULT_RICH: SparkPlan = { at: 90, count: 12, kind: ['gold-dust'], size: [3, 6], speed: [60, 180], gravity: 40, drag: 2.6, life: [600, 800] };
 
 const NS_VIEW = '0 0 340 238';
 

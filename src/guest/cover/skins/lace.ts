@@ -2,6 +2,7 @@
  * Mẫu `lace`: nền theme pha hồng, mép nắp lượn ren + lỗ đục (SVG tĩnh), cụm hoa ép (2 bông + 3 lá) thay dấu sáp.
  * Pha mở: cụm hoa nhấc lên translateY(-12px) rotate(-10deg) + mờ 260ms.
  */
+import type { Layer } from '../open-kit/sparks';
 import { svg } from '../../dom';
 import { path, shell, type EnvelopeSkin } from './kit';
 
@@ -23,6 +24,13 @@ function blossom(x: number, y: number, r: number, cls: string): SVGElement {
     svg('circle', { r: r * 0.24, class: 'fl-c' }));
 }
 
+const PETAL = 'M0 9C-5.4 6-6-2-3.4-6.6-2-9 2-9 3.4-6.6 6-2 5.4 6 0 9Z';
+/** e12-lace-petal (designer B `envelope-e12/e12.json`) */
+const PETALS: Layer[][] = [
+  [{ d: PETAL, fill: 'c1' }, { d: 'M0 8V-5', stroke: '#000', lw: 0.5, a: 0.25 }],
+  [{ d: PETAL, fill: 'c2' }, { d: 'M-2-4C-1-6.4 1.4-6.6 2.4-5', stroke: '#fff', lw: 0.9, a: 0.6 }],
+];
+
 export const skin: EnvelopeSkin = {
   build(p, o) {
     shell(p, 'lace', o, { flap: holes() });
@@ -35,4 +43,6 @@ export const skin: EnvelopeSkin = {
     if (light) return { steps: [{ el: p.seal, frames: [{ opacity: 1 }, { opacity: 0 }], start: 0, dur: 120 }], flapAt: 0 };
     return { steps: [{ el: p.seal, frames: [{ transform: 'none', opacity: 1 }, { transform: 'translateY(-12px) rotate(-10deg)', opacity: 0 }], start: 0, dur: 260 }], flapAt: 200 };
   },
+  // E12 + §3.4c: cánh hoa ép bay lả từ cụm hoa nhấc lên - Vừa 6 / Nhiều 12 (accent / accent-2 xen kẽ = .fl-1/.fl-2)
+  rich: (level) => [{ at: 60, count: level === 'full+' ? 12 : 6, shapes: PETALS, size: [9, 14], angle: [-150, -30], speed: [60, 160], gravity: 160, drag: 1.8, life: [1400, 1800], spin: 1.8 }],
 };

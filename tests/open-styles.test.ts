@@ -28,9 +28,9 @@ describe('OPEN_META', () => {
     expect(OPEN_STYLES.filter((id) => OPEN_META[id].cost === 'high')).toEqual(['light-gather']);
   });
 
-  it('kiểu có hạt theo bảng 1.1', () => {
+  it('kiểu có hạt theo bảng 1.1 + design-v4a-2bc §2 (origami/scroll có hạt ở mức Nhiều)', () => {
     expect(OPEN_STYLES.filter((id) => OPEN_META[id].usesParticles).sort()).toEqual(
-      ['curtain', 'double-door', 'flower-gate', 'gift-box', 'light-gather', 'moon-gate', 'wax-seal'],
+      ['curtain', 'double-door', 'flower-gate', 'gift-box', 'light-gather', 'moon-gate', 'origami', 'scroll', 'wax-seal'],
     );
   });
 });
@@ -66,4 +66,68 @@ describe('effectiveOpen (bảng 1.5)', () => {
     expect(effectiveOpen('wax-seal', 'full+', true)).toEqual({ id: 'wax-seal', mode: 'light' });
     expect(effectiveOpen('curtain', 'full+', true)).toEqual({ id: 'curtain', mode: 'full+' });
   });
+});
+
+// ---------------------------------------------------------------- v4a-2b: timeline thuần của 13 module (solution 4.1)
+import * as curtain from '@guest/cover/styles/curtain';
+import * as waxSeal from '@guest/cover/styles/wax-seal';
+import * as origami from '@guest/cover/styles/origami';
+import * as doubleDoor from '@guest/cover/styles/double-door';
+import * as flowerGate from '@guest/cover/styles/flower-gate';
+import * as scroll from '@guest/cover/styles/scroll';
+import * as card3d from '@guest/cover/styles/card-3d';
+import * as lightGather from '@guest/cover/styles/light-gather';
+import * as giftBox from '@guest/cover/styles/gift-box';
+import * as moonGate from '@guest/cover/styles/moon-gate';
+import * as book from '@guest/cover/styles/book';
+import * as inkSpread from '@guest/cover/styles/ink-spread';
+import * as polaroid from '@guest/cover/styles/polaroid';
+import type { Timeline } from '@guest/cover/open-kit/layers';
+
+type Level = 'light' | 'full' | 'full+';
+const MODS: Record<string, { timeline: (l: Level) => Timeline }> = {
+  curtain, 'wax-seal': waxSeal, origami, 'double-door': doubleDoor, 'flower-gate': flowerGate, scroll, 'card-3d': card3d,
+  'light-gather': lightGather, 'gift-box': giftBox, 'moon-gate': moonGate, book, 'ink-spread': inkSpread, polaroid,
+};
+/** Thuộc tính được animate: transform/opacity (+ clip-path có biên, z-index rời rạc) và ngoại lệ ghi trong design-v4a-2bc:
+ *  stroke-dashoffset (nơ gift-box, vệt nứt wax-seal - SVG nhỏ), mask-size/position (lỗ khoét ink-spread §2.12). */
+const ALLOWED = new Set(['transform', 'opacity', 'clipPath', 'zIndex', 'translate', 'scale', 'rotate', 'offset', 'easing',
+  'strokeDashoffset', 'maskSize', 'webkitMaskSize', 'maskPosition', 'webkitMaskPosition']);
+/** Lớp chứa chữ có animate clip-path (design §1.1 ngoại lệ có chủ đích): giấy scroll, chú thích polaroid. */
+const TEXT_CLIP = new Set(['sc-paper', 'pl-cap']);
+
+describe('13 kiểu mở v4a-2b - timeline(level)', () => {
+  it('đủ 13 module, đã bật trong capability', async () => {
+    const { CAPABILITIES } = await import('@shared/capabilities');
+    for (const id of Object.keys(MODS)) expect(CAPABILITIES.openStyle.supported).toContain(id);
+    expect(Object.keys(MODS)).toHaveLength(13);
+  });
+
+  for (const [id, m] of Object.entries(MODS)) {
+    describe(id, () => {
+      const t = { light: m.timeline('light'), full: m.timeline('full'), 'full+': m.timeline('full+') };
+
+      it('tổng ≤ 2400ms ở mọi cấp; Nhẹ ngắn hơn Vừa; Nhiều không kéo dài quá 50ms', () => {
+        for (const l of ['light', 'full', 'full+'] as const) expect(t[l].totalMs).toBeLessThanOrEqual(MAX_OPEN_MS);
+        expect(t.light.totalMs).toBeLessThan(t.full.totalMs);
+        expect(t['full+'].totalMs - t.full.totalMs).toBeLessThanOrEqual(50);
+      });
+
+      it('OPEN_META.ms = tổng mức Vừa của module', () => {
+        expect(OPEN_META[id as OpenStyle].ms).toBe(t.full.totalMs);
+      });
+
+      it('chỉ animate thuộc tính cho phép; clip-path quanh chữ có biên ≥ 0.3em', () => {
+        for (const tlx of Object.values(t)) {
+          for (const s of tlx.steps) {
+            for (const f of s.f) for (const k of Object.keys(f)) expect(ALLOWED, `${id}.${s.k}.${k}`).toContain(k);
+            if (TEXT_CLIP.has(s.k)) {
+              const last = String(s.f[s.f.length - 1]!.clipPath);
+              expect(last).toMatch(/^inset\(-\.3em\)$/);
+            }
+          }
+        }
+      });
+    });
+  }
 });

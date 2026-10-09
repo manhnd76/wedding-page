@@ -1,6 +1,7 @@
 /**
  * Khối "Kiểu mở thiệp" (design 8.13): gallery `role="radiogroup"` với hoạt ảnh CSS thu nhỏ khi hover/focus/chọn
  * (`open-mini.css`) + "Mẫu phong bì" khi kiểu thật là `envelope`. Chọn = phát ngay trong preview.
+ * v4a-2b: đủ 17 kiểu (từ CAPABILITIES), badge "Nặng ⚠" + dòng ghi chú khi kiểu đang dùng có chi phí Cao (solution 1.5, 1.7).
  */
 import { CAPABILITIES } from '@shared/capabilities';
 import type { OpenStyle } from '@shared/config/enums';
@@ -33,6 +34,9 @@ export function OpenBlock({ fx }: FxBlockProps) {
           );
         })}
       </div>
+      {OPEN_META[r.openStyle].cost === 'high' && (
+        <p class="note" data-testid="open-heavy-note">⚠ Hiệu ứng này đẹp nhưng nặng; máy yếu sẽ tự dùng kiểu đơn giản.</p>
+      )}
 
       {r.openStyle === 'envelope' && (
         <EnvelopeGallery draft={draft} r={r}

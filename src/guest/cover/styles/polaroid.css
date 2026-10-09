@@ -1,0 +1,23 @@
+/* polaroid (design-v4a-2bc §2.13): giấy #FFFDF9, mặt sau in dòng kẻ (mask), băng dính washi (mask accent-2) */
+.cover[data-open="polaroid"] .op-stage { isolation: isolate; }
+.pl, .pl-x { width: min(62vw, 250px, calc((100svh - 420px) * .84)); min-width: 150px; aspect-ratio: .84; }
+.pl { position: relative; transform: rotate(-3deg); z-index: 2; }
+.pl-x { width: min(50vw, 200px); position: absolute; left: 50%; top: 50%; transform-origin: 50% 50%; margin: 0; translate: -50% -50%; background: #FFFDF9; padding: 4% 4% 14%; box-shadow: 0 10px 22px -10px rgba(0,0,0,.45); opacity: 0; z-index: 1; }
+.pl-xi { display: block; width: 100%; height: 100%; object-fit: cover; background: var(--c-accent-2); opacity: .9; }
+div.pl-xi { opacity: .3; }
+.pl-rot { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(180deg); }
+.pl-face { position: absolute; inset: 0; background: #FFFDF9; box-shadow: 0 10px 22px -10px rgba(0,0,0,.45); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.pl-front { padding: 4% 4% 16%; }
+.pl-back { transform: rotateY(180deg); padding: 12%; color: #3A332E; }
+.pl-back .cv-guestline { position: relative; }
+.pl-back .cv-prefix { color: #6A5F57; }
+.pl-print { inset: 0; background: var(--c-muted); opacity: .18; -webkit-mask-image: url(../theme-assets/polaroid/back-print.svg); mask-image: url(../theme-assets/polaroid/back-print.svg); }
+.pl-photo { position: relative; width: 100%; height: 100%; overflow: hidden; background: linear-gradient(160deg, var(--c-accent-2), var(--c-primary)); }
+.pl-img { width: 100%; height: 100%; object-fit: cover; }
+.pl-img.op-mono { display: grid; place-items: center; font: 400 calc(34px * var(--fs-k))/1.2 var(--ff-script); color: #fff; }
+.pl-dev { position: absolute; inset: 0; }
+.pl-d1 { background: #F4F1EA; }
+.pl-d2 { background: #704214; mix-blend-mode: color; opacity: .9; }
+.pl-cap { position: absolute; left: 0; right: 0; bottom: 2%; text-align: center; font: 400 calc(min(20px, 5.4vw) * var(--fs-k))/1.3 var(--ff-script); color: #3A332E; padding: 0 .2em; white-space: nowrap; clip-path: inset(-.3em 100% -.3em -.3em); }
+.pl-tape { left: 50%; top: -12px; width: 84px; height: 30px; margin-left: -42px; background: var(--c-accent-2); opacity: .8; transform: rotate(-4deg); -webkit-mask-image: url(../theme-assets/polaroid/tape.svg); mask-image: url(../theme-assets/polaroid/tape.svg); z-index: 3; }
+.is-opening .pl-rot { will-change: transform; }

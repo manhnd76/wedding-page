@@ -13,8 +13,13 @@ export interface OpenMeta {
   cost: OpenCost;
   /** tổng thời lượng mức Vừa (ms), ≤ 2400 */
   ms: number;
-  /** có hạt (canvas ParticleField / burst) ở mức ≥ Vừa */
+  /** có hạt (canvas ParticleField / burst) ở mức Vừa hoặc Nhiều */
   usesParticles: boolean;
+  /**
+   * Họ bố cục (design-v4a-2bc §1.1): `object` = đầu đề + vật thể ở giữa; `gate` = cổng toàn màn + biển chữ `.cv-plaque`;
+   * `flat` = toàn màn không biển (light-gather, ink-spread). Không có = 4 kiểu cũ (DOM riêng).
+   */
+  family?: 'object' | 'gate' | 'flat';
 }
 
 export const OPEN_META: Record<OpenStyle, OpenMeta> = {
@@ -23,20 +28,20 @@ export const OPEN_META: Record<OpenStyle, OpenMeta> = {
   'card-flip': { cost: 'medium', ms: 1700, usesParticles: false },
   'fade-zoom': { cost: 'low', ms: 700, usesParticles: false },
   none: { cost: 'low', ms: 200, usesParticles: false },
-  // 13 kiểu v4a-2b (bảng 1.1, cột Vừa / Chi phí / Hạt)
-  curtain: { cost: 'low', ms: 1200, usesParticles: true },
-  'wax-seal': { cost: 'medium', ms: 1700, usesParticles: true },
-  origami: { cost: 'medium', ms: 1800, usesParticles: false },
-  'double-door': { cost: 'medium', ms: 1600, usesParticles: true },
-  'flower-gate': { cost: 'medium', ms: 1800, usesParticles: true },
-  scroll: { cost: 'medium', ms: 2100, usesParticles: false },
-  'card-3d': { cost: 'low', ms: 1400, usesParticles: false },
-  'light-gather': { cost: 'high', ms: 2400, usesParticles: true },
-  'gift-box': { cost: 'medium', ms: 1900, usesParticles: true },
-  'moon-gate': { cost: 'medium', ms: 1600, usesParticles: true },
-  book: { cost: 'low', ms: 1800, usesParticles: false },
-  'ink-spread': { cost: 'medium', ms: 1200, usesParticles: false },
-  polaroid: { cost: 'low', ms: 2200, usesParticles: false },
+  // 13 kiểu v4a-2b: ms = tổng mức Vừa theo module thật (design-v4a-2bc §2), chi phí theo bảng 1.1
+  curtain: { cost: 'low', ms: 1250, usesParticles: true, family: 'gate' },
+  'wax-seal': { cost: 'medium', ms: 1700, usesParticles: true, family: 'object' },
+  origami: { cost: 'medium', ms: 1800, usesParticles: true, family: 'object' },
+  'double-door': { cost: 'medium', ms: 1600, usesParticles: true, family: 'gate' },
+  'flower-gate': { cost: 'medium', ms: 1800, usesParticles: true, family: 'gate' },
+  scroll: { cost: 'medium', ms: 2100, usesParticles: true, family: 'object' },
+  'card-3d': { cost: 'low', ms: 1400, usesParticles: false, family: 'object' },
+  'light-gather': { cost: 'high', ms: 2400, usesParticles: true, family: 'flat' },
+  'gift-box': { cost: 'medium', ms: 1900, usesParticles: true, family: 'object' },
+  'moon-gate': { cost: 'medium', ms: 1600, usesParticles: true, family: 'gate' },
+  book: { cost: 'low', ms: 1800, usesParticles: false, family: 'object' },
+  'ink-spread': { cost: 'medium', ms: 1200, usesParticles: false, family: 'flat' },
+  polaroid: { cost: 'low', ms: 2200, usesParticles: false, family: 'object' },
 };
 
 export interface EffectiveOpen { id: OpenStyle; mode: OpenMode }

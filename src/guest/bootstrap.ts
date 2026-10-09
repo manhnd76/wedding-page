@@ -9,6 +9,7 @@ import { guestNameFromUrl } from '@shared/guest-name';
 import { planSections, type PlannedSection } from '@shared/sections/meta';
 import { ctx, emit, watchTyping, type Resolved } from './context';
 import { h } from './dom';
+import { OPEN_META } from '@shared/open-styles';
 import { mountCover } from './cover/cover';
 import { MusicPlayer } from './music/player';
 import { mountFloating } from './floating/floating';
@@ -228,7 +229,7 @@ function previewAfterOpen(boot: PreviewBoot, target: string | null, bridge: type
     bridge.applyOptions(o);
     return;
   }
-  if (target === 'cover') { done(1600); return; }
+  if (target === 'cover') { done((OPEN_META[ctx.resolved.openStyle]?.ms ?? 1300) + 300); return; }
   if (target === 'autoscroll') {
     window.scrollTo(0, 0);
     void import('./autoscroll/autoscroll').then((m) => {

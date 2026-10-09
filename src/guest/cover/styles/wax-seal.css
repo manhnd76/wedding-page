@@ -1,0 +1,32 @@
+/* wax-seal (design-v4a-2bc §2.2): thẻ gập cổng 2 cánh 2 mặt + dấu sáp 2 nửa (clipPath tĩnh) */
+.cover[data-open="wax-seal"] { --op-wax: var(--c-primary); --op-paper-2: var(--c-bg); }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .cover[data-open="wax-seal"] { --op-paper-2: color-mix(in srgb, var(--c-accent) 26%, var(--c-surface)); }
+  .wxs-hi { stop-color: color-mix(in srgb, var(--op-wax) 65%, #fff); }
+  .wxs-lo { stop-color: color-mix(in srgb, var(--op-wax) 65%, #000); }
+  .wx-press { fill: color-mix(in srgb, var(--op-wax) 90%, #000); }
+  .ws-ck { stroke: color-mix(in srgb, var(--op-wax) 40%, #000); }
+}
+.ws-card { position: relative; width: min(64vw, 260px, calc((100svh - 430px) * .8)); aspect-ratio: 4 / 5; min-width: 150px; }
+.ws-in { position: absolute; inset: 0; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 4px; display: grid; place-items: center; padding: 16px; }
+.ws-greet { opacity: 0; }
+.ws-w { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; }
+.ws-wl { left: 0; transform-origin: 0 50%; }
+.ws-wr { right: 0; transform-origin: 100% 50%; }
+.ws-f, .ws-b { position: absolute; inset: 0; border: 1px solid var(--c-line); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.ws-f { background: linear-gradient(90deg, rgba(0,0,0,.04), rgba(0,0,0,0) 30%), var(--c-surface); box-shadow: 0 6px 14px -8px rgba(0,0,0,.35); }
+.ws-f::after { content: ""; position: absolute; inset: 8px; border: 1px solid var(--c-accent); opacity: .7; }
+.ws-b { background: var(--op-paper-2); transform: rotateY(180deg); }
+.ws-wl .ws-f { border-radius: 4px 0 0 4px; }
+.ws-wr .ws-f { border-radius: 0 4px 4px 0; }
+.ws-seal { --ws: clamp(80px, 24vw, 104px); position: absolute; left: 50%; top: 50%; width: var(--ws); height: var(--ws); margin: calc(var(--ws) / -2) 0 0 calc(var(--ws) / -2); z-index: 5; }
+.ws-seal > * { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ws-h { filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+.wxs-hi { stop-color: var(--op-wax); } .wxs-mid { stop-color: var(--op-wax); } .wxs-lo { stop-color: var(--op-wax); }
+.wx-press { fill: var(--op-wax); }
+.wx-ring { fill: none; stroke: rgba(255,255,255,.35); stroke-width: 1.2; }
+.wx-ring2 { fill: none; stroke: rgba(0,0,0,.3); stroke-width: 1; }
+.ws-ck { fill: none; stroke: #000; stroke-width: 1.4; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 100; }
+.ws-sh { inset: 45%; width: 10%; height: 10%; }
+.ws-mono { display: grid; place-items: center; font: 500 calc(19px * var(--fs-k))/1 var(--ff-heading); color: var(--c-on-primary); letter-spacing: .04em; white-space: nowrap; }
+.is-opening .ws-w { will-change: transform; }

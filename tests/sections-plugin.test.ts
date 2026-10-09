@@ -91,9 +91,10 @@ describe('plugin inject-config-og: sửa config.json -> HTML đổi đúng', () 
   it('giá trị chưa hỗ trợ -> fallback + chỉ cảnh báo, build không lỗi', () => {
     const s = st((c) => { c.theme.preset = 'bien-dao'; c.cover.openStyle = 'origami'; c.fonts.script = 'moon-dance'; c.sections.divider = 'zigzag'; });
     expect(s.resolved.preset).toBe('tram-vang');
-    expect(s.resolved.openStyle).toBe('envelope');
+    // v4a-2b bật đủ 17 kiểu mở -> origami không còn fallback (3 cảnh báo còn lại: theme, font, divider)
+    expect(s.resolved.openStyle).toBe('origami');
     expect(s.fonts.some((f) => f.family === 'Great Vibes')).toBe(true);
-    expect(s.warnings.length).toBe(4);
+    expect(s.warnings.length).toBe(3);
   });
   it('config JSON chỉ chứa giá trị đã merge (đủ field)', () => {
     const s = st((c) => { delete c.effects; });

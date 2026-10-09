@@ -11,3 +11,29 @@
 @keyframes o-flip { to { transform: rotateY(180deg); } }
 @keyframes o-fade { to { transform: scale(1.08); opacity: .1; } }
 @media (prefers-reduced-motion: reduce) { .ocard .omini * { animation: none !important; } }
+/* v4a-2b: 13 kiểu mở mới - hình thu nhỏ tĩnh + 1 nhịp động khi hover/focus/đang chọn */
+.omini--curtain b, .omini--double-door b, .omini--moon-gate b, .omini--flower-gate b { inset: 0; height: auto; clip-path: none; border-radius: 0; transform-origin: 50% 50%; }
+.omini--curtain b { background: linear-gradient(90deg, #8e2b2b 0 49%, #c9a86a 49% 51%, #8e2b2b 51%); }
+.omini--double-door b { background: linear-gradient(90deg, #4a3a22 0 49%, #c9a86a 49% 51%, #4a3a22 51%); }
+.omini--moon-gate b { background: radial-gradient(circle at 50% 40%, transparent 26%, #c9a86a 27% 29%, #5b4a3a 30%); }
+.omini--flower-gate b { background: radial-gradient(circle at 12% 18%, #e7b7b5 0 16%, transparent 17%), radial-gradient(circle at 88% 22%, #e7b7b5 0 14%, transparent 15%), radial-gradient(ellipse at 50% 100%, transparent 44%, #c9a86a 45% 47%, transparent 48%); }
+.omini--card-3d b, .omini--book b, .omini--polaroid b, .omini--light-gather b, .omini--ink-spread b { display: none; }
+.omini--book i { background: #2b2320; }
+.omini--polaroid i { border-bottom: 14px solid #fff; background: linear-gradient(160deg, #e7c9b5, #8e6a8a); transform: rotate(-3deg); }
+.omini--light-gather { background: #1c1517; }
+.omini--light-gather i { background: radial-gradient(#f3d48c 1px, transparent 1.5px) 0 0 / 8px 8px; box-shadow: none; }
+.omini--ink-spread i { border-radius: 50%; inset: 30%; background: #8fa886; }
+.omini--scroll b { inset: 18% 10% auto; height: 6px; clip-path: none; background: #6b3e26; }
+.omini--scroll i { inset: 20% 16% 30%; transform-origin: top; }
+.omini--gift-box i { inset: 46% 22% 18%; background: #e9d5c4; }
+.omini--gift-box b { inset: 38% 18% auto; height: 12%; clip-path: none; background: #c9a86a; }
+.omini--wax-seal b { inset: 42% 38% auto; height: 18%; border-radius: 50%; clip-path: none; background: #8a3a2a; }
+.omini--origami b { inset: 22% 14% auto; height: 38%; }
+:is(.ocard:hover, .ocard:focus-visible, .ocard.is-on) :is(.omini--curtain, .omini--double-door, .omini--moon-gate, .omini--flower-gate) b { animation: o-gate 1.4s ease-in-out infinite alternate; }
+:is(.ocard:hover, .ocard:focus-visible, .ocard.is-on) :is(.omini--card-3d, .omini--book, .omini--polaroid) i { animation: o-flip 1.6s ease-in-out infinite alternate; }
+:is(.ocard:hover, .ocard:focus-visible, .ocard.is-on) :is(.omini--light-gather, .omini--ink-spread) i { animation: o-fade 1.4s ease-in-out infinite alternate; }
+:is(.ocard:hover, .ocard:focus-visible, .ocard.is-on) :is(.omini--wax-seal, .omini--gift-box, .omini--origami) b { animation: o-lift 1.4s ease-in-out infinite alternate; }
+:is(.ocard:hover, .ocard:focus-visible, .ocard.is-on) .omini--scroll i { animation: o-unroll 1.4s ease-in-out infinite alternate; }
+@keyframes o-gate { to { transform: scaleX(1.8); opacity: .15; } }
+@keyframes o-lift { to { transform: translateY(-40%) rotate(12deg); opacity: .2; } }
+@keyframes o-unroll { from { transform: scaleY(.08); } }

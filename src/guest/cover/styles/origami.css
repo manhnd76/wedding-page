@@ -1,0 +1,27 @@
+/* origami (design-v4a-2bc §2.3): 4 cánh 2 mặt; mặt sau = nền --op-paper-2 + hoạ tiết mask (cắt tam giác bằng clip-path tĩnh) */
+.cover[data-open="origami"] { --op-paper: var(--c-surface); --op-paper-2: var(--c-bg); --og-edge: var(--c-accent); }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .cover[data-open="origami"] { --op-paper-2: color-mix(in srgb, var(--c-accent) 26%, var(--c-surface)); --og-edge: color-mix(in srgb, var(--c-accent) 60%, var(--c-line)); }
+}
+.og { position: relative; width: min(72vw, 300px, calc(100svh - 470px)); min-width: 170px; aspect-ratio: 1; }
+.og-in { position: absolute; inset: 0; background: var(--op-paper); border: 1px solid var(--c-line); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 14%; gap: 2px; }
+.og-inv { font: italic 400 13px/1.3 var(--ff-heading); color: var(--c-muted); }
+.og-gst { font: italic 400 calc(18px * var(--fs-k))/1.3 var(--ff-heading); overflow-wrap: anywhere; padding-block: .08em; }
+.og-f { position: absolute; inset: 0; transform-style: preserve-3d; }
+.og-l { transform-origin: 0 50%; z-index: 1; } .og-r { transform-origin: 100% 50%; z-index: 2; }
+.og-b { transform-origin: 50% 100%; z-index: 3; } .og-t { transform-origin: 50% 0; z-index: 4; }
+.og-fr, .og-bk, .og-sd { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.og-face { fill: var(--op-paper); stroke: var(--og-edge); stroke-width: .5; }
+.og-crease { fill: none; stroke: var(--c-text); stroke-opacity: .14; stroke-width: .4; }
+.og-bk { background: var(--op-paper-2); }
+.og-pat { inset: 0; background: var(--c-accent); opacity: .55; -webkit-mask: url(../theme-assets/origami/flap-pattern.svg) 0 0 / 18px 18px repeat; mask: url(../theme-assets/origami/flap-pattern.svg) 0 0 / 18px 18px repeat; }
+.og-sd { background: linear-gradient(var(--og-a, 180deg), rgba(0,0,0,.6), transparent 70%); opacity: 0; }
+.og-l .og-bk, .og-l .og-sd { clip-path: polygon(0 0, 0 100%, 52% 50%); --og-a: 90deg; }
+.og-r .og-bk, .og-r .og-sd { clip-path: polygon(100% 0, 100% 100%, 48% 50%); --og-a: 270deg; }
+.og-b .og-bk, .og-b .og-sd { clip-path: polygon(0 100%, 100% 100%, 50% 48%); --og-a: 0deg; }
+.og-t .og-bk, .og-t .og-sd { clip-path: polygon(0 0, 100% 0, 50% 52%); }
+.og-l .og-bk, .og-r .og-bk { transform: rotateX(180deg); }
+.og-t .og-bk, .og-b .og-bk { transform: rotateY(180deg); }
+.og-stk { position: absolute; left: 50%; top: 50%; width: 32px; height: 32px; margin: -16px; z-index: 9; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+.og-stk-c { fill: var(--c-primary); } .og-stk-h { fill: #fff; }
+.is-opening .og-f { will-change: transform; }
