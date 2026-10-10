@@ -1,8 +1,9 @@
 /**
  * open-kit/sparks (solution-v4a-2bc.md bảng API "Hạt trên cover"; design-v4a-2bc §1.4, §3.0): hạt chạy TRÊN cover
  * trong lúc mở thiệp, dùng chung ParticleField (canvas nâng lên trên cover bằng `setOverCover`, hạ lại khi cover gỡ).
- * Loại hạt chưa có loader (vd `sparkle`, `petal-lotus` của v4a-2c) -> loại kế trong danh sách, cuối cùng là loại `k0`
- * của theme; burst chưa có -> `petals` (registry). Không tạo canvas khi Tắt/reduced (getField trả null).
+ * Loại hạt chưa có loader -> loại kế trong danh sách, cuối cùng là loại `k0` của theme; burst chưa có -> `petals` (registry).
+ * v4a-2c: `burst` có mảnh (`confetti`/`gold`/`red-paper`) -> dùng mảnh thật (lật/nhấp nháy) với vật lý của lời gọi.
+ * Không tạo canvas khi Tắt/reduced (getField trả null).
  */
 import { ctx, on } from '../../context';
 import { getField } from '../../effects/service';
@@ -36,6 +37,8 @@ export interface SparkReq {
   spread?: [number, number];
   /** trễ (ms đồng hồ thật) */
   at?: number;
+  /** lật giả (mảnh giấy) - v4a-2c */
+  flip?: boolean;
 }
 
 const rnd = ([a, b]: [number, number]) => a + Math.random() * (b - a);
@@ -67,15 +70,20 @@ function drawLayers(g: CanvasRenderingContext2D, s: number, layers: Layer[], c: 
   }
 }
 
-async function sprites(f: ParticleField, r: SparkReq, max: number): Promise<string[]> {
+/** Sprite + cờ chuyển động của 1 lời gọi. */
+interface Spr { keys: string[]; flip?: boolean; twinkle?: boolean }
+
+async function sprites(f: ParticleField, r: SparkReq, max: number): Promise<Spr> {
   const t = ctx.resolved.tokens;
   if (r.shapes) {
     const c = r.colors ?? [t.accent, t.accent2];
-    return r.shapes.map((ls, i) => {
-      const key = `op:${c.join()}:${i}:${ls.length}:${ls[0]?.d ?? ls[0]?.r}`;
-      f.makeSprite(key, max, (g, s) => drawLayers(g, s, ls, c));
-      return key;
-    });
+    return {
+      keys: r.shapes.map((ls, i) => {
+        const key = `op:${c.join()}:${i}:${ls.length}:${ls[0]?.d ?? ls[0]?.r}`;
+        f.makeSprite(key, max, (g, s) => drawLayers(g, s, ls, c));
+        return key;
+      }),
+    };
   }
   const { PARTICLE_LOADERS } = await import('../../effects/particles/types');
   for (const id of r.kind ?? []) {
@@ -83,29 +91,34 @@ async function sprites(f: ParticleField, r: SparkReq, max: number): Promise<stri
     if (!l) continue;
     const k = (await l()).kind;
     const c = r.colors ?? k.natural ?? [t.accent, t.primaryDecor];
-    const key = `op:${id}:${c.join()}`;
-    f.makeSprite(key, max, (g, s) => k.draw(g, s, c[0]!, c[1] ?? c[0]!));
-    return [key];
+    // v4a-2c: loại có biến thể/mặt sau (giấy đỏ, cánh sen, lấp lánh) -> đủ biến thể, lật theo loại; loại `twinkle` nhấp nháy
+    return { keys: f.kindSprites(`op:${id}:${c.join()}`, k, c[0]!, c[1] ?? c[0]!, max), flip: !!k.flip, twinkle: k.motion === 'twinkle' };
   }
-  return ['k0']; // loại hạt nền của theme (sprite field tự vẽ)
+  return { keys: ['k0'] }; // loại hạt nền của theme (sprite field tự vẽ)
 }
 
 /** Phát `count` hạt từ `origin`; trả số hạt đã thêm (0 khi Tắt/reduced hoặc không có canvas). */
 export async function coverSparks(r: SparkReq): Promise<number> {
   const f = await getField();
   if (!f || r.count <= 0) return 0;
+  // tải module burst song song với thời gian chờ `at` (không để chunk về trễ hơn mốc phát)
+  const pre = r.burst ? import('../../effects/burst/registry').then(async (m) => ({ m, mod: await m.BURST_LOADERS[r.burst!]?.().catch(() => null) })) : null;
   if (r.at) await new Promise((res) => setTimeout(res, r.at));
   f.setOverCover(true);
   f.refreshZones(); // vùng dịu `.env-addr` / `.cv-plaque` (SOFT_SELECTOR) có trên cover
   if (!hooked.has(f)) { hooked.add(f); on('cover-gone', () => f.setOverCover(false)); }
   const o = r.origin instanceof Element ? (() => { const b = r.origin.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 }; })() : r.origin;
-  if (r.burst) {
-    // burst có module (vd `confetti` của v4a-2c) -> dùng; chưa có -> vẽ bằng kind/shapes của lời gọi (nếu có), không thì `petals`
-    const m = await import('../../effects/burst/registry');
-    if (m.BURST_LOADERS[r.burst] || !(r.kind || r.shapes)) return m.playBurst(r.burst, f, { count: r.count, origin: o, kindCount: 1 });
-  }
   const size = r.size ?? [4, 7];
-  const keys = await sprites(f, r, size[1]);
+  let spr: Spr | null = null;
+  if (pre) {
+    // v4a-2c: burst có mảnh (`confetti`, `gold`, `red-paper`) -> mảnh thật + vật lý riêng của lời gọi;
+    // burst không có mảnh (`petals`) hoặc không có dự phòng kind/shapes -> phát cả burst; module lỗi -> kind/shapes
+    const { m, mod } = await pre;
+    if (mod?.pieces) spr = mod.pieces(f, r.colors);
+    else if (mod || !(r.kind || r.shapes)) return m.playBurst(r.burst!, f, { count: r.count, origin: o, kindCount: 1 });
+  }
+  spr ??= await sprites(f, r, size[1]);
+  const keys = spr.keys;
   const [sx, sy] = r.spread ?? [6, 6];
   const list: BurstParticle[] = [];
   for (let i = 0; i < r.count; i++) {
@@ -114,6 +127,7 @@ export async function coverSparks(r: SparkReq): Promise<number> {
       x: o.x + rnd([-sx, sx]), y: o.y + rnd([-sy, sy]), vx, vy,
       size: rnd(size), life: rnd(r.life ?? [600, 800]), gravity: r.gravity ?? 40, drag: r.drag ?? 2.4,
       sprite: keys[i % keys.length]!, spin: r.spin ?? 2,
+      ...(spr.flip || r.flip ? { flip: true } : {}), ...(spr.twinkle ? { twinkle: true } : {}),
     });
   }
   const before = f.burstActive;

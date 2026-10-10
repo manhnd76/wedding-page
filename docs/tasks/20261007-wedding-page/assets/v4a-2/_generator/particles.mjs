@@ -94,8 +94,8 @@ const K = [];
   const H = heartD(10.5);
   K.push({ id: 'paper-heart', name: 'Tim giấy', motion: 'fall', density: 0.8, size: [12, 20], speed: [24, 44], sway: [12, 24], spin: 0.7, flip: true,
     natural: null, colorNote: 'theme -> c1 = accent, c2 = primary-decor; mặt sau tự đậm hơn',
-    variants: [{ w: 1, layers: [{ d: H, fill: 'c1' }, { d: 'M0-3.7L12-12V12H0Z', clip: H, fill: 'dark', a: 0.16 }, { d: 'M0-3.7V8.9', stroke: 'light', lw: 0.7, a: 0.7 }, { d: smoothOpen([[-7.2, -4.6], [-5, -8], [-1.8, -6.6]]), stroke: 'light', lw: 1, a: 0.55 }] }],
-    back: [{ d: H, fill: 'dark', a: 1 }, { d: 'M0-3.7V8.9', stroke: 'c1', lw: 0.6, a: 0.6 }] });
+    variants: [{ w: 1, layers: [{ d: H, fill: 'c1' }, { d: 'M0-3.7L12-12V12H0Z', clip: H, fill: 'dark', a: 0.16 }, { d: 'M0-3.7V8.9', stroke: 'light', lw: 0.7, a: 0.7 }, { d: 'M-5.8 -0.4C-6.3 -2 -5.6 -3.6 -4.2 -4C-3.3 -4.3 -2.5 -4 -2 -3.4', stroke: 'light', lw: 1, a: 0.55 } /* P03 vòng 1: nằm trong thuỳ trái */] }],
+    back: [{ d: H, fill: 'c2', a: 0.9 }, { d: 'M0-3.7V8.9', stroke: 'light', lw: 0.6, a: 0.6 }] }); // P04 vòng 1: mặt sau = c2 (dark của accent nhạt ra nâu xám)
 }
 // 7. leaf-green
 {
@@ -135,7 +135,7 @@ function tf(d, dx, dy, a, s = 1) {
     return 'M' + pts.map((p) => pt1(...p)).join('L') + 'Z'; };
   const tri = () => { const pts = []; const lobes = [[-90, 10.5, 0.55], [-25, 8.6, 0.55], [-155, 8.6, 0.55]]; const N = 72; for (let i = 0; i < N; i++) { const a = -90 + (i / N) * 360; let r = 3; for (const [la, lr, lw] of lobes) { let d = Math.abs(((a - la + 540) % 360) - 180); r = Math.max(r, lr * Math.max(0, 1 - d / (lw * 60)) ** 0.7); } const ar = (a * Math.PI) / 180; pts.push([Math.cos(ar) * r, Math.sin(ar) * r + 1]); } return sm(pts.filter((_, i) => i % 2 === 0)); };
   const veins = 'M0 1.2V-9.6M0 1.2L8 -4.5M0 1.2L-8-4.5M0 1.2L5.4 3.8M0 1.2L-5.4 3.8M0 1.2V10';
-  K.push({ id: 'leaf-maple', name: 'Lá phong thu', motion: 'drift', density: 0.7, size: [14, 24], speed: [18, 34], sway: [10, 22], spin: 1.2, flip: true,
+  K.push({ id: 'leaf-maple', name: 'Lá phong thu', motion: 'drift', density: 0.7, size: [18, 28] /* P05 vòng 1 */, speed: [18, 34], sway: [10, 22], spin: 1.2, flip: true,
     natural: ['#D9662B', '#E8A13A'], naturalDark: ['#E07A40', '#F0B455'], colorNote: 'theme -> cam đỏ/vàng thu tự nhiên, 2 biến thể khác màu',
     variants: [
       { w: 0.6, layers: [{ d: maple(), fill: 'c1' }, { d: veins, stroke: 'dark', lw: 0.5, a: 0.35 }] },
@@ -159,8 +159,8 @@ function tf(d, dx, dy, a, s = 1) {
 }
 // 11. snow (thủ tục: chấm radial nhiều lớp độ sâu)
 K.push({ id: 'snow', name: 'Tuyết', motion: 'fall', density: 1.5, size: [2, 6], speed: [14, 30], sway: [6, 14], spin: 0, flip: false, depth: true,
-  natural: ['#FFFFFF', '#9FB3C8'], naturalDark: ['#FFFFFF', 'rgba(255,255,255,0)'], colorNote: 'theme -> trắng + vành xanh xám .5 để thấy trên nền sáng; theme tối bỏ vành. depth: cỡ lớn = rơi nhanh + rõ hơn',
-  variants: [{ w: 1, layers: [{ radial: [0, 0, 12], stops: [[0, 'c1', 1], [0.55, 'c1', 0.95], [0.78, 'c2', 0.5], [1, 'c2', 0]] }] }] });
+  natural: ['#EEF3F8', '#9FB3C8'] /* P02 vòng 1 */, naturalDark: ['#FFFFFF', 'rgba(255,255,255,0)'], colorNote: 'theme -> trắng + vành xanh xám .5 để thấy trên nền sáng; theme tối bỏ vành. depth: cỡ lớn = rơi nhanh + rõ hơn',
+  variants: [{ w: 1, layers: [{ radial: [0, 0, 12], stops: [[0, 'c1', 1], [0.6, 'c1', 0.95], [0.8, 'c2', 0.45], [1, 'c2', 0]] }] }] });
 // 12. bubble
 K.push({ id: 'bubble', name: 'Bong bóng', motion: 'float-up', density: 0.7, size: [10, 22], speed: [16, 30], sway: [8, 16], spin: 0, flip: false,
   natural: null, colorNote: 'theme -> c1 = accent-2 (bien-dao #8FD0CF, pastel-han #CFC6E8), c2 = accent (ánh cầu vồng); viền .7 + lòng .08',
@@ -183,9 +183,9 @@ K.push({ id: 'sparkle', name: 'Lấp lánh', motion: 'twinkle', density: 1.2, si
     ] });
 }
 // 15. dust-mote
-K.push({ id: 'dust-mote', name: 'Bụi nắng', motion: 'drift', density: 1.0, size: [3, 8], speed: [4, 10], sway: [4, 10], spin: 0, flip: false, alpha: [0.35, 0.75], twinkle: 0.25,
-  natural: ['#C9A876', '#FFF6E0'], naturalDark: ['#FFE7B0', '#FFF6E0'], colorNote: 'theme -> lõi kem sáng + vành nâu ấm (nền sáng hoai-co #F4ECDD vẫn thấy); theme tối: vàng nhạt',
-  variants: [{ w: 1, layers: [{ radial: [0, 0, 12], stops: [[0, 'c2', 0.95], [0.3, 'c2', 0.7], [0.6, 'c1', 0.35], [1, 'c1', 0]] }] }] });
+K.push({ id: 'dust-mote', name: 'Bụi nắng', motion: 'drift', density: 1.0, size: [5, 12] /* P01 vòng 1 */, speed: [4, 10], sway: [4, 10], spin: 0, flip: false, alpha: [0.45, 0.8], twinkle: 0.25,
+  natural: ['#B8925A', '#FFF1CC'], naturalDark: ['#FFE7B0', '#FFF6E0'], colorNote: 'theme -> lõi kem sáng + vành nâu ấm (nền sáng hoai-co #F4ECDD vẫn thấy); theme tối: vàng nhạt',
+  variants: [{ w: 1, layers: [{ radial: [0, 0, 12], stops: [[0, 'c2', 1], [0.35, 'c2', 0.85], [0.6, 'c1', 0.45], [1, 'c1', 0]] }] }] });
 // 16. red-paper (xác pháo)
 {
   const torn = (w, h, seed) => { const q = rng(seed); const x0 = -w / 2, x1 = w / 2, y0 = -h / 2, y1 = h / 2; return poly([[x0, y0 + q() * 0.8], [0, y0 + q() * 1.2], [x1, y0 + q() * 0.8], [x1, y1 - q() * 0.8], [0.3, y1 - q() * 1.2], [x0, y1 - q() * 0.8]]); };

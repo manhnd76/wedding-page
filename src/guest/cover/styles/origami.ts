@@ -5,7 +5,8 @@
  * Vừa ~1.8s: đầu đề rút 0–240 (cánh trên lật lên đè đầu đề) · sticker 0–160 · tên khách dưới tờ rút 360–520 (O09)
  *   · cánh trên 160, phải 280, dưới 400, trái 520 (380ms mỗi cánh)
  *   · tờ giấy phóng 1300–1800 + cover mờ từ 1500. Nhẹ ~0.8s: 4 cánh cùng lúc 100–480, mờ 480–800.
- * Nhiều: + bóng nếp mỗi cánh khi lật + 24 mảnh giấy vuông accent/accent-2 bung từ tâm (t=900; burst `confetti` khi v4a-2c có).
+ * Nhiều: + bóng nếp mỗi cánh khi lật + 24 mảnh giấy vuông accent/accent-2 bung từ tâm (t=900). v4a-2c: giữ mảnh vuông đúng §2.3
+ * (không dùng 4 hình của burst `confetti`), thêm lật giả.
  */
 import './origami.css';
 import { ctx } from '../../context';
@@ -65,7 +66,7 @@ export async function prepare(cover: HTMLElement, info: OpenPrepareInfo): Promis
 export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   if (c.level === 'full+') {
     const sq = (fill: string) => [{ d: 'M-7-5H7V5H-7Z', fill }];
-    void coverSparks({ count: 24, burst: 'confetti', shapes: [sq('c1'), sq('c2')], size: [6, 9], origin: cover.querySelector('.og')!, speed: [120, 320], life: [900, 1200], gravity: 260, drag: 1.6, spin: 5, at: 900 / c.timeScale });
+    void coverSparks({ count: 24, shapes: [sq('c1'), sq('c2')], flip: true, size: [6, 9], origin: cover.querySelector('.og')!, speed: [120, 320], life: [900, 1200], gravity: 260, drag: 1.6, spin: 5, at: 900 / c.timeScale });
   }
   return bind(cover, timeline(c.level), c);
 }

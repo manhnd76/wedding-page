@@ -4,7 +4,7 @@
  * Tên khách DƯỚI hộp (dải ruy băng cắt ngang mặt hộp). Đầu đề rút ngay (nắp bay lên đè tên cặp đôi).
  * Vừa ~1.9s: nơ tuột 0–400 · nắp bật 350–850 · thiệp nhô 600–1100 · confetti 40 mảnh t=900 · giữ · phóng 1500–1900 + cover mờ.
  * Nhẹ ~0.85s: nơ + nắp mờ, thiệp rút 150–550, không confetti. Nhiều: confetti 80.
- * Confetti = burst `confetti` của v4a-2c khi có; hiện dự phòng bằng mảnh giấy vẽ tại chỗ (`shapes`).
+ * Confetti = mảnh burst `confetti` (v4a-2c: 4 hình × màu theme, lật thấy mặt sau); `shapes` chỉ còn là dự phòng khi chunk lỗi.
  */
 import './gift-box.css';
 import { type OpenLevelCtx, type OpenRun } from '../anim';

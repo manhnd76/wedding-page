@@ -39,10 +39,10 @@ export async function prepare(cover: HTMLElement, info: OpenPrepareInfo): Promis
 
 export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   if (c.level === 'full+') {
-    // 16 hạt vàng dọc khe giữa (x = 50%, y 20–80%), bay ra 2 bên
+    // 16 hạt vàng dọc khe giữa (x = 50%, y 20–80%), bay ra 2 bên - mảnh burst `gold` (chấm + sao, nhấp nháy; v4a-2c)
     const h = innerHeight;
     for (const angle of [[-25, 25], [155, 205]] as [number, number][]) {
-      void coverSparks({ count: 8, kind: ['gold-dust'], colors: gold(), size: [3, 6], origin: { x: innerWidth / 2, y: h / 2 }, spread: [4, h * 0.3], angle, speed: [60, 160], life: [800, 950], at: 200 / c.timeScale });
+      void coverSparks({ count: 8, burst: 'gold', kind: ['gold-dust'], colors: gold(), size: [3, 6], origin: { x: innerWidth / 2, y: h / 2 }, spread: [4, h * 0.3], angle, speed: [60, 160], life: [800, 950], at: 200 / c.timeScale });
     }
   }
   return bind(cover, timeline(c.level), c);

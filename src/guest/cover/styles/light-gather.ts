@@ -150,8 +150,11 @@ export async function prepare(cover: HTMLElement, info: OpenPrepareInfo): Promis
   }
 }
 
+/** Cỡ 12 sao `sparkle` mức Nhẹ (P09: sao 4 cánh trên cover tối thiểu 6 px). */
+export const LIGHT_SPARK_SIZE: [number, number] = [6, 11];
+
 function lightBranch(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
-  void coverSparks({ count: 12, kind: ['sparkle', 'gold-dust'], colors: gold(), size: [4, 8], origin: center(cover.querySelector('.cv-names')), spread: [90, 50], speed: [10, 40], gravity: 0, drag: 1, life: [700, 1000] });
+  void coverSparks({ count: 12, kind: ['sparkle', 'gold-dust'], colors: gold(), size: LIGHT_SPARK_SIZE, origin: center(cover.querySelector('.cv-names')), spread: [90, 50], speed: [10, 40], gravity: 0, drag: 1, life: [700, 1000] });
   return fadeZoom(cover, { ...c, level: 'light' });
 }
 

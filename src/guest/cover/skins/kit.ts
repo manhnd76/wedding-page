@@ -45,8 +45,8 @@ export interface EnvelopeSkin {
   rich?(level: 'full' | 'full+'): SparkPlan[];
 }
 
-/** Mặc định E12 (`classic`): 12 hạt vàng toả 360° tại mốc 2 nửa seal bắt đầu tách. */
-export const DEFAULT_RICH: SparkPlan = { at: 90, count: 12, kind: ['gold-dust'], size: [3, 6], speed: [60, 180], gravity: 40, drag: 2.6, life: [600, 800] };
+/** Mặc định E12 (`classic`): 12 hạt vàng toả 360° tại mốc 2 nửa seal bắt đầu tách (mảnh burst `gold` chấm 70% / sao 30%, nhấp nháy). */
+export const DEFAULT_RICH: SparkPlan = { at: 90, count: 12, burst: 'gold', kind: ['gold-dust'], size: [3, 6], speed: [60, 180], gravity: 40, drag: 2.6, life: [600, 800] };
 
 const NS_VIEW = '0 0 340 238';
 

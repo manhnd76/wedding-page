@@ -10,7 +10,7 @@ const redPaper = K.find((k) => k.id === 'red-paper');
 
 // ---------- mảnh burst (cùng định dạng layer với hạt nền; "piece" = 1 sprite)
 const PIECES = [
-  { id: 'confetti', name: 'Giấy màu', motion: 'burst', flip: true, size: [7, 12], natural: null,
+  { id: 'confetti', name: 'Giấy màu', motion: 'burst', flip: true, size: [16, 24] /* P06 vòng 1 (confetti.ts SIZE; gift-box giữ cỡ riêng [6, 10]) */, natural: null,
     colorNote: 'theme sáng: [accent, accent-2, primary, mix(accent,#fff,.45)]; theme tối: [primary, accent, #F2E9E1, mix(primary,#fff,.3)]. Mỗi mảnh 1 màu ngẫu nhiên -> sprite = hình × màu (4×4 = 16 sprite nhỏ)',
     variants: [
       { w: 0.4, key: 'cf-rect', layers: [{ d: rect(11, 6), fill: 'c1' }], back: [{ d: rect(11, 6), fill: 'dark' }] },

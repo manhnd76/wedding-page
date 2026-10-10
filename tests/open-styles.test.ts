@@ -171,3 +171,12 @@ describe('review v4a-1-2b - chỉnh timeline (O02, O08, O09, O10, O11)', () => {
     }
   });
 });
+
+describe('P09 - sao sparkle trên cover', () => {
+  it('double-door Nhiều: cỡ [7, 13], vàng nhạt cố định #F3D48C/#FFF8E6 (mọi theme); light-gather Nhẹ: [6, 11]', () => {
+    expect(doubleDoor.DOOR_SPARKS).toEqual({ size: [7, 13], colors: ['#F3D48C', '#FFF8E6'] });
+    expect(lightGather.LIGHT_SPARK_SIZE).toEqual([6, 11]);
+    // quy tắc: sparkle trên cover tối thiểu 6 px
+    expect(Math.min(doubleDoor.DOOR_SPARKS.size[0], lightGather.LIGHT_SPARK_SIZE[0])).toBeGreaterThanOrEqual(6);
+  });
+});

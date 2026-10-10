@@ -134,3 +134,7 @@
 - Câu 1 (designer vẽ lại asset `watercolor-wash` trước vòng sửa FE): **HOÃN** — ghi backlog, sửa sau. Kéo theo **T02** và **O04** (phụ thuộc asset màu nước) hoãn cùng.
 - Câu 2–5 chấp nhận giả định designer: bỏ nền "pill" của divider trên mọi theme có texture; lời chào trong vật nhỏ + caption polaroid dùng heading italic thay script (< 28px); hạt E12 giữ alpha .75 trong vùng dịu quanh tên khách; "&" của Pinyon Script vẽ bằng heading italic (áp cả `luc-bao`).
 - FE sửa 15 lỗi còn lại: T01, T03, T04, T05, T06, O01, O02, O03, O05–O11 (≤ 3 vòng).
+
+## Sau designer review v4a-2c (2026-10-10)
+- Người duyệt đồng ý cả 6 giả định: Q1 burst phát từ nút được bỏ qua vùng loại trừ form; Q2 đưa script sinh module hạt vào repo; Q3 sao lấp lánh `double-door` dùng vàng nhạt cố định `#F3D48C/#FFF8E6` cho mọi theme; Q4 `leaf-maple` cỡ [18, 28]; Q5 tăng cỡ confetti, `gift-box` giữ cỡ riêng; Q6 giữ vệt bắn phụ `ink-spread`.
+- FE sửa 11 lỗi P01–P11 (vòng 1/3) -> designer xác nhận lại các ID cần mắt người -> commit.

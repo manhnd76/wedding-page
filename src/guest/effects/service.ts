@@ -4,7 +4,7 @@
  */
 import { ctx, emit, fxBlocked } from '../context';
 import { EffectRegistry } from './registry';
-import { MATRIX, computeIntensity, type FxState } from './intensity';
+import { MATRIX, burstCount, computeIntensity, type FxState } from './intensity';
 import { prepareReveal, revealAll, startReveal } from './reveal';
 import { startPerfProbe } from './perf-probe';
 import type { ParticleField } from './particles/field';
@@ -61,18 +61,26 @@ export function getField(): Promise<ParticleField | null> {
   const state = ctx.fx.state;
   if (state === 'off' || state === 'reduced') return (fieldPromise = Promise.resolve(null));
   fieldPromise = (async () => {
-    const [{ ParticleField, particleColors }, { loadKinds }] = await Promise.all([import('./particles/field'), import('./particles/types')]);
+    const [{ ParticleField, paletteOpts }, { loadKinds }] = await Promise.all([import('./particles/field'), import('./particles/types')]);
     const r = ctx.resolved;
     const kinds = await loadKinds(r.particles.types);
     kindCount = kinds.length;
-    const pc = particleColors(r.particles.color);
+    const pc = paletteOpts(r.particles.color);
     field = new ParticleField({
-      state, lowEnd: ctx.fx.lowEnd, kinds, colors: pc.colors, themeColors: pc.theme,
+      state, lowEnd: ctx.fx.lowEnd, kinds, ...pc, colors: [...pc.colors],
       themeDensity: r.particles.densityFactor, scope: ctx.config.effects.particles.scope,
       wind: ctx.config.effects.particles.wind && MATRIX.wind[state], background: ctx.config.effects.particles.enabled,
     });
     EffectRegistry.register('particles', { play: () => field?.start(), setTimeScale: (x) => { if (field) field.timeScale = x; } });
-    if (ctx.debug) (window as unknown as Record<string, unknown>).__wpFx = { snapshot: () => field?.debugSnapshot(), field };
+    if (ctx.debug) {
+      const w = window as unknown as Record<string, unknown>;
+      w.__wpFx = { snapshot: () => field?.debugSnapshot(), field };
+      // v4a-2c: phát thử burst bất kỳ (heart-burst / confetti RSVP chưa móc vào nút tới v3); số hạt mặc định theo cấp
+      w.__wpBurst = async (id: string, o: Partial<import('./burst/registry').BurstOpts> = {}) => {
+        const m = await import('./burst/registry');
+        return field ? m.playBurst(id, field, { count: burstCount(id, state), kindCount, ...o }) : 0;
+      };
+    }
     return field;
   })().catch(() => null);
   return fieldPromise;

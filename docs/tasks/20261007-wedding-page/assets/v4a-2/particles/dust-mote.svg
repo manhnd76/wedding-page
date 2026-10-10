@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="112" height="112">
 <!-- dust-mote: xem thử 1 biến thể (ô 24×24 tâm 0,0; màu tự nhiên). Dữ liệu thật: particles.json -->
-<g transform="translate(14 14)"><title>v1 w=1</title><radialGradient id="dust-mote-0-0g"><stop offset="0" stop-color="#FFF6E0" stop-opacity="0.95"/><stop offset="0.3" stop-color="#FFF6E0" stop-opacity="0.7"/><stop offset="0.6" stop-color="#C9A876" stop-opacity="0.35"/><stop offset="1" stop-color="#C9A876" stop-opacity="0"/></radialGradient><circle r="12" fill="url(#dust-mote-0-0g)"/></g>
+<g transform="translate(14 14)"><title>v1 w=1</title><radialGradient id="dust-mote-0-0g"><stop offset="0" stop-color="#FFF1CC" stop-opacity="1"/><stop offset="0.35" stop-color="#FFF1CC" stop-opacity="0.85"/><stop offset="0.6" stop-color="#B8925A" stop-opacity="0.45"/><stop offset="1" stop-color="#B8925A" stop-opacity="0"/></radialGradient><circle r="12" fill="url(#dust-mote-0-0g)"/></g>
 </svg>

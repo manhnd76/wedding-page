@@ -3,7 +3,7 @@
  * Vách gỗ 2 nửa có lỗ tròn (mask radial CSS - tròn tuyệt đối mọi tỉ lệ màn) + song cửa (mask tile) + vành trăng + hoa sen;
  * trong lỗ là ảnh: ảnh nền cover -> ảnh hero -> nền + monogram (open-kit/photo). Biển chữ đặt dưới cửa.
  * Vừa ~1.6s: biển rút 0–200 · sen mờ 0–250 · 2 nửa vách trượt 150–850 · ảnh nở tròn (clip-path circle) 700–1400 · ảnh mờ 1200–1600.
- * Nhẹ ~0.8s: bỏ bước nở tròn. Nhiều: + 12 cánh sen rơi từ mép trên (t=700) - `petal-lotus` của v4a-2c khi có, hiện = loại hạt của theme.
+ * Nhẹ ~0.8s: bỏ bước nở tròn. Nhiều: + 12 cánh sen rơi từ mép trên (t=700) - hạt `petal-lotus` (v4a-2c), dự phòng loại hạt của theme.
  */
 import './moon-gate.css';
 import { EASE_INOUT, type OpenLevelCtx, type OpenRun } from '../anim';

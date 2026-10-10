@@ -1,6 +1,6 @@
 /**
  * Registry burst (solution-v4a-2bc.md 0.3, 2.3): id -> dynamic import (1 module/burst, tải lười sau khi mở thiệp).
- * Bước 0 tạo với `petals`; v4a-2c sở hữu sau đó (thêm `confetti`, `gold`, `red-paper`, `heart-burst`).
+ * Bước 0 tạo với `petals`; v4a-2c thêm `confetti`, `gold`, `red-paper`, `heart-burst` (dữ liệu mảnh: `assets/v4a-2/burst/bursts.json`).
  */
 import { EffectRegistry } from '../registry';
 import { burstCount, type FxState } from '../intensity';
@@ -17,13 +17,26 @@ export interface BurstOpts {
   kindCount: number;
 }
 
+/** Sprite mảnh của 1 burst (khoá đã đăng ký trong field, lặp theo tỉ lệ biến thể) + cờ chuyển động. */
+export interface BurstPieces { keys: string[]; flip?: boolean; twinkle?: boolean }
+
 export interface BurstModule {
-  /** thêm hạt vào field; trả số hạt đã thêm */
+  /** thêm hạt vào field; trả số hạt đã thêm (gồm cả đợt trễ đã lên lịch) */
   play(field: ParticleField, o: BurstOpts): number;
+  /**
+   * Chỉ lấy sprite mảnh (v4a-2c): hạt trên cover (`open-kit/sparks`) giữ vật lý riêng của kiểu mở nhưng dùng mảnh thật
+   * của burst (confetti, bụi vàng). `colors` ghi đè bảng màu theme.
+   */
+  pieces?(field: ParticleField, colors?: readonly string[]): BurstPieces;
 }
 
+/** v4a-2c (solution-v4a-2bc.md 2.3): `confetti`/`gold`/`red-paper` = "Sau khi mở"; `heart-burst` = lời chúc (v3 móc nút). */
 export const BURST_LOADERS: Record<string, () => Promise<BurstModule>> = {
   petals: () => import('./petals'),
+  confetti: () => import('./confetti'),
+  gold: () => import('./gold'),
+  'red-paper': () => import('./red-paper'),
+  'heart-burst': () => import('./heart-burst'),
 };
 
 /** Module về muộn hơn mốc này (tính từ lúc mở thiệp) thì bỏ, không bắn burst trễ. */

@@ -3,13 +3,13 @@
  * 2 cánh cửa chạm khắc (mask `door-carve.svg`, cánh phải = lật gương) + vòng nắm + dải sáng khe giữa; chữ trên biển nổi.
  * Vừa ~1.6s: biển rút 0–200 · cánh xoay quanh bản lề ngoài 150–1050 tới ±82° (O08: qua 90° mặt sau ẩn -> cửa "bốc hơi") · sáng .8 ở 250–750 rồi tắt tới 1150
  *   · "camera" tiến vào 600–1600 · cover mờ 1200–1600. Nhẹ ~0.8s: cánh trượt ngang 100–700, mờ 500–800.
- * Nhiều: + 20 hạt sáng bay ra từ khe giữa (t=250) - `sparkle` của v4a-2c khi có, hiện dùng `gold-dust`.
+ * Nhiều: + 20 hạt sáng bay ra từ khe giữa (t=250) - hạt `sparkle` (v4a-2c), dự phòng `gold-dust`.
  */
 import './double-door.css';
 import { EASE_INOUT, type OpenLevelCtx, type OpenRun } from '../anim';
 import type { OpenPrepareInfo } from '../open-registry';
 import { bind, div, fade, mk, rise, tl, waitMasks, zoomOut, type StepSpec, type Timeline } from '../open-kit/layers';
-import { coverSparks, gold, prepareSparks } from '../open-kit/sparks';
+import { coverSparks, prepareSparks } from '../open-kit/sparks';
 
 /** O08: góc mở tối đa của cánh (< 90° để cánh vẫn thấy; "camera" zoom đưa cánh ra khỏi khung). */
 export const DOOR_DEG = 82;
@@ -38,11 +38,17 @@ export async function prepare(cover: HTMLElement, info: OpenPrepareInfo): Promis
   await waitMasks(layers);
 }
 
+/**
+ * Hạt sao bay ra từ khe cửa (P09, Q3): sao 4 cánh cần ≈1.8× cỡ chấm tròn -> [7, 13]; màu vàng nhạt cố định
+ * (cặp vàng sáng của theme tối) ở mọi theme vì hạt bay trên cánh cửa sẫm - `gold()` theme sáng (`#B8862F`) chìm.
+ */
+export const DOOR_SPARKS = { size: [7, 13] as [number, number], colors: ['#F3D48C', '#FFF8E6'] };
+
 export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   if (c.level === 'full+') {
     const o = { x: innerWidth / 2, y: innerHeight / 2 };
     for (const angle of [[-12, 12], [168, 192]] as [number, number][]) {
-      void coverSparks({ count: 10, kind: ['sparkle', 'gold-dust'], colors: gold(), size: [3, 7], origin: o, spread: [3, innerHeight * 0.35], angle, speed: [40, 120], life: [800, 1000], gravity: 0, drag: 0.6, at: 250 / c.timeScale });
+      void coverSparks({ count: 10, kind: ['sparkle', 'gold-dust'], colors: DOOR_SPARKS.colors, size: DOOR_SPARKS.size, origin: o, spread: [3, innerHeight * 0.35], angle, speed: [40, 120], life: [800, 1000], gravity: 0, drag: 0.6, at: 250 / c.timeScale });
     }
   }
   return bind(cover, timeline(c.level), c);

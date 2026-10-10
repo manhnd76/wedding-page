@@ -14,8 +14,8 @@
    "motion": "burst",
    "flip": true,
    "size": [
-    7,
-    12
+    16,
+    24
    ],
    "natural": null,
    "colorNote": "theme sáng: [accent, accent-2, primary, mix(accent,#fff,.45)]; theme tối: [primary, accent, #F2E9E1, mix(primary,#fff,.3)]. Mỗi mảnh 1 màu ngẫu nhiên -> sprite = hình × màu (4×4 = 16 sprite nhỏ)",

@@ -62,7 +62,7 @@ export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   if (c.level === 'full+') {
     const red = ctx.config.theme.preset === 'son-do';
     void coverSparks({
-      count: 12, kind: red ? ['red-paper', 'petal-rose'] : ['gold-dust'], colors: red ? ['#C8231F', '#E0392B'] : gold(), size: red ? [7, 11] : [3, 6],
+      count: 12, ...(red ? {} : { burst: 'gold' }), kind: red ? ['red-paper', 'petal-rose'] : ['gold-dust'], colors: red ? ['#C8231F', '#E0392B'] : gold(), size: red ? [7, 11] : [3, 6],
       origin: { x: innerWidth / 2, y: -10 }, spread: [innerWidth * 0.4, 4], angle: [70, 110], speed: [60, 140], life: [1200, 1500], gravity: 120, drag: 0.8, at: 1150 / c.timeScale,
     });
   }

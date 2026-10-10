@@ -39,9 +39,9 @@ export const skin: EnvelopeSkin = {
       flapAt: 200,
     };
   },
-  // E12: 24 xác pháo đỏ bung quạt lên từ huy hiệu 囍 + 8 sao vàng (red-paper của v4a-2c khi có, hiện = cánh hoa nhuộm đỏ)
+  // E12: 24 xác pháo đỏ bung quạt lên từ huy hiệu 囍 (hạt `red-paper`, lật thấy mặt sau) + 8 sao vàng (`sparkle`) - v4a-2c
   rich: () => [
     { at: 60, count: 24, kind: ['red-paper', 'petal-rose'], colors: ['#C8231F', '#E0392B'], size: [7, 11], angle: [-160, -20], speed: [180, 420], gravity: 520, drag: 1.6, life: [1100, 1400], spin: 4 },
-    { at: 60, count: 8, kind: ['gold-dust'], colors: ['#E8C46A', '#FFF4D6'], size: [4, 7], speed: [60, 160], gravity: 40, drag: 2.4, life: [700, 900] },
+    { at: 60, count: 8, kind: ['sparkle', 'gold-dust'], colors: ['#E8C46A', '#FFF4D6'], size: [4, 7], speed: [60, 160], gravity: 40, drag: 2.4, life: [700, 900] },
   ],
 };

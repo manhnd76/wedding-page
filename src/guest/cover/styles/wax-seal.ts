@@ -78,7 +78,7 @@ export async function prepare(cover: HTMLElement, info: OpenPrepareInfo): Promis
 export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   const card = cover.querySelector('.ws-card');
   if (c.level === 'full+') {
-    void coverSparks({ count: 14, kind: ['gold-dust'], colors: gold(), size: [3, 6], origin: cover.querySelector('.ws-seal')!, speed: [60, 160], life: [600, 800], at: 360 / c.timeScale });
+    void coverSparks({ count: 14, burst: 'gold', kind: ['gold-dust'], colors: gold(), size: [3, 6], origin: cover.querySelector('.ws-seal')!, speed: [60, 160], life: [600, 800], at: 360 / c.timeScale });
   }
   return bind(cover, timeline(c.level, { w: card?.getBoundingClientRect().width || 240 }), c);
 }

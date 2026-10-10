@@ -10,6 +10,7 @@ function fakeField() {
     size: { w: 360, h: 740 },
     get burstActive() { return added.length; },
     addBurst(list: unknown[]) { added.push(...list); },
+    bgKey: (i: number) => `k${i}`,
   };
   return { field: f as unknown as ParticleField, added };
 }

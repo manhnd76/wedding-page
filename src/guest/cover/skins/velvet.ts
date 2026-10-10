@@ -37,5 +37,5 @@ export const skin: EnvelopeSkin = {
     return { steps: [sheen(p, 0, 350), ...split], flapAt: 380 };
   },
   // E12: 16 hạt vàng toả 360° khi seal bắt đầu tách (sau vệt sáng)
-  rich: () => [{ at: 200, count: 16, kind: ['gold-dust'], colors: ['#F3D48C', '#FFF8E6'], size: [3, 6], speed: [80, 220], gravity: 30, drag: 2.4, life: [800, 1100] }],
+  rich: () => [{ at: 200, count: 16, burst: 'gold', kind: ['gold-dust'], colors: ['#F3D48C', '#FFF8E6'], size: [3, 6], speed: [80, 220], gravity: 30, drag: 2.4, life: [800, 1100] }],
 };

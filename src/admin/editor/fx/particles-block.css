@@ -1,0 +1,8 @@
+/* Khối "Hạt nền" (vòng sửa 2c, P10/P11) - tải cùng chunk route Hiệu ứng (import từ particles-block.tsx). */
+.chip--follow { margin-right: .5rem; }
+.chip--follow[aria-pressed='false'] { border-style: dashed; }
+/* đang theo theme: loại gợi ý của theme (chưa phải lựa chọn riêng -> không aria-pressed) */
+.chip--theme { border: 2px solid var(--a-primary); background: var(--a-primary-soft); }
+.chip-sub { color: var(--a-muted); font-size: .85em; }
+.pdrop { min-height: 1.2em; margin: .2rem 0 0; }
+.pdrop:empty { margin: 0; }
