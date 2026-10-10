@@ -35,7 +35,7 @@ export type IconName = keyof typeof P;
 
 export function icon(name: IconName | string, size = 20): SVGElement {
   return svg('svg', { viewBox: '0 0 24 24', width: size, height: size, 'aria-hidden': 'true', focusable: 'false', class: 'ic' },
-    svg('path', { d: P[name] ?? '', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
+    svg('path', { d: P[name] ?? name, fill: 'none', stroke: 'currentColor', 'stroke-width': 1.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
 }
 
 /** <svg><use href="sprite#id"></svg> cho ornament (sprite tô bằng currentColor). */
@@ -45,5 +45,13 @@ export function ornament(spriteUrl: string, id: string, cls = 'orn', w = 160, h 
   const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
   use.setAttribute('href', `${spriteUrl}#${id}`);
   s.appendChild(use);
+  return s;
+}
+
+/** calendar-flip (design-v4a-2a 4.9): lịch 2 phần - khung + khoen (`cal-body`) và tờ lịch (`cal-page`) lật giả bằng scaleY. */
+export function calendarFlipIcon(size = 18): SVGElement {
+  const s = icon('M4 6h16v14H4zM8 3v4M16 3v4', size);
+  s.firstElementChild!.setAttribute('class', 'cal-body');
+  s.append(svg('g', { class: 'cal-page' }, svg('path', { d: 'M4 10h16v10H4z', fill: 'currentColor', 'fill-opacity': 0.15 }), icon('M4 10h16').firstElementChild as SVGElement));
   return s;
 }

@@ -43,7 +43,10 @@ export default function EffectsRoute({ store, preview, peek }: RouteProps) {
       <RevealBlock fx={fx} />
       <AutoScrollBlock fx={fx} />
       <MicroBlock fx={fx} />
-      <p class="note">Bản hiện tại có {CAPABILITIES.openStyle.supported.length}/17 kiểu mở, {CAPABILITIES.particle.supported.length}/21 loại hạt, {CAPABILITIES.revealStyle.supported.length}/6 gói hiện nội dung; phần còn lại sẽ có ở bản sau.</p>
+      {/* v4a-2a: đã đủ 17 kiểu mở, 21 loại hạt, 6 gói hiện nội dung -> chỉ nhắc khi bản build thiếu */}
+      {CAPABILITIES.openStyle.supported.length + CAPABILITIES.particle.supported.length + CAPABILITIES.revealStyle.supported.length < 44 && (
+        <p class="note">Bản hiện tại có {CAPABILITIES.openStyle.supported.length}/17 kiểu mở, {CAPABILITIES.particle.supported.length}/21 loại hạt, {CAPABILITIES.revealStyle.supported.length}/6 gói hiện nội dung; phần còn lại sẽ có ở bản sau.</p>
+      )}
     </section>
   );
 }

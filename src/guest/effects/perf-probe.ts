@@ -1,8 +1,9 @@
 /**
  * Đo FPS 2s sau khi mở thiệp, sau đó theo dõi nhẹ (mỗi 10s đo 2s).
- * FPS < 45 -> hạ theo thứ tự design 5.10: gió -> giảm hạt 50% -> parallax-layers -> tắt hạt nền -> Ken Burns -> photo-tilt.
+ * FPS < 45 -> hạ theo thứ tự design 5.10: gió -> giảm hạt 50% -> parallax-layers -> tắt hạt nền -> Ken Burns -> photo-tilt
+ * -> revealLite (v4a-2a: phần tử chưa hiện bỏ tách chữ/clip/blur).
  */
-export const DEGRADE_ORDER = ['wind', 'halfParticles', 'parallaxLayers', 'particles', 'kenBurns', 'photoTilt'] as const;
+export const DEGRADE_ORDER = ['wind', 'halfParticles', 'parallaxLayers', 'particles', 'kenBurns', 'photoTilt', 'revealLite'] as const;
 export type DegradeStep = (typeof DEGRADE_ORDER)[number];
 export const FPS_THRESHOLD = 45;
 

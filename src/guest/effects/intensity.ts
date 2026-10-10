@@ -47,8 +47,8 @@ export const MATRIX = {
   wishFly: row<'insert' | 'heart4' | 'variant' | 'insert-fade'>('insert', 'heart4', 'variant', 'variant', 'insert-fade'),
   rsvpSuccess: row<'static' | 'draw' | 'draw+confetti-small' | 'draw+confetti'>('static', 'draw', 'draw+confetti-small', 'draw+confetti', 'static'),
   countdown: row<'instant' | 'fade' | 'full'>('instant', 'fade', 'full', 'full', 'instant'),
-  /** scroll-progress: config = theo config admin */
-  scrollProgress: row<boolean | 'config'>(false, false, 'config', true, true),
+  /** scroll-progress: config = theo config admin (R2A-05: chỉ khi admin bật, ở Vừa/Nhiều/reduced) */
+  scrollProgress: row<boolean | 'config'>(false, false, 'config', 'config', 'config'),
   /** chữ ký / line-draw */
   signature: row<'instant' | 'anim'>('instant', 'anim', 'anim', 'anim', 'instant'),
   /** tim bay, heartbeat */
@@ -145,3 +145,6 @@ export function fireworksSpec(state: FxState, lowEnd: boolean): FireworksSpec | 
   if (!s) return null;
   return lowEnd ? { bursts: 1, perBurst: 24 } : s;
 }
+
+/** Thanh tiến độ đọc hiện khi và chỉ khi admin bật + cấp Vừa/Nhiều/reduced (design-v4a-2a 4.5). */
+export const scrollProgressOn = (state: FxState, cfg: boolean): boolean => fx('scrollProgress', state) === 'config' && cfg;

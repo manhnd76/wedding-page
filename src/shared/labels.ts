@@ -13,6 +13,9 @@ import { isSupported, type CapabilityKey } from './capabilities.ts';
 // [v4a-1] imports >>>
 import type { MotifIntensity, MotifMotion, MotifPlacement, MotifSet } from './config/enums.ts';
 // [v4a-1] imports <<<
+// [v4a-2a] imports >>>
+import type { RevealMode } from './config/enums.ts';
+// [v4a-2a] imports <<<
 
 /** Tên theme lấy từ preset (một nguồn). */
 export const THEME_LABEL = Object.fromEntries(THEME_IDS.map((id) => [id, PRESETS[id].name])) as Record<ThemeId, string>;
@@ -94,6 +97,7 @@ export const MOTIF_MOTION_LABEL: Record<MotifMotion, string> = { auto: 'Theo m�
 // [v4a-1] <<<
 
 // [v4a-2a] >>>
+export const REVEAL_MODE_LABEL: Record<RevealMode, string> = { auto: 'Xen kẽ tự động', uniform: 'Giống nhau mọi phần' };
 // [v4a-2a] <<<
 
 /** Giá trị enum theo đường dẫn config (diff, nhãn chung). */
@@ -134,6 +138,7 @@ const BY_PATH: Record<string, Record<string, string>> = {
   // [v4a-1] <<<
 
   // [v4a-2a] >>>
+  'effects.reveal.mode': REVEAL_MODE_LABEL,
   // [v4a-2a] <<<
 };
 
@@ -141,6 +146,8 @@ const BY_PATH: Record<string, Record<string, string>> = {
 export function enumLabel(path: string, value: unknown): string | undefined {
   if (value === 'theme') return 'Theo theme';
   if (typeof value !== 'string') return undefined;
+  // v4a-2a: ghim gói theo section `effects.reveal.sections.<id>` (đường dẫn động)
+  if (path.startsWith('effects.reveal.sections.')) return (REVEAL_LABEL as Record<string, string>)[value];
   return BY_PATH[path]?.[value];
 }
 

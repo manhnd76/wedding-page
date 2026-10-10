@@ -444,7 +444,7 @@
    "spin": 0.7,
    "flip": true,
    "natural": null,
-   "colorNote": "theme -> c1 = accent, c2 = primary-decor; mặt sau tự đậm hơn",
+   "colorNote": "theme -> c1 = accent, c2 = primary-decor; mặt sau = tim màu c2 (primary-decor) .9 + gân giữa sáng",
    "variants": [
     {
      "w": 1,

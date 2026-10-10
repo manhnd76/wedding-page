@@ -6,7 +6,7 @@ import { useRef, useState } from 'preact/hooks';
 import type { SectionItem } from '@shared/config/types';
 import { SECTION_META, planSections } from '@shared/sections/meta';
 import { DIVIDERS } from '@shared/config/enums';
-import { DIVIDER_LABEL } from '@shared/labels';
+import { DIVIDER_LABEL, REVEAL_LABEL } from '@shared/labels';
 import { Icon } from '../../ui/icons';
 import { CAPABILITIES } from '@shared/capabilities';
 import type { EditorStore } from '../../state/store';
@@ -39,6 +39,9 @@ export function SectionsRoute(p: { store: EditorStore; go: (r: string) => void }
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const plan = planSections(draft, 'none');
+  // v4a-2a: ghim kiểu hiện theo phần -> nhãn + deep link sang "Hiệu ứng" (khối reveal đọc khoá rồi xoá)
+  const pins = draft.effects.reveal.sections ?? {};
+  const toFx = (k: string) => { try { sessionStorage.setItem('wp_fx_focus_v1', k); } catch { /* ignore */ } p.go('effects'); };
   const numberOf = new Map(plan.map((x) => [x.item.id, x.number]));
   /** cùng tên với mục ở thanh bên (vd "Ảnh bìa (Hero)") - A22 */
   const label = (it: SectionItem) => groupById(it.type)?.title ?? SECTION_META[it.type]?.label ?? it.type;
@@ -106,6 +109,7 @@ export function SectionsRoute(p: { store: EditorStore; go: (r: string) => void }
               <span class="sec-name">
                 {label(it)}{pinned ? <span class="muted"> · luôn ở {it.type === 'hero' ? 'đầu' : 'cuối'}</span> : ''}
                 {empty && <span class="badge badge--warn"> ⚠ chưa có nội dung, sẽ tự ẩn</span>}
+                {pins[it.id] && <> <button type="button" class="btn btn-link sec-pin" onClick={() => toFx(`reveal:${it.id}`)}>Hiện: {REVEAL_LABEL[pins[it.id]!]}</button></>}
               </span>
               {!pinned && <>
                 <button type="button" class="icon-btn" aria-label={`Đưa ${label(it)} lên`} disabled={i <= 1} onClick={() => move(i, i - 1)}><Icon name="up" /></button>
@@ -123,6 +127,7 @@ export function SectionsRoute(p: { store: EditorStore; go: (r: string) => void }
         })}
       </ol>
       <p class="sr-only" aria-live="assertive">{live}</p>
+      <button type="button" class="btn btn-link" onClick={() => toFx('reveal-sections')}>Kiểu hiện khi cuộn của từng phần ›</button>
       <Toggle label="Hiện số thứ tự (01, 02…)" checked={draft.sections.showNumbers} onChange={(v) => store.setPath('sections.showNumbers', v)} />
       <Select label="Đường phân cách giữa các phần" value={draft.sections.divider}
         options={[{ value: 'theme', label: 'Theo theme' }, ...DIVIDERS.filter((d) => (CAPABILITIES.divider.supported as readonly string[]).includes(d)).map((d) => ({ value: d, label: DIVIDER_LABEL[d] }))]}

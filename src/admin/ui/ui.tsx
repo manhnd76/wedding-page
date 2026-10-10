@@ -12,7 +12,8 @@ let tid = 0;
 export function toast(text: string, opts: { action?: ToastAction; actions?: ToastAction[]; ms?: number; tone?: ToastItem['tone'] } = {}): void {
   const actions = [...(opts.action ? [opts.action] : []), ...(opts.actions ?? [])];
   const t: ToastItem = { id: ++tid, text, actions, ...(opts.tone ? { tone: opts.tone } : {}) };
-  toasts = [...toasts.slice(-2), t];
+  // cùng nội dung -> thay toast cũ, không chồng (vd bấm chip liên tục: "Đã chọn: Hạt nền")
+  toasts = [...toasts.filter((x) => x.text !== text).slice(-2), t];
   toastSubs.forEach((f) => f(toasts));
   setTimeout(() => dropToast(t.id), opts.ms ?? (actions.length ? 5000 : 4000));
 }

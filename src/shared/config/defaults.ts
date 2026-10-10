@@ -28,6 +28,7 @@ export const DEFAULT_CONFIG: WeddingConfig = {
     reveal: {
       style: 'theme', heading: null, block: null, image: null, ornament: null,
       // [v4a-2a] >>>
+      mode: 'auto', sections: {},
       // [v4a-2a] <<<
     },
     parallax: true,

@@ -268,7 +268,7 @@ const EXTRA_LABELS: Record<string, string> = {
   'theme.ornamentSet': 'Hoạ tiết', 'theme.texture': 'Texture nền', 'theme.photoFrame': 'Khung ảnh',
   fonts: 'Font', 'fonts.preset': 'Bộ font', 'fonts.heading': 'Font tiêu đề', 'fonts.script': 'Font chữ ký', 'fonts.body': 'Font nội dung', 'fonts.scaleStep': 'Cỡ chữ',
   effects: 'Hiệu ứng', 'effects.intensity': 'Cường độ hiệu ứng', 'effects.particles': 'Hạt nền', 'effects.burst': 'Hiệu ứng sau khi mở',
-  'effects.reveal': 'Hiện nội dung khi cuộn', music: 'Nhạc', 'music.src': 'Bài nhạc', 'music.title': 'Tên bài nhạc',
+  'effects.reveal': 'Hiện nội dung khi cuộn', 'effects.reveal.mode': 'Cách áp dụng hiện nội dung', 'effects.reveal.sections': 'Kiểu hiện từng phần', music: 'Nhạc', 'music.src': 'Bài nhạc', 'music.title': 'Tên bài nhạc',
   sections: 'Các phần & thứ tự', 'sections.items': 'Thứ tự / bật tắt các phần', 'sections.showNumbers': 'Hiện số thứ tự', 'sections.divider': 'Đường phân cách',
   'cover.openStyle': 'Kiểu mở thiệp', 'cover.envelope': 'Mẫu phong bì', 'cover.envelope.style': 'Mẫu phong bì',
   'cover.envelope.color': 'Màu phong bì', 'cover.envelope.guestOnFront': 'Ghi tên khách trên phong bì', 'cover.envelope.liner': 'Lót hoa văn trong nắp',
@@ -288,6 +288,8 @@ const EXTRA_LABELS: Record<string, string> = {
 /** Nhãn dễ đọc cho 1 đường dẫn config (diff). Vd `content.thankyou.heading` -> "Lời cảm ơn › Tiêu đề". */
 export function labelForPath(path: string): string {
   const clean = path.replace(/\[(\d+)\]/g, '.$1');
+  // v4a-2a: ghim reveal theo section -> "Kiểu hiện · <tên phần>"
+  if (path.startsWith('effects.reveal.sections.')) { const id = path.slice(24); return `Kiểu hiện · ${groupById(id)?.title ?? id}`; }
   if (EXTRA_LABELS[path]) return EXTRA_LABELS[path]!;
   let best: { g: FormGroup; rest: string } | null = null;
   for (const g of FORM_GROUPS) {

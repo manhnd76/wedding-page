@@ -3,7 +3,6 @@ import type { ParticleKind } from '../kind';
 /**
  * Lá phong thu (design-v4a-2bc §4.2). Chỉ dữ liệu - engine vẽ bằng `drawLayers` (sprite-kit).
  * Sinh từ `assets/v4a-2/particles/particles.json` (ô 24×24 tâm 0,0). theme -> cam đỏ/vàng thu tự nhiên, 2 biến thể khác màu
- * Vòng sửa P05 (`scripts/particles-overrides.mjs`): cỡ [18, 28] (Q4) - hình lá chỉ chiếm ~70% ô, cỡ cũ đọc như dấu sao
  */
 export const kind: ParticleKind = {
   id: 'leaf-maple', motion: 'drift', density: 0.7, size: [18, 28], speed: [18, 34],

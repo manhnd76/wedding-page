@@ -117,6 +117,9 @@ export const REVEAL_ATOMS = [
 export type RevealAtom = (typeof REVEAL_ATOMS)[number] | 'none';
 
 // [v4a-2a] >>>
+/** B1: cách áp gói reveal cho các section (solution-v4a-2a.md 1.1) */
+export const REVEAL_MODES = ['auto', 'uniform'] as const;
+export type RevealMode = (typeof REVEAL_MODES)[number];
 // [v4a-2a] <<<
 
 export const WISH_FLY = ['paper-plane', 'bubble', 'heart'] as const;

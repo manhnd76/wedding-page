@@ -4,7 +4,7 @@ import type { PlannedSection } from '@shared/sections/meta';
 import { safeHttpsUrl, safeMapEmbedUrl } from '@shared/assets';
 import { ctx, toast } from '../context';
 import { downloadBlob, h, nonEmpty } from '../dom';
-import { icon } from '../icons';
+import { calendarFlipIcon, icon } from '../icons';
 import { framed, shell, vnParts } from './common';
 
 export function directionsUrl(ev: EventItem): string | null {
@@ -40,6 +40,15 @@ function mapBlock(ev: EventItem): HTMLElement | null {
   box.append(btn);
   return box;
 }
+
+/** Bấm "Thêm vào lịch": tờ lịch lật ngay (calendar-flip, CSS theo cấp) rồi tạo .ics. */
+const calClick = (ev: EventItem) => (e: Event) => {
+  const b = e.currentTarget as HTMLElement;
+  b.classList.remove('is-flip');
+  void b.offsetWidth;
+  b.classList.add('is-flip');
+  void addToCalendar(ev);
+};
 
 async function addToCalendar(ev: EventItem) {
   try {
@@ -81,7 +90,7 @@ export function events(p: PlannedSection, rsvpVisible: boolean): HTMLElement {
         h('div', null, nonEmpty(ev.venueName) ? h('p', { class: 'ev-venue-n' }, ev.venueName) : null, nonEmpty(ev.address) ? h('p', { class: 'small muted' }, ev.address) : null)) : null,
       h('div', { class: 'ev-actions' },
         dir ? h('a', { class: 'btn btn-outline', href: dir, target: '_blank', rel: 'noopener' }, icon('route', 18), 'Chỉ đường') : null,
-        ev.addToCalendar && parts && !past ? h('button', { class: 'btn btn-outline', type: 'button', onclick: () => void addToCalendar(ev) }, icon('calendar', 18), 'Thêm vào lịch') : null),
+        ev.addToCalendar && parts && !past ? h('button', { class: 'btn btn-outline', type: 'button', onclick: calClick(ev) }, calendarFlipIcon(18), 'Thêm vào lịch') : null),
       ev.rsvpEnabled && rsvpVisible && !past ? h('a', { class: 'btn btn-primary btn-block', href: '#rsvp', 'data-rsvp-event': ev.id }, 'Xác nhận tham dự') : null,
       mapBlock(ev));
   });

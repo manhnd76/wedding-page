@@ -5,6 +5,7 @@ import {
 } from '@guest/effects/intensity';
 import { atomFor } from '@guest/effects/reveal';
 import { REVEAL_PACKS } from '@shared/theme/resolve';
+import { DEGRADE_ORDER } from '@guest/effects/perf-probe';
 
 /**
  * Bảng kỳ vọng chép tay từ design 5.3 + 5.10 (mỗi dòng = 1 hiệu ứng; cột off/low/medium/high/reduced).
@@ -29,7 +30,8 @@ const EXPECTED: Record<keyof typeof MATRIX, unknown[]> = {
   wishFly: ['insert', 'heart4', 'variant', 'variant', 'insert-fade'],
   rsvpSuccess: ['static', 'draw', 'draw+confetti-small', 'draw+confetti', 'static'],
   countdown: ['instant', 'fade', 'full', 'full', 'instant'],
-  scrollProgress: [false, false, 'config', true, true],
+  // R2A-05: chỉ hiện khi admin bật, ở Vừa/Nhiều/reduced
+  scrollProgress: [false, false, 'config', 'config', 'config'],
   signature: ['instant', 'anim', 'anim', 'anim', 'instant'],
   heartbeat: [false, false, true, true, false],
 };
@@ -106,13 +108,20 @@ describe('reveal theo cấp (design 5.10)', () => {
     expect(atomFor('ornament', soft, 'low')).toBe('none');
     expect(atomFor('image', soft, 'reduced')).toBe('fade-fast');
   });
-  it('medium bỏ blur-in và parallax-layers; high đầy đủ', () => {
+  it('medium bỏ blur-in (-> mask-up, R2A-02) và parallax-layers; high đầy đủ', () => {
     const cine = REVEAL_PACKS.cinematic;
-    expect(atomFor('heading', cine, 'medium')).toBe('fade-up');
+    expect(atomFor('heading', cine, 'medium')).toBe('mask-up');
     expect(atomFor('heading', cine, 'high')).toBe('blur-in');
     expect(atomFor('image', { ...cine, image: 'parallax-layers' }, 'medium')).toBe('photo-settle');
   });
   it('gói soft ở medium', () => {
     expect(['heading', 'block', 'image', 'ornament'].map((r) => atomFor(r as never, soft, 'medium'))).toEqual(['fade-up', 'fade-up', 'photo-settle', 'svg-draw']);
+  });
+});
+
+describe('perf-probe (v4a-2a)', () => {
+  it('DEGRADE_ORDER kết thúc bằng revealLite, sau photoTilt', () => {
+    expect(DEGRADE_ORDER.at(-1)).toBe('revealLite');
+    expect(DEGRADE_ORDER.at(-2)).toBe('photoTilt');
   });
 });

@@ -7,6 +7,9 @@ import type {
 // [v4a-1] >>>
 import type { MotifIntensity, MotifMotion, MotifPlacement, MotifSet } from './enums.ts';
 // [v4a-1] <<<
+// [v4a-2a] imports >>>
+import type { RevealMode } from './enums.ts';
+// [v4a-2a] imports <<<
 
 /** Ảnh trong config (solution 5.5). `null` = chưa có ảnh. */
 export type ImageRef = {
@@ -94,6 +97,10 @@ export interface WeddingConfig {
       style: ThemeOr<RevealStyle>;
       heading: RevealAtom | null; block: RevealAtom | null; image: RevealAtom | null; ornament: RevealAtom | null;
       // [v4a-2a] >>>
+      /** B1: "auto" = xen kẽ tự động, "uniform" = giống nhau mọi phần */
+      mode: RevealMode;
+      /** ghim gói theo section: khoá = sections.items[].id */
+      sections: Record<string, RevealStyle>;
       // [v4a-2a] <<<
     };
     parallax: boolean;

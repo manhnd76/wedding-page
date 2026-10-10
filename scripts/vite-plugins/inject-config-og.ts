@@ -19,6 +19,7 @@ import type { WeddingConfig } from '../../src/shared/config/types.ts';
 import { FONT_REGISTRY, FONT_SUBSETS, fontStack, fontsourceFile, type FontMeta } from '../../src/shared/fonts/registry.ts';
 import { planSections } from '../../src/shared/sections/meta.ts';
 import { resolveTheme, themeCssVars, type ResolvedTheme } from '../../src/shared/theme/resolve.ts';
+import { planOf } from '../../src/shared/reveal-plan.ts';
 import { assetUrl, safeHttpsUrl } from '../../src/shared/assets.ts';
 import { CAPABILITIES } from '../../src/shared/capabilities.ts';
 import type { FontId } from '../../src/shared/config/enums.ts';
@@ -132,6 +133,8 @@ export function buildState(root: string, raw: unknown, fail: (m: string) => neve
   const merged = mergeWithDefaults(m.config);
   const config = merged.config;
   const r = resolveTheme(config);
+  // v4a-2a B1: gói reveal từng section tính sẵn (guest entry không mang thuật toán xen kẽ)
+  r.reveal.plan = planOf(config, r.reveal);
   const warnings = [...m.warnings, ...merged.warnings, ...r.warnings];
   planSections(config, r.divider, (w) => warnings.push(w));
 

@@ -3,7 +3,6 @@ import type { ParticleKind } from '../kind';
 /**
  * Bụi nắng (design-v4a-2bc §4.2). Chỉ dữ liệu - engine vẽ bằng `drawLayers` (sprite-kit).
  * Sinh từ `assets/v4a-2/particles/particles.json` (ô 24×24 tâm 0,0). theme -> lõi kem sáng + vành nâu ấm (nền sáng hoai-co #F4ECDD vẫn thấy); theme tối: vàng nhạt
- * Vòng sửa P01 (`scripts/particles-overrides.mjs`): cỡ [5, 12], vành ấm đậm #B8925A + lõi #FFF1CC, stops đặc hơn, alpha [.45, .8] (giấy sáng gần như vô hình); naturalDark giữ
  */
 export const kind: ParticleKind = {
   id: 'dust-mote', motion: 'drift', density: 1, size: [5, 12], speed: [4, 10],

@@ -1,6 +1,7 @@
 /**
- * Đếm ngược (design 4.6, 5.9): style flip + simple (v1), milestones, 3 trạng thái (trước / trong ngày / sau),
- * aria-live chỉ trên dòng ẩn cập nhật mỗi phút; pháo hoa every-view (chunk lazy).
+ * Đếm ngược (design 4.6, 5.9): style flip + simple (v1), slide + odometer (v4a-2a §4.3-4.4), milestones,
+ * 3 trạng thái (trước / trong ngày / sau), aria-live chỉ trên dòng ẩn cập nhật mỗi phút; pháo hoa every-view (chunk lazy).
+ * Ô giây: Vừa chỉ mờ dần, Nhiều mới quay/trượt (flip giữ như cũ: không lật giây).
  */
 import type { PlannedSection } from '@shared/sections/meta';
 import { countdownTarget } from '@shared/sections/meta';
@@ -9,6 +10,7 @@ import { ctx, fxBlocked } from '../context';
 import { h, nonEmpty } from '../dom';
 import { fireworksSpec, fx } from '../effects/intensity';
 import { getField } from '../effects/service';
+import { EffectRegistry } from '../effects/registry';
 import { FireworksTrigger } from '../effects/burst/fireworks-trigger';
 import { shell, vnDayKey } from './common';
 
@@ -48,6 +50,25 @@ export function countdown(p: PlannedSection): HTMLElement | null {
 
   const prev: Record<string, string> = {};
   let lastMinute = -1;
+  // slide / odometer: chunk lười `odometer` khi section sắp vào màn (600px); chưa tải -> mờ dần
+  let fxm: typeof import('../effects/micro/odometer') | null = null;
+  const lazy = style === 'slide' || style === 'odometer';
+  const loadFx = () => import('../effects/micro/odometer').then((m) => { if (!fxm && style === 'odometer') cells.forEach((x) => m.build(x.v, prev[x.k] ?? '00')); fxm = m; });
+  if (lazy && anim !== 'instant' && 'IntersectionObserver' in window) {
+    const pre = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { pre.disconnect(); void loadFx(); } }, { rootMargin: '600px' });
+    pre.observe(sec);
+  }
+  const slow = () => 1 / Math.min(1, EffectRegistry.timeScale);
+  /** Đổi giá trị 1 ô: full = hoạt ảnh của kiểu (lật/trượt/quay), ngược lại mờ dần. */
+  const tick = (v: HTMLElement, from: string, to: string, full: boolean, s: boolean) => {
+    const roll = full && lazy;
+    if (fxm && (roll || style === 'odometer')) fxm.run(style, v, from, to, roll ? (s ? 300 : 450) : 0, slow());
+    else v.textContent = to;
+    if (anim === 'instant' || !v.animate || (roll && fxm)) return;
+    const flip = full && style === 'flip';
+    v.animate(flip ? [{ transform: 'rotateX(-90deg)', opacity: 0.4 }, { transform: 'rotateX(0)', opacity: 1 }] : [{ opacity: 0.35 }, { opacity: 1 }],
+      { duration: flip ? 300 : 200 * slow(), easing: 'cubic-bezier(.22,1,.36,1)' });
+  };
   let timer: ReturnType<typeof setInterval> | null = null;
   let trigger: FireworksTrigger | null = null;
 
@@ -68,16 +89,11 @@ export function countdown(p: PlannedSection): HTMLElement | null {
     for (const cell of cells) {
       const val = String(r[cell.k]).padStart(2, '0');
       if (prev[cell.k] === val) continue;
-      const first = prev[cell.k] === undefined;
+      const old = prev[cell.k];
       prev[cell.k] = val;
-      cell.v.textContent = val;
-      if (!first && anim !== 'instant' && typeof cell.v.animate === 'function') {
-        if (anim === 'full' && style === 'flip' && cell.k !== 's') {
-          cell.v.animate([{ transform: 'rotateX(-90deg)', opacity: 0.4 }, { transform: 'rotateX(0)', opacity: 1 }], { duration: 300, easing: 'cubic-bezier(.22,1,.36,1)' });
-        } else {
-          cell.v.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 250 });
-        }
-      }
+      if (old === undefined) { if (fxm && style === 'odometer') fxm.build(cell.v, val); else cell.v.textContent = val; continue; }
+      const s = cell.k === 's';
+      tick(cell.v, old, val, anim === 'full' && (!s || (style !== 'flip' && ctx.fx.state === 'high')), s);
     }
     if (now.getMinutes() !== lastMinute) {
       lastMinute = now.getMinutes();

@@ -114,7 +114,9 @@ export function customizedGroups(c: WeddingConfig): ThemeGroup[] {
   if (c.effects.burst.onOpen !== 'theme') out.push('burst');
   if (c.effects.particles.types !== 'theme' || c.effects.particles.color !== 'theme') out.push('particles');
   const r = c.effects.reveal;
-  if (r.style !== 'theme' || r.heading !== null || r.block !== null || r.image !== null || r.ornament !== null) out.push('reveal');
+  // v4a-2a: + cách áp dụng và ghim theo section (design-v4a-2a 5.2)
+  if (r.style !== 'theme' || (r.mode ?? 'auto') !== 'auto' || Object.keys(r.sections ?? {}).length > 0
+    || r.heading !== null || r.block !== null || r.image !== null || r.ornament !== null) out.push('reveal');
   return out;
 }
 
@@ -132,7 +134,7 @@ export function resetGroup(c: WeddingConfig, g: ThemeGroup): WeddingConfig {
     case 'openStyle': n.cover.openStyle = 'theme'; if (n.cover.envelope) n.cover.envelope.style = 'theme'; break;
     case 'burst': n.effects.burst.onOpen = 'theme'; break;
     case 'particles': n.effects.particles.types = 'theme'; n.effects.particles.color = 'theme'; break;
-    case 'reveal': n.effects.reveal = { style: 'theme', heading: null, block: null, image: null, ornament: null }; break;
+    case 'reveal': n.effects.reveal = { style: 'theme', mode: 'auto', sections: {}, heading: null, block: null, image: null, ornament: null }; break;
   }
   return n;
 }

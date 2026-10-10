@@ -93,7 +93,7 @@ const K = [];
 {
   const H = heartD(10.5);
   K.push({ id: 'paper-heart', name: 'Tim giấy', motion: 'fall', density: 0.8, size: [12, 20], speed: [24, 44], sway: [12, 24], spin: 0.7, flip: true,
-    natural: null, colorNote: 'theme -> c1 = accent, c2 = primary-decor; mặt sau tự đậm hơn',
+    natural: null, colorNote: 'theme -> c1 = accent, c2 = primary-decor; mặt sau = tim màu c2 (primary-decor) .9 + gân giữa sáng',
     variants: [{ w: 1, layers: [{ d: H, fill: 'c1' }, { d: 'M0-3.7L12-12V12H0Z', clip: H, fill: 'dark', a: 0.16 }, { d: 'M0-3.7V8.9', stroke: 'light', lw: 0.7, a: 0.7 }, { d: 'M-5.8 -0.4C-6.3 -2 -5.6 -3.6 -4.2 -4C-3.3 -4.3 -2.5 -4 -2 -3.4', stroke: 'light', lw: 1, a: 0.55 } /* P03 vòng 1: nằm trong thuỳ trái */] }],
     back: [{ d: H, fill: 'c2', a: 0.9 }, { d: 'M0-3.7V8.9', stroke: 'light', lw: 0.6, a: 0.6 }] }); // P04 vòng 1: mặt sau = c2 (dark của accent nhạt ra nâu xám)
 }

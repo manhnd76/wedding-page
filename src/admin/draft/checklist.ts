@@ -76,7 +76,8 @@ export function runChecklist(c: WeddingConfig, opts: { tokenExpiresAt?: string |
   if (w) warn(w, 'connect');
 
   // tổ hợp hiệu ứng nặng (design 8.13)
-  if (c.effects.intensity === 'high' && r.reveal.style === 'cinematic' && r.openStyle === 'light-gather') {
+  // v4a-2a: "có phần nào dùng Điện ảnh" = gói chính hoặc ghim (design-v4a-2a 5.2)
+  if (c.effects.intensity === 'high' && (r.reveal.style === 'cinematic' || Object.values(r.reveal.pins ?? {}).includes('cinematic')) && r.openStyle === 'light-gather') {
     warn('Tổ hợp hiệu ứng khá nặng cho điện thoại cũ; máy yếu sẽ tự giảm.', 'effects');
   }
   return out;

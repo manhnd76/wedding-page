@@ -21,8 +21,21 @@ export function mountFloating(music: MusicPlayer, visibleIds: Set<string>): void
     const btn = h('button', { type: 'button', class: 'fl-btn fl-music', 'aria-pressed': 'false', 'aria-label': 'Bật nhạc' },
       h('span', { class: 'disc', 'aria-hidden': 'true' }, h('span', { class: 'disc-label' })), h('span', { class: 'fl-music-off', 'aria-hidden': 'true' }));
     const tip = h('span', { class: 'fl-tip', role: 'status' });
+    const wrap = h('div', { class: 'fl-music-wrap' }, tip, btn);
     let tipShown = false;
+    let prevS = '';
+    let rippleAt = -1e5;
     const sync = (s: MusicState) => {
+      // music-ripple (design-v4a-2a 4.7): sang "playing" từ trạng thái khác, ≥ 10s/lần; chỉ hiện ở cấp Vừa/Nhiều (CSS `.fx-attn`)
+      if (s === 'playing' && prevS !== 'playing' && performance.now() - rippleAt > 10_000) {
+        rippleAt = performance.now();
+        for (let i = 0; i < 2; i++) {
+          const r = h('span', { class: 'fl-ripple', 'aria-hidden': 'true' });
+          setTimeout(() => r.remove(), 1600);
+          wrap.append(r);
+        }
+      }
+      prevS = s;
       btn.hidden = s === 'error';
       const playing = s === 'playing' || s === 'loading';
       btn.setAttribute('aria-pressed', String(playing));
@@ -40,7 +53,7 @@ export function mountFloating(music: MusicPlayer, visibleIds: Set<string>): void
     btn.addEventListener('click', () => music.toggle());
     music.onChange(sync);
     sync(music.state);
-    right.append(h('div', { class: 'fl-music-wrap' }, tip, btn));
+    right.append(wrap);
   }
 
   // ---- scroll top

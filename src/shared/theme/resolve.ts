@@ -1,4 +1,4 @@
-import { capOr } from '../capabilities.ts';
+import { CAPABILITIES, STAGE, capOr, isSupported } from '../capabilities.ts';
 import type {
   BurstOnOpen, Divider, EnvelopeStyle, FontId, OpenStyle, OrnamentSet, ParticleType, PhotoFrame, RevealAtom, RevealStyle, Texture, ThemeId,
 } from '../config/enums.ts';
@@ -10,6 +10,11 @@ import { PRESETS, STATUS_TOKENS, type ThemePreset } from './presets.ts';
 import type { MotifIntensity, MotifMotion, MotifPlacement, MotifSet } from '../config/enums.ts';
 import { motifCap } from './motif-cap.ts';
 import { sanitizeMotifPlacements } from './parts.ts';
+import type { RevealMode } from '../config/enums.ts';
+import { REVEAL_PACKS, revealHarmony, type RevealPack, type RevealRole } from '../reveal-packs.ts';
+
+// bảng gói chuyển sang reveal-packs.ts (re-export qua reveal-plan.ts) - giữ export cũ cho test/code cũ
+export { REVEAL_PACKS, type RevealPack } from '../reveal-packs.ts';
 
 export interface ResolvedTokens {
   primary: string; onPrimary: string; accent: string; accent2: string; primaryDecor: string;
@@ -49,7 +54,22 @@ export interface ResolvedMotif {
   cap: number;
 }
 
-export interface RevealPack { heading: RevealAtom; block: RevealAtom; image: RevealAtom; ornament: RevealAtom; stagger: number }
+/**
+ * Reveal đã resolve (solution-v4a-2a.md 1.3). Các field của `RevealPack` giữ nghĩa cũ: gói chính A đã áp ghi đè vai trò.
+ */
+export interface ResolvedReveal extends RevealPack {
+  /** gói chính A */
+  style: RevealStyle;
+  mode: RevealMode;
+  /** ghi đè vai trò cấp trang sau capability; null = theo gói */
+  overrides: Record<RevealRole, RevealAtom | null>;
+  /** ghim theo section đã lọc capability */
+  pins: Record<string, RevealStyle>;
+  /** [A, ...đồng hành] đã lọc capability */
+  harmony: RevealStyle[];
+  /** gói hiệu lực từng section (`planOf`): plugin build / nhánh resolve lười của guest gắn; resolveTheme không tính */
+  plan?: Record<string, { pack: RevealStyle; src: 'pinned' | 'main' | 'auto' }>;
+}
 
 export interface ResolvedTheme {
   preset: ThemeId;
@@ -65,23 +85,13 @@ export interface ResolvedTheme {
   burstOnOpen: BurstOnOpen;
   envelope: ResolvedEnvelope;
   particles: { types: ParticleType[]; color: string; densityFactor: number };
-  reveal: RevealPack & { style: RevealStyle };
+  reveal: ResolvedReveal;
   motif: ResolvedMotif;
   /** URL sprite divider riêng (plugin build / preview gắn khi divider thuộc `DIVIDER_SPRITES`) */
   dividerUrl?: string;
   /** cảnh báo fallback (giá trị do config chọn mà bản hiện tại chưa có) */
   warnings: string[];
 }
-
-/** Bảng gói reveal (design 5.8). */
-export const REVEAL_PACKS: Record<RevealStyle, RevealPack> = {
-  soft: { heading: 'fade-up', block: 'fade-up', image: 'photo-settle', ornament: 'svg-draw', stagger: 80 },
-  editorial: { heading: 'mask-up', block: 'fade', image: 'wipe', ornament: 'svg-draw', stagger: 90 },
-  letter: { heading: 'split-chars', block: 'fade', image: 'zoom-in', ornament: 'svg-draw', stagger: 60 },
-  gentle: { heading: 'fade', block: 'fade', image: 'fade', ornament: 'none', stagger: 60 },
-  playful: { heading: 'split-words', block: 'zoom-in', image: 'rise-tilt', ornament: 'svg-draw', stagger: 100 },
-  cinematic: { heading: 'blur-in', block: 'fade-up', image: 'photo-settle', ornament: 'svg-draw', stagger: 120 },
-};
 
 export interface ResolveOptions {
   /** false: bỏ qua capabilities (admin xem dữ liệu thô). Mặc định true. */
@@ -159,11 +169,16 @@ export function resolveTheme(config: WeddingConfig, opts: ResolveOptions = {}): 
   const rv = config.effects.reveal;
   const style = pick('revealStyle', rv.style, preset.suggest.revealStyle);
   const pack = REVEAL_PACKS[style];
-  const role = (r: 'heading' | 'block' | 'image' | 'ornament'): RevealAtom => {
+  const overrides = {} as Record<RevealRole, RevealAtom | null>;
+  for (const r of ['heading', 'block', 'image', 'ornament'] as const) {
     const v = rv[r];
-    if (v === null) return pack[r];
-    return caps ? (capOr('revealAtom', v, warnings, pack[r]) as RevealAtom) : v;
-  };
+    overrides[r] = v === null || v === undefined ? null : caps && !isSupported('revealAtom', v) ? (capOr('revealAtom', v, warnings, pack[r]), null) : v;
+  }
+  const role = (r: RevealRole): RevealAtom => overrides[r] ?? pack[r];
+  // ghim theo section: gói chưa hỗ trợ -> bỏ ghim (section theo tự động) + cảnh báo (solution 1.3, câu hỏi #1)
+  const pins = Object.fromEntries(Object.entries(rv.sections ?? {}).filter(([id, v]) => !caps || isSupported('revealStyle', v)
+    || !warnings.push(`"${v}" (revealStyle) chưa có ở bản ${STAGE} -> phần ${id} theo tự động`))) as Record<string, RevealStyle>;
+  const harmony = revealHarmony(style, caps ? CAPABILITIES.revealStyle.supported : Object.keys(REVEAL_PACKS));
 
   // ---- hoạ tiết nền B2 (config khác "theme" thắng, ngược lại preset)
   const mc = config.theme.motif ?? { set: 'theme', placements: 'theme', intensity: 'theme', motion: 'auto' };
@@ -186,7 +201,11 @@ export function resolveTheme(config: WeddingConfig, opts: ResolveOptions = {}): 
     fontScale: config.fonts.scaleStep === -1 ? 0.92 : config.fonts.scaleStep === 1 ? 1.08 : 1,
     ornamentSet, texture, photoFrame, divider, openStyle, burstOnOpen, envelope,
     particles: { types, color, densityFactor: preset.densityFactor ?? 1 },
-    reveal: { style, heading: role('heading'), block: role('block'), image: role('image'), ornament: role('ornament'), stagger: pack.stagger },
+    reveal: {
+      style, mode: rv.mode === 'uniform' ? 'uniform' : 'auto',
+      heading: role('heading'), block: role('block'), image: role('image'), ornament: role('ornament'), stagger: pack.stagger,
+      overrides, pins, harmony,
+    },
     motif,
     warnings,
   };

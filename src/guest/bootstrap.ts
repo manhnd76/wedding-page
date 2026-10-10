@@ -14,7 +14,7 @@ import { mountCover } from './cover/cover';
 import { MusicPlayer } from './music/player';
 import { mountFloating } from './floating/floating';
 import { afterOpen, applyFxClasses, computeFx } from './effects/service';
-import { prepareReveal } from './effects/reveal';
+import { prepareReveal, revealApi } from './effects/reveal';
 import { announcement, couple, families, footer, hero, loveStory, thankyou, timeline } from './sections/basic';
 import { events } from './sections/events';
 import { countdown } from './sections/countdown';
@@ -56,7 +56,9 @@ async function loadConfig(boot: PreviewBoot | null): Promise<{ config: WeddingCo
   if (!resolved) {
     const { resolveTheme, themeCssVars } = await import('@shared/theme/resolve');
     const { fontStack } = await import('@shared/fonts/registry');
+    const { planOf } = await import('@shared/reveal-plan');
     resolved = resolveTheme(config);
+    resolved.reveal.plan = planOf(config, resolved.reveal);
     if (boot) {
       const bridge = await import('./preview-bridge');
       resolved.ornamentUrl = await bridge.ornamentUrlFor(import.meta.env.BASE_URL, resolved.ornamentSet);
@@ -249,24 +251,12 @@ function previewAfterOpen(boot: PreviewBoot, target: string | null, bridge: type
     return;
   }
   if (target === 'burst' || target === 'particles') { window.scrollTo(0, 0); done(target === 'burst' ? 2600 : 1200); return; }
-  if (target === 'reveal') {
-    const secs = Array.from(document.querySelectorAll<HTMLElement>('main .sec'));
-    const first = secs.find((s, i) => i > 0 && s.querySelector('img')) ?? secs[1];
-    if (first) {
-      window.scrollTo(0, Math.max(0, first.offsetTop - window.innerHeight * 0.6));
-      setTimeout(() => window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' }), 250);
-    }
-    done(2200);
+  // v4a-2a: reveal (tour 3 phần), reveal:<id>, micro:<mã> -> chunk lười fx-preview (solution-v4a-2a.md 3.5)
+  if (target === 'reveal' || target.startsWith('reveal:') || target.startsWith('micro:')) {
+    void import('./effects/reveal/fx-preview').then((m) => m.runFxPreview(revealApi, target, { speed: boot.fx?.speed ?? 1, done: () => bridge.post({ type: 'fx:done', target }) }));
     return;
   }
-  // micro:<mã> hoặc tên section -> cuộn tới section liên quan
-  const sec = target.startsWith('micro:') ? MICRO_SECTION[target.slice(6)] ?? '' : target;
-  if (sec) document.getElementById(sec)?.scrollIntoView({ block: 'start' });
-  else if (o.scrollY) window.scrollTo(0, o.scrollY);
+  // tên section -> cuộn tới section đó
+  document.getElementById(target)?.scrollIntoView({ block: 'start' });
   done(900);
 }
-
-const MICRO_SECTION: Record<string, string> = {
-  wishFly: 'guestbook', 'wish-fly': 'guestbook', rsvp: 'rsvp', 'rsvp-success': 'rsvp', countdown: 'countdown',
-  fireworks: 'countdown', photoTilt: 'album', 'photo-tilt': 'album', buttonShine: 'hero',
-};

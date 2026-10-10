@@ -4,8 +4,10 @@
  */
 import { ctx, emit, fxBlocked } from '../context';
 import { EffectRegistry } from './registry';
-import { MATRIX, burstCount, computeIntensity, type FxState } from './intensity';
-import { prepareReveal, revealAll, startReveal } from './reveal';
+import { MATRIX, burstCount, computeIntensity, scrollProgressOn, type FxState } from './intensity';
+import { idle } from '../dom';
+import { currentPlan, prepareReveal, revealAll, revealApi, revealLite, startReveal } from './reveal';
+import { fxSlow } from './reveal/atoms';
 import { startPerfProbe } from './perf-probe';
 import type { ParticleField } from './particles/field';
 
@@ -53,6 +55,11 @@ export function applyFxClasses(state: FxState): void {
   html.classList.toggle('fx-press', MATRIX.press[state] === 'anim');
   html.classList.toggle('fx-attn', MATRIX.attention[state]);
   html.classList.toggle('fx-heart', MATRIX.heartbeat[state]);
+  // vệt sáng CTA (cả nút cover chạy trước khi mở - CSS thuần)
+  html.classList.toggle('fx-shine', MATRIX.attention[state] && ctx.config.effects.micro.buttonShine);
+  // preview 0.5x: kéo dài mọi thời lượng CSS reveal/micro (R2A-06)
+  const slow = ctx.preview ? fxSlow(EffectRegistry.timeScale) : 1;
+  if (slow > 1) html.style.setProperty('--fx-slow', String(slow)); else html.style.removeProperty('--fx-slow');
 }
 
 /** Tạo field (lazy). Không tạo canvas khi off/reduced (design 5.7 lớp 4). */
@@ -91,7 +98,9 @@ export async function afterOpen(): Promise<void> {
   const state = ctx.fx.state;
   if (ctx.preview && !ctx.preview.animateReveal) revealAll(document);
   else startReveal(document);
+  if (ctx.debug) void import('./reveal/fx-preview').then((m) => m.installDebug(revealApi));
   setupParallax(state);
+  mountMicro(state);
   if (state === 'off' || state === 'reduced') return;
   const f = await getField();
   if (!f) return;
@@ -106,27 +115,62 @@ export async function afterOpen(): Promise<void> {
       if (step === 'wind' || step === 'halfParticles' || step === 'particles') f.degrade(step);
       if (step === 'kenBurns') document.documentElement.classList.remove('fx-kb');
       if (step === 'parallaxLayers') document.documentElement.classList.add('fx-no-parallax');
+      if (step === 'photoTilt') { document.documentElement.classList.add('fx-no-tilt'); EffectRegistry.reset('micro:photoTilt'); }
+      if (step === 'revealLite') revealLite(document);
     }, fxBlocked);
   }
 }
 
-/** Parallax ảnh nền hero/thank-you 0.15 tốc độ cuộn - chỉ cấp Nhiều (design 5.3). */
+/**
+ * Parallax ảnh nền hero/thank-you 0.15 tốc độ cuộn - chỉ cấp Nhiều (design 5.3). v4a-2a: + `parallax-layers`
+ * (hero/thankyou có gói ảnh cinematic hoặc ghi đè image) - chunk lười, dùng chung 1 listener cuộn passive + rAF.
+ */
 function setupParallax(state: FxState) {
   if (!MATRIX.parallax[state] || !ctx.config.effects.parallax) return;
   const imgs = Array.from(document.querySelectorAll<HTMLElement>('.hero-media img, .ty-media img'));
-  if (!imgs.length) return;
+  const rv = ctx.resolved.reveal;
+  const plan = currentPlan();
+  // nguyên tử ảnh của section (ghim > ghi đè > tự động > gói chính) là của cinematic hoặc ghi đè parallax-layers
+  const secs = MATRIX.parallaxLayers[state] ? Array.from(document.querySelectorAll<HTMLElement>('.sec-hero, .sec-thankyou')).filter((s) => {
+    const e = plan[s.id];
+    const ov = rv.overrides?.image;
+    return e?.src === 'pinned' ? e.pack === 'cinematic' : ov ? ov === 'parallax-layers' : (e?.src === 'auto' ? e.pack : rv.style) === 'cinematic';
+  }) : [];
+  if (!imgs.length && !secs.length) return;
+  const fns: (() => void)[] = [];
   let ticking = false;
   const update = () => {
     ticking = false;
+    for (const f of fns) f();
+  };
+  if (imgs.length) fns.push(() => {
     if (document.documentElement.classList.contains('fx-no-parallax')) return;
     for (const im of imgs) {
       const r = im.parentElement!.getBoundingClientRect();
       if (r.bottom < 0 || r.top > window.innerHeight) continue;
       im.style.setProperty('translate', `0 ${Math.round(-r.top * 0.15)}px`);
     }
-  };
+  });
+  if (secs.length) void import('./reveal/parallax-layers').then((m) => { fns.push(m.layers(secs)); update(); }).catch(() => undefined);
   window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
   update();
+}
+
+type MicroMod = Promise<{ mount(): unknown }>;
+const load = (p: () => MicroMod) => idle(() => void p().then((m) => m.mount()).catch(() => undefined));
+
+/** Micro-interaction sau khi mở (solution-v4a-2a.md 3.3): mỗi loại là chunk lười, chỉ tải khi đủ điều kiện. */
+function mountMicro(state: FxState): void {
+  const m = ctx.config.effects.micro;
+  // btn-shine / name-sparkle / gift-shake (module tự tìm ứng viên; "&" ở hero luôn có)
+  if (MATRIX.attention[state]) load(() => import('./micro/micro-attn'));
+  // ảnh nghiêng: chỉ máy có chuột (chunk ~1 KB tải lúc rảnh, listener ủy quyền trên #main)
+  if (m.photoTilt && MATRIX.photoTilt[state] && matchMedia('(hover: hover) and (pointer: fine)').matches) load(() => import('./micro/photo-tilt'));
+  if (m.coupleHeartTap && state !== 'off' && document.querySelector('.person-photo')) {
+    document.documentElement.classList.add('fx-hearttap');
+    load(() => import('./micro/heart-tap'));
+  }
+  if (scrollProgressOn(state, m.scrollProgress)) load(() => import('./micro/scroll-progress'));
 }
 
 /** Nút khách "Bật/Tắt hiệu ứng" (design 5.4, 7.1). */

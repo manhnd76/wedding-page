@@ -10,6 +10,9 @@ import type { SectionItem, WeddingConfig } from './types.ts';
 import { MOTIF_INTENSITIES, MOTIF_MOTIONS, MOTIF_SETS } from './enums.ts';
 import { sanitizeMotifPlacements } from '../theme/parts.ts';
 // [v4a-1] imports <<<
+// [v4a-2a] imports >>>
+import { REVEAL_MODES } from './enums.ts';
+// [v4a-2a] imports <<<
 
 type Obj = Record<string, unknown>;
 
@@ -124,6 +127,7 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
     }
   }
   // [v4a-2a] >>>
+  fix('effects.reveal.mode', isOneOf(REVEAL_MODES, r.mode), () => r.mode, (v) => (r.mode = v), 'auto');
   // [v4a-2a] <<<
   const as = e.autoScroll;
   fix('effects.autoScroll.mode', isOneOf(AUTO_SCROLL_MODES, as.mode), () => as.mode, (v) => (as.mode = v), 'flow');
@@ -143,6 +147,15 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
   const s = cfg.sections;
   fix('sections.divider', themeOr(DIVIDERS, s.divider), () => s.divider, (v) => (s.divider = v), 'theme');
   s.items = normalizeSectionItems(s.items, warnings);
+  // [v4a-2a] >>> ghim reveal theo section (solution-v4a-2a.md 1.2): cần danh sách id nên đặt sau normalizeSectionItems
+  {
+    // đọc bản gốc (deepMerge đã đổi mảng/chuỗi thành {}) để cảnh báo; dựng object mới (không gán khoá động)
+    const raw: unknown = (((migrated as Obj | null)?.effects as Obj | undefined)?.reveal as Obj | undefined)?.sections ?? {};
+    const ids = new Set(s.items.map((x) => x.id));
+    r.sections = Object.fromEntries((isObj(raw) ? Object.entries(raw) : [['', raw] as [string, unknown]]).filter(([k, v]) => (ids.has(k) && isOneOf(REVEAL_STYLES, v))
+      || !warnings.push(`config.effects.reveal.sections${k ? `.${k}` : ''} = ${JSON.stringify(v)}: không hợp lệ hoặc không có phần này -> bỏ`))) as typeof r.sections;
+  }
+  // [v4a-2a] <<<
 
   const ct = cfg.content;
   fix('content.countdown.style', isOneOf(COUNTDOWN_STYLES, ct.countdown.style), () => ct.countdown.style, (v) => (ct.countdown.style = v), 'flip');

@@ -19,8 +19,8 @@ describe('module hạt khớp particles.json + ghi đè (Q2)', () => {
     const cur = readFileSync(path.join(OUT_DIR, `${id}.ts`), 'utf8').replace(/\r\n/g, '\n');
     expect(cur).toBe(files[id]);
   });
-  it('ghi đè chỉ gồm ID review P01–P05', () => {
-    expect(Object.values(OVERRIDES).flat().map((o) => o.id).sort()).toEqual(['P01', 'P02', 'P03', 'P04', 'P05']);
+  it('ghi đè trống: P01–P05 đã chép vào particles.json (v4a-2a xoá mục thừa); số liệu vẫn kiểm ở dưới', () => {
+    expect(Object.values(OVERRIDES).flat()).toEqual([]);
   });
 });
 

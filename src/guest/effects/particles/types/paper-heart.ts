@@ -2,9 +2,7 @@ import type { ParticleKind } from '../kind';
 
 /**
  * Tim giấy (design-v4a-2bc §4.2). Chỉ dữ liệu - engine vẽ bằng `drawLayers` (sprite-kit).
- * Sinh từ `assets/v4a-2/particles/particles.json` (ô 24×24 tâm 0,0). theme -> c1 = accent, c2 = primary-decor; mặt sau tự đậm hơn
- * Vòng sửa P03 (`scripts/particles-overrides.mjs`): nét sáng nằm trong thuỳ trái (path cũ nằm hẳn ngoài tim)
- * Vòng sửa P04 (`scripts/particles-overrides.mjs`): mặt sau = tim màu c2 (theme: primary-decor) .9 + gân giữa sáng (dark của accent nhạt ra nâu xám)
+ * Sinh từ `assets/v4a-2/particles/particles.json` (ô 24×24 tâm 0,0). theme -> c1 = accent, c2 = primary-decor; mặt sau = tim màu c2 (primary-decor) .9 + gân giữa sáng
  */
 export const kind: ParticleKind = {
   id: 'paper-heart', motion: 'fall', density: 0.8, size: [12, 20], speed: [24, 44],

@@ -1,0 +1,12 @@
+/* Khối "Hiện nội dung khi cuộn" - "Từng phần" (design-v4a-2a 5.2): 2 dòng/khối ở mọi bề rộng; summary KHÔNG flex. */
+.rv-level { color: var(--a-warn); }
+.rv-secs { margin: .8rem 0; }
+.rv-secs > summary { cursor: pointer; min-height: 44px; padding: .6rem 0; font-weight: 600; color: var(--a-primary); }
+.rv-list { list-style: none; margin: .4rem 0; padding: 0; display: grid; gap: 8px; }
+.rv-row { border: 1px solid var(--a-line); border-radius: 8px; padding: .5rem .6rem; background: var(--a-surface); }
+.rv-name { margin: 0 0 .4rem; font-weight: 600; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.rv-num { color: var(--a-muted); font-variant-numeric: tabular-nums; }
+.badge--muted { background: var(--a-line); color: var(--a-text); font-weight: 500; }
+.rv-ctl { display: flex; gap: .5rem; align-items: stretch; }
+.rv-ctl .input { flex: 1; min-width: 0; min-height: 48px; }
+.rv-see { flex: none; min-width: 44px; min-height: 48px; padding: 0 .8rem; }

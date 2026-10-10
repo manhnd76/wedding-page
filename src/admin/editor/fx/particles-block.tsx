@@ -47,7 +47,10 @@ export function ParticlesBlock({ fx }: FxBlockProps) {
   const types: ParticleType[] = byTheme ? [] : e.particles.types as ParticleType[];
   const [dropped, setDropped] = useState<ParticleType | null>(null);
   const timer = useRef(0);
+  const dropRef = useRef<HTMLParagraphElement>(null);
   useEffect(() => () => clearTimeout(timer.current), []);
+  // v4a-2a (việc nhỏ 2c): dòng "Đã bỏ…" ngay dưới chip, cuộn vào vùng nhìn (không bị thanh tab dưới che ở 390×844)
+  useEffect(() => { if (dropped) dropRef.current?.scrollIntoView?.({ block: 'nearest' }); }, [dropped]);
   const toggleType = (t: ParticleType) => {
     const r2 = nextTypes(e.particles.types, sug.particles.types, t);
     clearTimeout(timer.current);
@@ -92,13 +95,13 @@ export function ParticlesBlock({ fx }: FxBlockProps) {
           <button type="button" class="chip chip--follow" data-testid="ptheme" aria-pressed={byTheme} onClick={setTheme}>{byTheme ? '✓ ' : ''}Theo theme</button>
           {first.map(chip)}
         </div>
+        <p class="help pdrop" aria-live="polite" data-testid="pdrop" ref={dropRef}>{dropped ? `Đã bỏ "${PARTICLE_LABEL[dropped]}" - chọn tối đa 2 loại.` : ''}</p>
         {more.length > 0 && (
           <details class="details" open={moreOpen} data-testid="pmore" onToggle={(ev) => setMoreOpen((ev.currentTarget as HTMLDetailsElement).open)}>
             <summary>{`Xem thêm (${more.length})`}</summary>
             <div class="details-in"><div class="chips" data-testid="pchips-more">{more.map(chip)}</div></div>
           </details>
         )}
-        <p class="help pdrop" aria-live="polite" data-testid="pdrop">{dropped ? `Đã bỏ "${PARTICLE_LABEL[dropped]}" - chọn tối đa 2 loại.` : ''}</p>
       </fieldset>
       <Segmented legend="Màu hạt" name="pcolor" value={colorMode}
         options={[{ value: 'theme', label: 'Theo theme' }, { value: 'multi', label: 'Nhiều màu' }, { value: 'custom', label: 'Tự chọn' }]}
