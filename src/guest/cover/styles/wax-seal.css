@@ -10,6 +10,8 @@
 .ws-card { position: relative; width: min(64vw, 260px, calc((100svh - 430px) * .8)); aspect-ratio: 4 / 5; min-width: 150px; }
 .ws-in { position: absolute; inset: 0; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 4px; display: grid; place-items: center; padding: 16px; }
 .ws-greet { opacity: 0; }
+/* O05: script trong thẻ gập ≥ 28px (thẻ 230px ở 360) */
+:root:not(:is([data-script="imperial-script"], [data-script="moon-dance"], [data-script="birthstone"])) .ws-greet { font-size: max(28px, calc(28px * var(--fs-k))); }
 .ws-w { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; }
 .ws-wl { left: 0; transform-origin: 0 50%; }
 .ws-wr { right: 0; transform-origin: 100% 50%; }

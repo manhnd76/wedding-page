@@ -2,7 +2,8 @@
  * Kiểu mở `origami` - Gấp giấy (design-v4a-2bc §2.3, họ vật thể, chi phí Vừa).
  * Tờ vuông + 4 cánh tam giác 2 mặt (path asset `open/origami/inline.svg`; mặt sau = hoạ tiết mask `flap-pattern.svg`).
  * Tên khách DƯỚI tờ giấy; trang trong lặp lại câu mời (trang trí, aria-hidden).
- * Vừa ~1.8s: đầu đề rút 0–240 (cánh trên lật lên đè đầu đề) · sticker 0–160 · cánh trên 160, phải 280, dưới 400, trái 520 (380ms mỗi cánh)
+ * Vừa ~1.8s: đầu đề rút 0–240 (cánh trên lật lên đè đầu đề) · sticker 0–160 · tên khách dưới tờ rút 360–520 (O09)
+ *   · cánh trên 160, phải 280, dưới 400, trái 520 (380ms mỗi cánh)
  *   · tờ giấy phóng 1300–1800 + cover mờ từ 1500. Nhẹ ~0.8s: 4 cánh cùng lúc 100–480, mờ 480–800.
  * Nhiều: + bóng nếp mỗi cánh khi lật + 24 mảnh giấy vuông accent/accent-2 bung từ tâm (t=900; burst `confetti` khi v4a-2c có).
  */
@@ -23,11 +24,15 @@ const FLAPS: [string, string, string, string][] = [
 ];
 const HEART = 'M0 5.5C-7 1-6.5-4.5-3.2-4.8-1.4-5 0-3.4 0-2.4 0-3.4 1.4-5 3.2-4.8 6.5-4.5 7 1 0 5.5Z';
 
+/** O09: dòng "Kính gửi / tên khách" dưới tờ giấy rút xuống + mờ TRƯỚC khi cánh dưới lật đè lên (trang trong đã lặp tên khách). */
+const guestOut = (s: number, d: number): StepSpec =>
+  ({ k: 'cv-guestline', f: [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(8px)' }], s, d });
+
 export function timeline(level: OpenLevelCtx['level']): Timeline {
   const flip = (i: number, s: number, d: number): StepSpec =>
     ({ k: FLAPS[i]![0], f: [{ transform: `perspective(900px) ${FLAPS[i]![3].replace(/-?180/, '0')}` }, { transform: `perspective(900px) ${FLAPS[i]![3]}` }], s, d, e: EASE_INOUT });
   if (level === 'light') {
-    return tl([rise('cv-head', 0, 150), fade('og-stk', 0, 120), ...[0, 1, 2, 3].map((i) => flip(i, 100, 380)), fade('cover', 480, 320)]);
+    return tl([rise('cv-head', 0, 150), fade('og-stk', 0, 120), guestOut(0, 140), ...[0, 1, 2, 3].map((i) => flip(i, 100, 380)), fade('cover', 480, 320)]);
   }
   // thứ tự lật: trên, phải, dưới, trái
   const order = [3, 1, 2, 0];
@@ -35,7 +40,7 @@ export function timeline(level: OpenLevelCtx['level']): Timeline {
     rise('cv-head', 0, 240),
     { k: 'og-stk', f: [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.15)', opacity: 1, offset: 0.4 }, { transform: 'scale(0)', opacity: 0 }], s: 0, d: 160, e: 'cubic-bezier(.34,1.56,.64,1)' },
     ...order.map((i, n) => flip(i, 160 + n * 120, 380)),
-    fade('cv-guestline', 1250, 200),
+    guestOut(360, 160),
     zoomOut('og', 1300, 500, 2.4),
     fade('cover', 1500, 300),
   ];

@@ -1,5 +1,8 @@
 /* Section (design 4). Mobile-first; desktop >= 1024px. */
 .sec { position: relative; padding-block: var(--section-py); scroll-margin-top: 16px; }
+/* T05: cắt tràn NGANG ở section (dải .mtf--band trôi rộng hơn 1 chu kỳ). clip không tạo vùng cuộn, không phá sticky;
+   trục dọc vẫn visible (divider vắt ranh giới, parallax pattern). */
+.sec { overflow-x: clip; }
 .tone-bg { background: var(--c-bg); }
 .tone-surface { background: var(--c-surface); }
 .sec-in { width: min(100% - 2 * var(--gutter), var(--container)); margin-inline: auto; }
@@ -67,6 +70,8 @@ p { text-wrap: pretty; }
 .couple-amp-orn { position: absolute; width: 120px; height: 24px; color: var(--c-accent); opacity: .8; }
 .couple-amp { position: relative; font: 400 56px/1.35 var(--ff-script); color: var(--c-accent); padding-inline: .3em; background: var(--sec-bg, transparent); }
 .tone-bg .couple-amp { --sec-bg: var(--c-bg); } .tone-surface .couple-amp { --sec-bg: var(--c-surface); }
+/* T04: Pinyon Script -> "&" heading italic (.8 × 56px) */
+[data-script="pinyon-script"] .couple-amp { font-family: var(--ff-heading); font-style: italic; font-size: calc(56px * .8); }
 @media (min-width: 768px) {
   .couple-grid { grid-template-columns: 1fr auto 1fr; align-items: center; }
   .person-photo { width: 300px; }

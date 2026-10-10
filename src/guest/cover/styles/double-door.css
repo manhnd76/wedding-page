@@ -11,6 +11,11 @@
 .dd-r { right: 0; transform-origin: 100% 50%; }
 .dd-c { inset: 0; background: var(--dd-carve); -webkit-mask: url(../theme-assets/double-door/door-carve.svg) 50% 50% / 100% auto no-repeat; mask: url(../theme-assets/double-door/door-carve.svg) 50% 50% / 100% auto no-repeat; }
 .dd-r .dd-c { transform: scaleX(-1); }
+/* O03: desktop cánh rộng ~720px -> hoạ tiết 200×520 phóng 3.6× bị cắt. Giữ trọn tấm chạm theo CHIỀU CAO màn, đặt sát khe giữa
+   (cánh phải lật gương nên 100% cũng là phía khe); phần cánh phía ngoài để trơn như mảng tường/khung. */
+@media (min-width: 1024px) {
+  .dd-c { -webkit-mask-size: auto 100%; mask-size: auto 100%; -webkit-mask-position: 100% 50%; mask-position: 100% 50%; }
+}
 .dd-ring { top: 52%; width: 24px; height: 36px; background: var(--c-accent); -webkit-mask-image: url(../theme-assets/double-door/ring.svg); mask-image: url(../theme-assets/double-door/ring.svg); }
 .dd-l .dd-ring { right: 10px; }
 .dd-r .dd-ring { left: 10px; }

@@ -30,6 +30,8 @@ export interface SparkReq {
   gravity?: number;
   drag?: number;
   spin?: number;
+  /** O01: |vx| tối thiểu (px/s) theo dấu cos(góc) - quạt chéo bay ra ngoài, không rơi thẳng đứng */
+  minVx?: number;
   /** rải điểm phát quanh gốc (± px theo x, y) */
   spread?: [number, number];
   /** trễ (ms đồng hồ thật) */
@@ -37,6 +39,14 @@ export interface SparkReq {
 }
 
 const rnd = ([a, b]: [number, number]) => a + Math.random() * (b - a);
+
+/** Vận tốc ban đầu từ góc (độ, 0 = phải, -90 = lên) + tốc độ; `minVx` kẹp |vx| theo dấu hướng ngang của góc. */
+export function sparkVelocity(deg: number, v: number, minVx = 0): { vx: number; vy: number } {
+  const a = (deg * Math.PI) / 180;
+  let vx = Math.cos(a) * v;
+  if (minVx > 0 && Math.abs(vx) < minVx) vx = (vx < 0 ? -1 : 1) * minVx;
+  return { vx, vy: Math.sin(a) * v };
+}
 const hooked = new WeakSet<ParticleField>();
 
 /** Vàng kim theo mode (design §3.1: sáng `#B8862F/#C9A24A`, tối `#F3D48C`; lõi sáng). */
@@ -99,10 +109,9 @@ export async function coverSparks(r: SparkReq): Promise<number> {
   const [sx, sy] = r.spread ?? [6, 6];
   const list: BurstParticle[] = [];
   for (let i = 0; i < r.count; i++) {
-    const a = (rnd(r.angle ?? [0, 360]) * Math.PI) / 180;
-    const v = rnd(r.speed ?? [60, 180]);
+    const { vx, vy } = sparkVelocity(rnd(r.angle ?? [0, 360]), rnd(r.speed ?? [60, 180]), r.minVx);
     list.push({
-      x: o.x + rnd([-sx, sx]), y: o.y + rnd([-sy, sy]), vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+      x: o.x + rnd([-sx, sx]), y: o.y + rnd([-sy, sy]), vx, vy,
       size: rnd(size), life: rnd(r.life ?? [600, 800]), gravity: r.gravity ?? 40, drag: r.drag ?? 2.4,
       sprite: keys[i % keys.length]!, spin: r.spin ?? 2,
     });

@@ -3,6 +3,7 @@
 > **Phiên mới (local hoặc cloud) bắt đầu ở đây.** Orchestrator: đọc file này + `CLAUDE.md` + `decisions.md`, **review lại plan với người duyệt trước khi giao bất kỳ việc nào**. Định nghĩa agent nằm trong `.claude/agents/` (orchestrator chạy làm main agent: `claude --agent orchestrator`; trên cloud không chọn được agent thì yêu cầu Claude đóng vai theo `.claude/agents/orchestrator.md`).
 
 ## 1. Đang ở đâu
+- **(2026-10-10, phiên local)** Đã pull main (3426f84) + npm install. Người duyệt đồng ý: designer review gộp v4a-1 + v4a-2b -> FE sửa -> v4a-2c -> v4a-2a. Branch làm việc local: `feat/20261007-wedding-page-v4a-review` (tách từ main). Designer review XONG: `design-review-v4a-1-2b.md` (17 lỗi: v4a-1 1 Cao/2 Vừa/3 Thấp; v4a-2b 0 Cao/5 Vừa/6 Thấp; T05 cuộn ngang Biển Đảo). Người duyệt: hoãn vẽ lại watercolor-wash (T02, O04 -> backlog B4), chấp nhận câu 2–5. FE sửa 15 lỗi XONG (vòng 1/3, chưa commit): build xanh (guest JS 34.55, admin 75.62/80), unit 875/875 (orchestrator chạy lại), full e2e 114/114 (FE chạy). Designer cần xem lại: T01, T03, T04, O01, O02/O11, O03, O05, O08–O10. Chờ người duyệt: designer xác nhận lại? commit? -> v4a-2c.
 - Branch làm việc: **`claude/keen-albattani-k0ds71`** (1 branch duy nhất, đã push; `main` chưa đụng — đưa vào `main` bằng PR khi người duyệt yêu cầu). Branch phụ `wt/v4a-2b` đã push (đã merge hết vào branch phiên, có thể xoá). Worktree `/home/user/wp-v4a-1`, `/home/user/wp-v4a-2b` chỉ tồn tại trong container cloud cũ — không cần nữa.
 - **Không có agent nào đang chạy. Không có việc dở trong code** (working tree sạch).
 - **Từ nay chỉ chạy 1 frontend-developer tại một thời điểm** (người duyệt, 2026-10-09).
@@ -82,3 +83,10 @@ Thứ tự: v4a-1 ✔code -> v4a-2b ✔code -> (designer review 2 đợt) -> v4a
 - Thiết kế: `design.md` (Bản sửa 5) · `design-v4a-2a.md` · `design-v4a-2bc.md` · asset `assets/v4a-1/`, `assets/v4a-2/`, `assets/v4a-2a/`.
 - Report: `frontend-report-v4a-step0.md`, `frontend-report-v4a-1.md`, `frontend-report-v4a-2b.md`, `design-report-v4a-1.md`, `design-report-v4a-2a.md`, `design-report-v4a-2bc.md`, các `frontend-report*.md` cũ.
 - Review: `design-review-v1.md`, `design-review-admin-v2.md`, `design-review-envelopes.md`.
+
+## Cập nhật 2026-10-10 (phiên local)
+- Vòng sửa 1/3 (15 lỗi) XONG, chưa commit. Người duyệt chọn: **designer xác nhận lại** đúng các ID T01, T03, T04, O01, O02/O11, O03, O05, O08, O09, O10 -> đạt thì commit, còn lỗi thì vòng 2/3 -> rồi v4a-2c.
+- Đang chạy: ui-ux-designer xác nhận lại -> ghi thêm mục "Xác nhận vòng 1" vào `design-review-v4a-1-2b.md`.
+- Designer xác nhận vòng 1: 11/11 qua (8 Đạt, 2 Đạt + chấp nhận lệch O01/O05, 1 chấp nhận lệch O03). Không cần vòng 2. Đã commit đợt sửa.
+- Ghi chú không chặn — xem lại khi review v4a-2c: cánh `lace` mức Vừa tụm hẹp (~40px); vệt bắn phụ `ink-spread` mức Nhiều ~90px hơi to.
+- Tiếp: **v4a-2c** trên branch `feat/20261007-wedding-page-v4a-2c` (tách từ branch review). frontend-developer -> `frontend-report-v4a-2c.md`.

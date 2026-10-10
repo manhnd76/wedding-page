@@ -37,6 +37,9 @@
 .mtf--band { --band-period: 144px; left: 0; right: 0; top: 10px; height: 24px; opacity: min(calc(var(--mtf-level, .18) * 2.5), .7);
   -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; -webkit-mask-size: auto 100%; mask-size: auto 100%; -webkit-mask-position: 0 0; mask-position: 0 0; }
 @media (min-width: 1024px) { .mtf--band { --band-period: 192px; height: 32px; top: 14px; } }
+/* T01: section ngay sau divider - hình divider (cao ~21/30px, tâm trên ranh giới) không được cắt ngang dải */
+.divider + .sec > .mtf--band { top: 22px; }
+@media (min-width: 1024px) { .divider + .sec > .mtf--band { top: 28px; } }
 
 /* 5. hero: medallion lớn sau tên ở Hero/Cảm ơn KHÔNG ảnh - sau chữ -> chịu cap (cả 2 section đã overflow: hidden) */
 .mtf--hero { left: 50%; top: 50%; width: min(118vw, 760px); aspect-ratio: 1; translate: -50% -50%; opacity: min(var(--mtf-level, .18), var(--motif-cap, 0)); }

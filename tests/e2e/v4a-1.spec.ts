@@ -250,6 +250,8 @@ test.describe('admin (bản build, không kết nối)', () => {
     await expect(page.getByTestId('motif-pl-band')).toBeDisabled();
     await expect(page.getByTestId('motif-pl-hero')).toBeDisabled();
     await expect(page.getByTestId('motif-full')).toBeVisible();
+    // T06: "Phủ nền" vẫn bật vì nó thay "Sau tiêu đề" -> dòng nhắc nói đúng điều đó
+    await expect(page.getByTestId('motif-full')).toHaveText('Đã chọn đủ 2 vị trí. Chọn "Phủ nền" sẽ thay cho "Sau tiêu đề".');
     // Trầm Vàng cap .05 + vị trí sau chữ -> cảnh báo
     await expect(page.getByTestId('motif-lowcap')).toBeVisible();
     // preview có góc hoạ tiết
@@ -267,6 +269,8 @@ test.describe('admin (bản build, không kết nối)', () => {
     await page.getByRole('button', { name: /Dùng trọn gói/ }).click();
     await expect(page.getByTestId('motif-follow')).toBeChecked();
     await expect(page.getByTestId('motif-dong-son')).toHaveAttribute('aria-checked', 'true');
+    // T06: nhãn không lồng ngoặc, không tên phụ "(Song Hỷ)"
+    await expect(page.locator('label', { has: page.getByTestId('motif-follow') })).toHaveText(/^\s*Theo theme · Son Đỏ: Trống đồng — Sau tiêu đề \+ Dải viền\s*$/);
     await expect(page.locator('.comp')).toContainText('Trống đồng (Sau tiêu đề + Dải viền)');
     expect(errors).toEqual([]);
   });
@@ -278,4 +282,56 @@ test('Cover: tap mở được với theme mới (Pastel Hàn, font Moon Dance)'
   await tapOpen(page, 10_000);
   await expect(page.locator('html')).toHaveClass(/is-opened/, { timeout: 10_000 });
   expect(errors).toEqual([]);
+});
+
+test.describe('review v4a-1 (mobile 360px)', () => {
+  const VW = 360;
+  test.use({ viewport: { width: VW, height: 740 } });
+
+  test('T05: 12 theme - không cuộn ngang ở 360px sau khi cuộn hết trang; Biển Đảo card-3d không nhảy khi chạm', async ({ context }) => {
+    test.setTimeout(240_000);
+    const wide: string[] = [];
+    for (const id of THEME_IDS) {
+      const page = await context.newPage();
+      await bootPreview(page, { theme: { preset: id } }, null, OPEN);
+      await waitLanding(page);
+      await page.waitForLoadState('networkidle');
+      // cuộn từng màn tới cuối để mọi phần tử lười (hoạ tiết, reveal) đã gắn
+      await page.evaluate(async () => {
+        document.documentElement.style.setProperty('scroll-behavior', 'auto');
+        for (let y = 0; y <= document.documentElement.scrollHeight; y += Math.round(innerHeight * 0.8)) {
+          window.scrollTo(0, y);
+          await new Promise((r) => setTimeout(r, 60));
+        }
+        window.scrollTo(0, document.documentElement.scrollHeight);
+      });
+      await page.waitForTimeout(400);
+      // mobile: tràn ngang làm layout viewport nới ra (innerWidth cũng thành 504) -> so với bề rộng viewport đã đặt (360)
+      const m = await page.evaluate((W) => {
+        const sw = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth, window.innerWidth);
+        const over = sw > W
+          ? Array.from(document.querySelectorAll<HTMLElement>('body *')).filter((e) => e.getBoundingClientRect().right > W + 1).slice(0, 3).map((e) => e.className)
+          : [];
+        return { W, sw, over };
+      }, VW);
+      if (m.sw !== m.W) wide.push(`${id}: scrollWidth ${m.sw} > ${m.W} (${m.over.join(' | ')})`);
+      await page.close();
+    }
+    expect(wide).toEqual([]);
+
+    // Biển Đảo (song-nuoc band trôi) + card-3d theo theme: khung .cv-inner không đổi bề rộng/vị trí ngay sau khi chạm
+    const page = await context.newPage();
+    await bootPreview(page, { theme: { preset: 'bien-dao' } });
+    await page.locator('.cv-cta').waitFor({ state: 'visible', timeout: 10_000 });
+    const box = () => page.evaluate(() => { const e = document.querySelector<HTMLElement>('.cv-inner'); return e ? { w: e.offsetWidth, l: e.offsetLeft } : null; });
+    const before = await box();
+    await tapOpen(page, 10_000);
+    await page.waitForTimeout(60);
+    const after = await box();
+    const sw = await page.evaluate(() => Math.max(document.documentElement.scrollWidth, window.innerWidth));
+    expect(before).not.toBeNull();
+    if (after) expect(after).toEqual(before);
+    expect(sw).toBe(VW);
+    await page.close();
+  });
 });

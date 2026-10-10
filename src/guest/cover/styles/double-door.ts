@@ -1,7 +1,7 @@
 /**
  * Kiểu mở `double-door` - Cửa đôi (design-v4a-2bc §2.4, họ cổng, chi phí Vừa).
  * 2 cánh cửa chạm khắc (mask `door-carve.svg`, cánh phải = lật gương) + vòng nắm + dải sáng khe giữa; chữ trên biển nổi.
- * Vừa ~1.6s: biển rút 0–200 · cánh xoay quanh bản lề ngoài 150–1050 · sáng .8 ở 250–750 rồi tắt tới 1150
+ * Vừa ~1.6s: biển rút 0–200 · cánh xoay quanh bản lề ngoài 150–1050 tới ±82° (O08: qua 90° mặt sau ẩn -> cửa "bốc hơi") · sáng .8 ở 250–750 rồi tắt tới 1150
  *   · "camera" tiến vào 600–1600 · cover mờ 1200–1600. Nhẹ ~0.8s: cánh trượt ngang 100–700, mờ 500–800.
  * Nhiều: + 20 hạt sáng bay ra từ khe giữa (t=250) - `sparkle` của v4a-2c khi có, hiện dùng `gold-dust`.
  */
@@ -10,6 +10,9 @@ import { EASE_INOUT, type OpenLevelCtx, type OpenRun } from '../anim';
 import type { OpenPrepareInfo } from '../open-registry';
 import { bind, div, fade, mk, rise, tl, waitMasks, zoomOut, type StepSpec, type Timeline } from '../open-kit/layers';
 import { coverSparks, gold, prepareSparks } from '../open-kit/sparks';
+
+/** O08: góc mở tối đa của cánh (< 90° để cánh vẫn thấy; "camera" zoom đưa cánh ra khỏi khung). */
+export const DOOR_DEG = 82;
 
 export function timeline(level: OpenLevelCtx['level']): Timeline {
   if (level === 'light') {
@@ -20,7 +23,7 @@ export function timeline(level: OpenLevelCtx['level']): Timeline {
     ({ k, f: [{ transform: 'perspective(900px) rotateY(0deg)' }, { transform: `perspective(900px) rotateY(${deg}deg)` }], s: 150, d: 900, e: EASE_INOUT });
   return tl([
     rise('cv-plaque', 0, 200, ' scale(.98)'),
-    sw('dd-l', -105), sw('dd-r', 105),
+    sw('dd-l', -DOOR_DEG), sw('dd-r', DOOR_DEG),
     { k: 'dd-light', f: [{ opacity: 0 }, { opacity: 0.8, offset: 0.55 }, { opacity: 0 }], s: 250, d: 900 },
     zoomOut('dd', 600, 1000),
     fade('cover', 1200, 400),

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { OPEN_STYLES, type OpenStyle } from '@shared/config/enums';
 import { OPEN_META, effectiveOpen, type OpenMode } from '@shared/open-styles';
 import { FX_STATES, MATRIX } from '@guest/effects/intensity';
-import { MAX_OPEN_MS } from '@guest/cover/anim';
+import { EASE_INOUT, EASE_OUT, MAX_OPEN_MS } from '@guest/cover/anim';
 
 /** Bảng 1.1 (solution-v4a-2bc.md): chi phí + có hạt của 13 kiểu v4a-2b; 4 kiểu cũ theo module hiện tại. */
 const COST: Record<OpenStyle, 'low' | 'medium' | 'high'> = {
@@ -130,4 +130,44 @@ describe('13 kiểu mở v4a-2b - timeline(level)', () => {
       });
     });
   }
+});
+
+describe('review v4a-1-2b - chỉnh timeline (O02, O08, O09, O10, O11)', () => {
+  const step = (t: Timeline, k: string) => t.steps.filter((s) => s.k === k);
+
+  it('O08 double-door: cánh mở ±82° (không quá 90° -> mặt sau không biến mất)', () => {
+    const t = MODS['double-door']!.timeline('full');
+    const last = (k: string) => String(step(t, k)[0]!.f.at(-1)!.transform);
+    expect(last('dd-l')).toContain('rotateY(-82deg)');
+    expect(last('dd-r')).toContain('rotateY(82deg)');
+  });
+
+  it('O09 origami: dòng tên khách rút (mờ + xuống 8px) 360–520, trước khi cánh dưới lật ở 400', () => {
+    const t = MODS.origami!.timeline('full');
+    const [g] = step(t, 'cv-guestline');
+    expect(g).toMatchObject({ s: 360, d: 160 });
+    expect(g!.f.at(-1)).toEqual({ opacity: 0, transform: 'translateY(8px)' });
+    const bottom = step(t, 'og-b')[0]!;
+    expect(bottom.s).toBe(400);
+  });
+
+  it('O10 flower-gate: cụm hoa dùng --ease-inout, giữ 150–950', () => {
+    const t = MODS['flower-gate']!.timeline('full');
+    for (const k of ['fg-cl', 'fg-cr']) expect(step(t, k)[0]).toMatchObject({ s: 150, d: 800, e: EASE_INOUT });
+  });
+
+  it('O11 ink-spread: khối chữ cover mờ 1→0 trong 0–300ms (không dời, không clip) ở mọi mức', () => {
+    for (const l of ['light', 'full', 'full+'] as const) {
+      const [c] = step(MODS['ink-spread']!.timeline(l), 'cv-inner');
+      expect(c).toMatchObject({ s: 0, d: 300, e: EASE_OUT, f: [{ opacity: 1 }, { opacity: 0 }] });
+    }
+  });
+
+  it('O02 ink-spread Nhiều: vệt bắn phụ nhỏ scale ≤ .12, alpha .35', () => {
+    const [r2] = step(MODS['ink-spread']!.timeline('full+'), 'ik-rim2');
+    for (const f of r2!.f) {
+      expect(Number(/scale\(([\d.]+)\)/.exec(String(f.transform))![1])).toBeLessThanOrEqual(0.12);
+      expect(Number(f.opacity)).toBeLessThanOrEqual(0.35);
+    }
+  });
 });

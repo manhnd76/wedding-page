@@ -44,5 +44,6 @@ export const skin: EnvelopeSkin = {
     return { steps: [{ el: p.seal, frames: [{ transform: 'none', opacity: 1 }, { transform: 'translateY(-12px) rotate(-10deg)', opacity: 0 }], start: 0, dur: 260 }], flapAt: 200 };
   },
   // E12 + §3.4c: cánh hoa ép bay lả từ cụm hoa nhấc lên - Vừa 6 / Nhiều 12 (accent / accent-2 xen kẽ = .fl-1/.fl-2)
-  rich: (level) => [{ at: 60, count: level === 'full+' ? 12 : 6, shapes: PETALS, size: [9, 14], angle: [-150, -30], speed: [60, 160], gravity: 160, drag: 1.8, life: [1400, 1800], spin: 1.8 }],
+  // O01: bay ≥ 40px khỏi gốc trước khi rơi (trước: 60–160 px/s, drag 1.8 -> chỉ 15–35px rồi đứng)
+  rich: (level) => [{ at: 60, count: level === 'full+' ? 12 : 6, shapes: PETALS, size: [9, 14], angle: [-150, -30], speed: [140, 220], gravity: 100, drag: 1.2, life: [1400, 1800], spin: 1.8 }],
 };

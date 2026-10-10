@@ -18,6 +18,6 @@ div.pl-xi { opacity: .3; }
 .pl-dev { position: absolute; inset: 0; }
 .pl-d1 { background: #F4F1EA; }
 .pl-d2 { background: #704214; mix-blend-mode: color; opacity: .9; }
-.pl-cap { position: absolute; left: 0; right: 0; bottom: 2%; text-align: center; font: 400 calc(min(20px, 5.4vw) * var(--fs-k))/1.3 var(--ff-script); color: #3A332E; padding: 0 .2em; white-space: nowrap; clip-path: inset(-.3em 100% -.3em -.3em); }
+.pl-cap { position: absolute; left: 0; right: 0; bottom: 2%; text-align: center; font: italic 500 calc(16px * var(--fs-k))/1.3 var(--ff-heading); /* O05: chú thích < 28px -> heading italic (như frames.css) */ color: #3A332E; padding: 0 .2em; white-space: nowrap; clip-path: inset(-.3em 100% -.3em -.3em); }
 .pl-tape { left: 50%; top: -12px; width: 84px; height: 30px; margin-left: -42px; background: var(--c-accent-2); opacity: .8; transform: rotate(-4deg); -webkit-mask-image: url(../theme-assets/polaroid/tape.svg); mask-image: url(../theme-assets/polaroid/tape.svg); z-index: 3; }
 .is-opening .pl-rot { will-change: transform; }

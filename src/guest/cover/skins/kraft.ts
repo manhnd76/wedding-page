@@ -59,9 +59,11 @@ export const skin: EnvelopeSkin = {
       flapAt: 300,
     };
   },
-  // E12: 10 nhánh oải hương rơi theo 2 quạt chéo xuống khi nơ bắt đầu tuột (né rơi thẳng lên thẻ tên)
-  rich: () => [20, 100].map((a) => ({
-    at: 120, count: 5, angle: [a, a + 60] as [number, number], speed: [40, 140] as [number, number], gravity: 380, drag: 1.4, life: [1000, 1300] as [number, number],
+  // E12: 10 nhánh oải hương khi nơ bắt đầu tuột.
+  // O01: 2 quạt chéo hướng LÊN-ra-ngoài 20–80° tính từ phương ngang (canvas: -80..-20 phải, -160..-100 trái), |vx| ≥ 60px/s
+  // -> nhánh oải hương bay vòng cung sang 2 bên rồi rơi, né thẻ tên (trước: 20..80 = hướng XUỐNG, rơi thẳng đè thẻ tên)
+  rich: () => [-80, -160].map((a) => ({
+    at: 120, count: 5, angle: [a, a + 60] as [number, number], speed: [160, 300] as [number, number], minVx: 60, gravity: 260, drag: 1.1, life: [1000, 1300] as [number, number],
     size: [10, 16] as [number, number], spin: 3, colors: ['#8E7CC3', '#7A8F5C'], shapes: [LAVENDER]
   })),
 };

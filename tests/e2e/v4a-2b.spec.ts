@@ -207,3 +207,36 @@ test.describe('admin - gallery 17 kiểu mở', () => {
     await expect(page.locator('.pv-now')).toContainText('Đang xem', { timeout: 20_000 });
   });
 });
+
+test.describe('review v4a-1-2b (O06, O07)', () => {
+  const ready = (page: Page) => page.waitForFunction(() => !(document.querySelector('.cv-cta') as HTMLButtonElement | null)?.disabled, null, { timeout: 10_000 });
+
+  test('O06: tên khách ngắn trong hộp cố định (card-3d mặt trước, polaroid mặt sau) không bị ép xuống 15px', async ({ page }) => {
+    for (const [theme, style] of [['bien-dao', 'card-3d'], ['pastel-han', 'polaroid']] as const) {
+      await open(page, { theme: { preset: theme }, cover: { openStyle: style } });
+      await ready(page);
+      const fit = await page.locator('.op-fit').first().getAttribute('data-fit');
+      const [px, lines] = (fit ?? '0/0').split('/').map(Number);
+      expect(px, `${style} data-fit=${fit}`).toBeGreaterThanOrEqual(19);
+      expect(lines, style).toBe(1);
+    }
+  });
+
+  test('O07: Đêm Nhung (Imperial Script) - tên trên cover ≥ 46px (biển ≥ 44px), mỗi tên 1 dòng, không tràn hộp', async ({ page }) => {
+    for (const style of ['theme', 'card-3d', 'double-door', 'moon-gate'] as const) {
+      await open(page, { theme: { preset: 'dem-nhung' }, cover: { openStyle: style } });
+      await ready(page);
+      const r = await page.evaluate(() => {
+        const n = document.querySelector<HTMLElement>('.cover .cv-names')!;
+        const lh = parseFloat(getComputedStyle(n).lineHeight);
+        const one = (s: string) => { const e = n.querySelector<HTMLElement>(s)!; return e.getClientRects().length === 1 && e.offsetHeight < lh * 1.6; };
+        const fit = n.closest<HTMLElement>('.op-fit, .cv-plaque');
+        return { px: parseFloat(getComputedStyle(n).fontSize), plaque: !!n.closest('.cv-plaque'), a: one('.nm-a'), b: one('.nm-b'),
+          over: fit ? fit.scrollHeight - fit.clientHeight : 0, open: document.querySelector('.cover')?.getAttribute('data-open') };
+      });
+      expect(r.px, `${style}/${r.open}`).toBeGreaterThanOrEqual(r.plaque ? 44 : 46);
+      expect(r.a && r.b, `${style}: mỗi tên 1 dòng`).toBe(true);
+      expect(r.over, `${style}: không tràn hộp`).toBeLessThanOrEqual(1);
+    }
+  });
+});

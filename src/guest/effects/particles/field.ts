@@ -7,7 +7,7 @@
  */
 import { ctx, fxBlocked, on } from '../../context';
 import { targetParticleCount, type FxState } from '../intensity';
-import { MAX_SOFT_ZONES, SOFT_SELECTOR, SpawnLimiter, alphaTarget, approach, visibleZones, weightedDensity, type Rect, type SectionVis } from './geometry';
+import { COVER_SOFT_ALPHA, MAX_SOFT_ZONES, SOFT_ALPHA, SOFT_SELECTOR, SpawnLimiter, alphaTarget, approach, visibleZones, weightedDensity, type Rect, type SectionVis } from './geometry';
 import type { Motion, ParticleKind } from './kind';
 
 export const BG_HARD_CAP = 40;
@@ -19,6 +19,8 @@ interface P {
   a: number; motion: Motion | 'burst'; flip: boolean; spr: HTMLCanvasElement; sprSmall: HTMLCanvasElement;
   // burst
   age: number; life: number; gravity: number; drag: number; toBg: boolean; clip: Rect | null; kindIdx: number;
+  /** trần alpha trong vùng dịu (burst trên cover: .75; còn lại .3) */
+  softA?: number;
 }
 
 export interface BurstParticle {
@@ -232,6 +234,7 @@ export class ParticleField {
         ph: rand(0, Math.PI * 2), phs: rand(1, 2), sway: 0, a: 1, motion: 'burst', flip: b.sprite.startsWith('k'),
         spr: sp[0], sprSmall: sp[1], age: 0, life: b.life, gravity: b.gravity ?? 0, drag: b.drag ?? 0,
         toBg: !!b.toBg, clip: b.clip ?? null, kindIdx: b.kindIdx ?? 0,
+        softA: this.overCover ? COVER_SOFT_ALPHA : SOFT_ALPHA,
       });
     }
     this.ensureRunning();
@@ -362,12 +365,12 @@ export class ParticleField {
         const edge = Math.min(p.x - p.clip.left, p.clip.right - p.x, p.y - p.clip.top, p.clip.bottom - p.y);
         a *= Math.max(0, Math.min(1, edge / 24));
       }
-      p.a = Math.min(a, alphaTarget(p.x, p.y, 1, this.zones, this.soft));
+      p.a = Math.min(a, alphaTarget(p.x, p.y, 1, this.zones, this.soft, p.softA));
       if (p.age >= p.life) {
         if (p.toBg && this.bg.length < target && this.o.kinds[p.kindIdx]) {
           const k2 = this.o.kinds[p.kindIdx]!;
           p.motion = k2.motion; p.vy = rand(k2.speed[0], k2.speed[1]) * (k2.motion === 'float-up' ? -1 : 1);
-          p.vx = 0; p.sway = rand(10, 28); p.a = maxA; p.vr = rand(-1, 1) * (k2.spin ?? 0);
+          p.vx = 0; p.sway = rand(10, 28); p.a = maxA; p.vr = rand(-1, 1) * (k2.spin ?? 0); p.softA = SOFT_ALPHA;
           this.bg.push(p);
         }
         continue;

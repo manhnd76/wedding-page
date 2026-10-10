@@ -129,3 +129,8 @@
 - Người duyệt cho phép **push branch `wt/v4a-2b`** lên GitHub (giữ WIP v4a-2b).
 - **Từ nay chỉ chạy 1 frontend-developer, không song song.** Thứ tự: hoàn tất v4a-2b -> (designer review v4a-1, v4a-2b) -> v4a-2c -> v4a-2a.
 - Vì không còn song song: FE v4a-2b được sửa 1 hunk `SOFT_SELECTOR` trong `geometry.ts` (thuộc 2c) cho vùng dịu `.env-addr`/`.cv-plaque`.
+
+## Sau designer review v4a-1 + v4a-2b (2026-10-10)
+- Câu 1 (designer vẽ lại asset `watercolor-wash` trước vòng sửa FE): **HOÃN** — ghi backlog, sửa sau. Kéo theo **T02** và **O04** (phụ thuộc asset màu nước) hoãn cùng.
+- Câu 2–5 chấp nhận giả định designer: bỏ nền "pill" của divider trên mọi theme có texture; lời chào trong vật nhỏ + caption polaroid dùng heading italic thay script (< 28px); hạt E12 giữ alpha .75 trong vùng dịu quanh tên khách; "&" của Pinyon Script vẽ bằng heading italic (áp cả `luc-bao`).
+- FE sửa 15 lỗi còn lại: T01, T03, T04, T05, T06, O01, O02, O03, O05–O11 (≤ 3 vòng).

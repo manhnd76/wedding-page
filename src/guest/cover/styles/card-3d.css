@@ -8,6 +8,8 @@
 .c3-front .cv-head { gap: 2px; }
 .c3-back { background: var(--c-primary); transform: rotateY(180deg); display: grid; place-items: center; padding: 14%; }
 .c3-back .op-greet { color: var(--c-on-primary); }
+/* O05: mặt sau thẻ đủ rộng (~266px) -> giữ script nhưng ≥ 28px (§2.1); script "cần cẩn trọng" vẫn heading italic (cover.css) */
+:root:not(:is([data-script="imperial-script"], [data-script="moon-dance"], [data-script="birthstone"])) .c3-back .op-greet { font-size: max(28px, calc(clamp(28px, 8vw, 32px) * var(--fs-k))); }
 .c3-frame { inset: 0; background: var(--c-accent); -webkit-mask-image: url(../theme-assets/card-3d/card-frame.svg); mask-image: url(../theme-assets/card-3d/card-frame.svg); }
 .c3-div { width: 48px; height: 1px; background: var(--c-accent); flex: none; }
 .c3-sh { position: absolute; left: 10%; right: 10%; bottom: -26px; height: 22px; background: radial-gradient(closest-side, rgba(0,0,0,.35), transparent); opacity: .35; }

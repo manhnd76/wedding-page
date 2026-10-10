@@ -5,11 +5,12 @@
  * Vành sắc tố `.ik-rim` (mask `blob-rim.svg`) là phần tử fixed TRÊN cover (không bị lỗ khoét), chỉ animate transform.
  * Dự phòng B (không có mask-composite): lớp mực `.ik-fill` phóng scale(0→1) phủ cover rồi cover mờ.
  * Vừa ~1.2s: lỗ + vành nở 0–1000 · vành mờ 700–1000 · cover mờ 1000–1200. Nhẹ ~0.65s: từ tâm màn, không vành.
- * Nhiều: + 2 vành phụ lệch (±30% w, ±20% h), trễ 150ms, scale(0→.35) (chỉ trang trí, không khoét thêm).
+ * Nhiều: + 2 vệt bắn phụ lệch (±30% w, ±20% h), trễ 150ms, scale(0→.12), blob-core đặc accent .35 (O02b; chỉ trang trí).
+ * O11: khối chữ cover `.cv-inner` mờ 1→0 trong 0–300ms (--ease-out, không dời/không clip) để lỗ khoét đi qua chữ đã mờ.
  */
 import './ink-spread.css';
 import { css } from '../../dom';
-import type { OpenLevelCtx, OpenRun } from '../anim';
+import { EASE_OUT, type OpenLevelCtx, type OpenRun } from '../anim';
 import type { OpenPrepareInfo } from '../open-registry';
 import { bind, div, fade, mk, tl, waitMasks, type StepSpec, type Timeline } from '../open-kit/layers';
 
@@ -27,10 +28,11 @@ export function timeline(level: OpenLevelCtx['level'], g = { x: 180, y: 370, s: 
   const steps: StepSpec[] = g.hole
     ? [{ k: 'cover', f: [{ maskSize: sz(0), webkitMaskSize: sz(0), maskPosition: p(0), webkitMaskPosition: p(0) }, { maskSize: sz(g.s), webkitMaskSize: sz(g.s), maskPosition: p(g.s), webkitMaskPosition: p(g.s) }] as Keyframe[], s: 0, d, e: SPREAD }]
     : [{ k: 'ik-fill', f: [{ transform: 'scale(0)' }, { transform: 'scale(1)' }], s: 0, d, e: SPREAD }];
+  steps.push(fade('cv-inner', 0, 300, 1, 0, EASE_OUT));
   steps.push(fade('cover', light ? 450 : 1000, light ? 200 : 200));
   if (!light) {
     steps.push({ k: 'ik-rim', f: [{ transform: 'scale(0)', opacity: 0.55 }, { transform: 'scale(.7)', opacity: 0.55, offset: 0.7 }, { transform: 'scale(1)', opacity: 0 }], s: 0, d, e: SPREAD });
-    if (level === 'full+') steps.push({ k: 'ik-rim2', f: [{ transform: 'scale(0)', opacity: 0.55 }, { transform: 'scale(.35)', opacity: 0 }], s: 150, d: 850 });
+    if (level === 'full+') steps.push({ k: 'ik-rim2', f: [{ transform: 'scale(0)', opacity: 0.35 }, { transform: 'scale(.12)', opacity: 0.35, offset: 0.6 }, { transform: 'scale(.12)', opacity: 0 }], s: 150, d: 850 });
   }
   return tl(steps);
 }
@@ -56,7 +58,7 @@ export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   if (!light) {
     // vành nằm ngoài cover (fixed, trên cùng) để lỗ khoét không xoá mất nửa trong của vành
     rims = [place(div('ik-rim'), x, y)];
-    if (c.level === 'full+') rims.push(place(div('ik-rim ik-rim2'), x + w * 0.3, y - h * 0.2), place(div('ik-rim ik-rim2'), x - w * 0.3, y + h * 0.2));
+    if (c.level === 'full+') rims.push(place(div('ik-rim2'), x + w * 0.3, y - h * 0.2), place(div('ik-rim2'), x - w * 0.3, y + h * 0.2));
     document.body.append(...rims);
   }
   const t = timeline(c.level, { x, y, s, hole: ok });

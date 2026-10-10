@@ -20,3 +20,7 @@
 - Tham khảo: https://github.com/nilbuild/page-mascot (mascot đổi ô/khung hình theo hướng con trỏ).
 - Mong muốn: trên mobile không có con trỏ -> dùng **vị trí/hướng scroll** hoặc **cảm biến định hướng (DeviceOrientation)** để chọn ô (frame) thay cho con trỏ.
 - Cần làm rõ lần tới: nhân vật là gì (chibi cô dâu chú rể? sprite tự vẽ?), đặt ở đâu, bật/tắt trong admin; giấy phép của page-mascot (dùng lại code hay tự làm); iOS cần xin quyền cảm biến bằng thao tác người dùng (có thể xin lúc chạm "mở thiệp"); fallback khi từ chối quyền -> dùng scroll; reduced-motion -> đứng yên; hiệu năng (throttle theo rAF).
+
+## B4. Vẽ lại asset `watercolor-wash` (hoãn 2026-10-10)
+- Từ design-review-v4a-1-2b.md: **T02** (vệt màu nước thành "khối" phẳng, theme Màu Nước) và **O04** (cover Màu Nước + `ink-spread` trơn nhất trong 12 theme). Lỗi gốc ở spec/asset của designer.
+- Việc: ui-ux-designer vẽ lại `assets/v4a-1/textures/watercolor-wash.svg` (+ spec) -> FE áp dụng. Chưa xếp giai đoạn.

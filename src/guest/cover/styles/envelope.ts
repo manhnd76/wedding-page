@@ -61,6 +61,18 @@ export async function prepare(cover: HTMLElement, info?: OpenPrepareInfo): Promi
   current.build(p, { liner: ctx.resolved.envelope?.liner !== false, monogram: ctx.config.cover.monogram ?? '', uid: Math.random().toString(36).slice(2, 7) });
 }
 
+type Box = { left: number; right: number; top: number; bottom: number };
+/**
+ * O01: gốc phát E12. Seal nằm trong/sát thẻ tên (`.env-addr`, vùng dịu) -> gốc = mép trên thẻ tên − 12px
+ * (không thấp hơn tâm seal) để hạt không sinh ra ngay trong vùng dịu; không có thẻ tên / không chồng ngang -> tâm seal.
+ */
+export function sparkOrigin(seal: Box, addr: Box | null): { x: number; y: number } {
+  const x = (seal.left + seal.right) / 2;
+  const y = (seal.top + seal.bottom) / 2;
+  if (!addr || addr.bottom <= addr.top || seal.right < addr.left || seal.left > addr.right) return { x, y };
+  return { x, y: Math.min(y, addr.top - 12) };
+}
+
 /** Khoảng rút thẻ (px) và độ dời để thẻ về giữa màn, kẹp để thẻ luôn nằm trọn trong viewport. */
 export function cardTravel(card: { top: number; height: number }, vh: number, scale = 1.12, margin = 8): { pull: number; center: number } {
   const pull = Math.max(0, Math.min(card.height * 0.62, card.top - margin));
@@ -84,7 +96,8 @@ export function play(cover: HTMLElement, c: OpenLevelCtx): OpenRun {
   // E12: hạt chạy song song trên canvas nâng lên trên cover, không đổi tổng thời lượng
   const plan = richPlan(current, ctx.resolved.envelope?.style ?? 'classic', c.level);
   if (plan.length && sparks) {
-    void sparks.then((m) => { for (const x of plan) void m.coverSparks({ colors: x.kind ? m.gold() : undefined, ...x, origin: p.seal, at: x.at / c.timeScale }); }).catch(() => undefined);
+    const origin = sparkOrigin(p.seal.getBoundingClientRect(), cover.querySelector('.env-addr')?.getBoundingClientRect() ?? null);
+    void sparks.then((m) => { for (const x of plan) void m.coverSparks({ colors: x.kind ? m.gold() : undefined, ...x, origin, at: x.at / c.timeScale }); }).catch(() => undefined);
   }
   const steps: Step[] = [...unlock.steps];
   const flapAt = unlock.flapAt;

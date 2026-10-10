@@ -5,8 +5,12 @@
  * của bộ hoạ tiết; `wave`/`torn-paper` chỉ CSS; `none` không chèn.
  */
 .divider--brush-stroke .div-orn { opacity: .75; } /* vệt cọ đặc: hạ đậm để không nặng hơn tiêu đề */
-.divider--dots .div-orn { width: 120px; } /* 3 chấm không cần khung rộng */
-@media (min-width: 1024px) { .divider--dots .div-orn { width: 160px; } }
+/* T01: 3 chấm không cần khung rộng - khung 56/72px; svg dùng preserveAspectRatio slice (common.ts) nên chấm không bị thu nhỏ */
+.divider--dots .div-orn { width: 56px; }
+@media (min-width: 1024px) { .divider--dots .div-orn { width: 72px; } }
+/* T01: trên giấy có texture, nền đặc "viên thuốc" lộ thành mảng phẳng vắt ranh giới -> bỏ nền, chỉ còn hình line-art.
+   texture none giữ nền đặc --div-bg (khâu 2 tông section). */
+[data-texture]:not([data-texture="none"]) .div-orn { background: none; }
 
 /* torn-paper (Đất Nung): mép giấy xé chạy hết chiều ngang = mép trên của section SAU (màu --div-bg).
    Mask tile 240×20 lặp ngang; cao 20px mobile / 26px desktop, nhô lên trên ranh giới. Bóng mảnh đặt ở CHA (mask cắt filter). */

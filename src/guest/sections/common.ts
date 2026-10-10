@@ -94,7 +94,12 @@ export function divider(kind: string, next?: HTMLElement | null, prev?: Element 
   // 'ornament' = divider của bộ hoạ tiết; divider có hình = sprite riêng (design 1.6.7b); wave/torn-paper chỉ CSS
   const url = kind === 'ornament' ? ctx.resolved.ornamentUrl : isDividerSprite(kind) ? ctx.resolved.dividerUrl : '';
   const o = url ? ornament(url, 'divider', 'orn div-orn') : null;
-  if (o) { o.setAttribute('data-rv', 'ornament'); d.appendChild(o); }
+  if (o) {
+    o.setAttribute('data-rv', 'ornament');
+    // T01: khung dots hẹp (56px) - cắt 2 bên rỗng của symbol 160×24 thay vì thu nhỏ 3 chấm
+    if (kind === 'dots') o.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    d.appendChild(o);
+  }
   return d;
 }
 

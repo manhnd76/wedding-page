@@ -33,10 +33,12 @@ export interface MotifPanelProps {
 
 const placementsText = (pl: readonly MotifPlacement[]) => pl.map((p) => MOTIF_PLACEMENT_LABEL[p]).join(' + ');
 
-/** "Trống đồng (Sau tiêu đề + Dải viền)" / "Không dùng" (nhãn "Theo theme"). */
+/** T06: "Trống đồng — Sau tiêu đề + Dải viền" / "Không dùng" (nhãn "Theo theme", không lồng ngoặc). */
 function motifSummary(set: MotifSet | 'none', placements: readonly MotifPlacement[]): string {
-  return set === 'none' ? MOTIF_SET_LABEL.none : `${MOTIF_SET_LABEL[set]}${placements.length ? ` (${placementsText(placements)})` : ''}`;
+  return set === 'none' ? MOTIF_SET_LABEL.none : `${MOTIF_SET_LABEL[set]}${placements.length ? ` — ${placementsText(placements)}` : ''}`;
 }
+/** Tên theme bỏ tên phụ trong ngoặc: "Son Đỏ (Song Hỷ)" -> "Son Đỏ". */
+const shortName = (name: string) => name.replace(/\s*\(.*\)\s*$/, '');
 
 export default function MotifPanel({ store, draft, resolved, peek }: MotifPanelProps) {
   const [live, setLive] = useState('');
@@ -94,6 +96,9 @@ export default function MotifPanel({ store, draft, resolved, peek }: MotifPanelP
     } else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pickSet(cards[i]!); }
   };
   const full = curPl.length >= 2;
+  // T06: đủ 2 vị trí nhưng còn cặp loại trừ (Phủ nền ⟂ Sau tiêu đề) vẫn bật -> nói rõ nó sẽ thay vị trí nào
+  const swapFrom = curPl.find((p) => { const q = CONFLICT[p]; return q !== undefined && !curPl.includes(q); });
+  const swapTo = swapFrom ? CONFLICT[swapFrom] : undefined;
   const lowCap = r.cap < 0.1 && curPl.some((p) => MOTIF_BEHIND_TEXT.includes(p)) && curSet !== 'none';
   const t = resolved.tokens;
 
@@ -102,7 +107,7 @@ export default function MotifPanel({ store, draft, resolved, peek }: MotifPanelP
       <fieldset class="field">
         <legend>Hoạ tiết nền</legend>
         <label class="check"><input type="radio" name="mtf-mode" checked={!custom} onChange={followTheme} data-testid="motif-follow" />
-          Theo theme ({preset.name}: {motifSummary(preset.motif.set, preset.motif.set === 'none' ? [] : preset.motif.placements)})</label>
+          Theo theme · {shortName(preset.name)}: {motifSummary(preset.motif.set, preset.motif.set === 'none' ? [] : preset.motif.placements)}</label>
         <label class="check"><input type="radio" name="mtf-mode" checked={custom} onChange={() => startCustom()} data-testid="motif-custom" /> Tự chọn</label>
       </fieldset>
 
@@ -137,7 +142,9 @@ export default function MotifPanel({ store, draft, resolved, peek }: MotifPanelP
           })}
         </div>
         <p class="help">"Phủ nền" không dùng cùng "Sau tiêu đề" (hai lớp chồng nhau).</p>
-        {full && custom && <p class="help" data-testid="motif-full">Đã chọn đủ 2 vị trí: bỏ chọn một vị trí để chọn vị trí khác.</p>}
+        {full && custom && <p class="help" data-testid="motif-full">{swapFrom && swapTo
+          ? `Đã chọn đủ 2 vị trí. Chọn "${MOTIF_PLACEMENT_LABEL[swapTo]}" sẽ thay cho "${MOTIF_PLACEMENT_LABEL[swapFrom]}".`
+          : 'Đã chọn đủ 2 vị trí: bỏ chọn một vị trí để chọn vị trí khác.'}</p>}
         <p class="sr-only" aria-live="polite" data-testid="motif-live">{live}</p>
       </fieldset>
 

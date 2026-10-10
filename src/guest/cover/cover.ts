@@ -129,7 +129,7 @@ const GUEST_MIN_PX = 15;
 export function fitEnvGuest(addr: HTMLElement): { px: number; lines: number } | null {
   // v4a-2b: dùng chung cho hộp cỡ cố định của kiểu mở mới (`.op-fit`: mặt sau polaroid, trang book, giấy scroll...)
   const g = addr.querySelector<HTMLElement>('.env-guest, .cv-guest');
-  if (!g || !addr.clientHeight) return null;
+  if (!g || !addr.clientHeight || !addr.offsetWidth) return null;
   const pre = addr.querySelector<HTMLElement>('.env-prefix, .cv-prefix');
   g.classList.remove('is-long');
   g.style.removeProperty('font-size');
@@ -139,7 +139,9 @@ export function fitEnvGuest(addr: HTMLElement): { px: number; lines: number } | 
   const acs = getComputedStyle(addr);
   const room = addr.clientHeight - parseFloat(acs.paddingTop) - parseFloat(acs.paddingBottom);
   const row = acs.flexDirection === 'row';
-  const kids = Array.from(addr.children) as HTMLElement[];
+  // O06: chỉ tính phần tử trong luồng - lớp trang trí absolute (khung mask, sheen, giấy in) phủ cả mặt thẻ làm `used` > `room`
+  // nên trước đây tên khách luôn bị ép xuống bậc 15px ở card-3d / polaroid
+  const kids = (Array.from(addr.children) as HTMLElement[]).filter((k) => !/^(absolute|fixed)$/.test(getComputedStyle(k).position));
   let px = GUEST_MIN_PX;
   let lines = 1;
   for (let i = 0; i < steps.length; i++) {

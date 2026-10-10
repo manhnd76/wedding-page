@@ -22,12 +22,14 @@ export function insideAny(x: number, y: number, rects: readonly Rect[], margin =
 export const SOFT_SELECTOR = '.hero-names, .ann-names, .ann-invite, .sec-head, .env-addr, .cv-plaque';
 export const SOFT_MARGIN = 8;
 export const SOFT_ALPHA = 0.3;
+/** O01 (review v4a-1-2b, decisions 2026-10-10): hạt phát TRÊN cover (E12 / kiểu mở) sống ≤ 1.8s -> sàn .75 trong vùng dịu */
+export const COVER_SOFT_ALPHA = 0.75;
 export const MAX_SOFT_ZONES = 4;
 
-/** Alpha đích của 1 hạt: trong vùng loại trừ = 0; trong vùng dịu ≤ 0.3; còn lại = maxA. */
-export function alphaTarget(x: number, y: number, maxA: number, exclusion: readonly Rect[], soft: readonly Rect[]): number {
+/** Alpha đích của 1 hạt: trong vùng loại trừ = 0; trong vùng dịu ≤ `softA` (mặc định 0.3); còn lại = maxA. */
+export function alphaTarget(x: number, y: number, maxA: number, exclusion: readonly Rect[], soft: readonly Rect[], softA = SOFT_ALPHA): number {
   if (insideAny(x, y, exclusion)) return 0;
-  if (soft.length && insideAny(x, y, soft, SOFT_MARGIN)) return Math.min(maxA, SOFT_ALPHA);
+  if (soft.length && insideAny(x, y, soft, SOFT_MARGIN)) return Math.min(maxA, softA);
   return maxA;
 }
 
