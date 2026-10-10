@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "publish": {
-    "id": "c755359f-e187-42aa-92eb-f14d3675ad68",
-    "at": "2026-10-10T01:50:02.412Z"
+    "id": "",
+    "at": ""
   },
   "meta": {
     "siteUrl": "",
@@ -89,19 +89,7 @@
     "enabled": true,
     "openStyle": "theme",
     "background": "paper",
-    "backgroundImage": {
-      "src": "content/images/cover/serene-anime-bride-with-lily-bou.98cf0d8d.webp",
-      "w": 551,
-      "h": 978,
-      "alt": "Ảnh cưới của Minh Anh và Thuỳ Linh",
-      "dominantColor": "#d39152",
-      "updatedAt": "2026-10-10T01:41:35.593Z",
-      "lqip": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAYAA4DASIAAhEBAxEB/8QAGAAAAgMAAAAAAAAAAAAAAAAAAAQCBQb/xAAoEAABAgUCBQUBAAAAAAAAAAABAgMABAUREiFBIjFRgZETYXGxwfD/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAZEQACAwEAAAAAAAAAAAAAAAAAAREhQWH/2gAMAwEAAhEDEQA/AFG2nJp1uXlhd5agAFDhCdclE7W08xFxJQtSVGxSSORH3r5i2o1LVNIanWlqS8zMY5AiwTjrp3hetSZkp5WOSm3CVJWTe53F+t/yCdwVqjT0qkmnygbU8VqJyULcIVvbfoO0LVilzVSxQ2/b0zqld8T73A5/3yQRnZHD/9k=",
-      "focalPoint": {
-        "x": 0.52,
-        "y": 0.28
-      }
-    },
+    "backgroundImage": null,
     "eyebrow": "Thiệp mời cưới",
     "dateText": "12 · 12 · 2026",
     "monogram": "M & L",
@@ -217,12 +205,11 @@
         "fullName": "Nguyễn Minh Anh",
         "shortName": "Minh Anh",
         "photo": {
-          "src": "content/images/couple/elegant-groom-in-a-charcoal-suit.a3f3d115.webp",
-          "w": 747,
-          "h": 934,
+          "src": "content/images/couple/groom.0b6e8b4a.svg",
+          "w": 800,
+          "h": 1000,
           "alt": "Chú rể Nguyễn Minh Anh",
-          "dominantColor": "#fdf6ea",
-          "updatedAt": "2026-10-10T01:42:51.095Z"
+          "dominantColor": "#8d9db5"
         },
         "bio": "Con trai của ông Nguyễn Văn Bình và bà Lê Thị Hoa"
       },
@@ -232,12 +219,11 @@
         "fullName": "Trần Thuỳ Linh",
         "shortName": "Thuỳ Linh",
         "photo": {
-          "src": "content/images/couple/serene-anime-bride-with-lily-bou.df43f61c.webp",
-          "w": 747,
-          "h": 934,
+          "src": "content/images/couple/bride.bd35268c.svg",
+          "w": 800,
+          "h": 1000,
           "alt": "Cô dâu Trần Thuỳ Linh",
-          "dominantColor": "#bb8150",
-          "updatedAt": "2026-10-10T01:43:09.866Z"
+          "dominantColor": "#c2a3b5"
         },
         "bio": "Con gái của ông Trần Văn Long và bà Phạm Thị Mai"
       }

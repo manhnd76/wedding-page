@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "createdAt": "2026-10-10T01:50:09.113Z",
+  "reason": "publish",
+  "publishId": "c755359f-e187-42aa-92eb-f14d3675ad68",
+  "restoredPublishId": null,
+  "backupPublishId": null,
+  "fromCommit": "60291e9d61af89de9d0f5ffc19dced9dbc53e9a8",
+  "files": [
+    {
+      "path": "public/content/config.json",
+      "backupPath": "backup/files/public/content/config.json",
+      "existed": true
+    },
+    {
+      "path": "public/content/images/cover/serene-anime-bride-with-lily-bou.98cf0d8d.webp",
+      "backupPath": null,
+      "existed": false,
+      "slot": "cover.backgroundImage"
+    },
+    {
+      "path": "public/content/images/couple/elegant-groom-in-a-charcoal-suit.a3f3d115.webp",
+      "backupPath": null,
+      "existed": false,
+      "slot": "content.couple.groom.photo"
+    },
+    {
+      "path": "public/content/images/couple/serene-anime-bride-with-lily-bou.df43f61c.webp",
+      "backupPath": null,
+      "existed": false,
+      "slot": "content.couple.bride.photo"
+    },
+    {
+      "path": "public/content/images/couple/groom.0b6e8b4a.svg",
+      "backupPath": "backup/files/public/content/images/couple/groom.0b6e8b4a.svg",
+      "existed": true,
+      "slot": "content.couple.groom.photo"
+    },
+    {
+      "path": "public/content/images/couple/bride.bd35268c.svg",
+      "backupPath": "backup/files/public/content/images/couple/bride.bd35268c.svg",
+      "existed": true,
+      "slot": "content.couple.bride.photo"
+    }
+  ]
+}
