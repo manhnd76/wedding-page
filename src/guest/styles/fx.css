@@ -3,34 +3,77 @@
 /* đang gõ: ẩn hẳn lớp hạt (canvas đứng yên có thể trùng ô nhập khi bàn phím đẩy trang) */
 .is-typing .fx-canvas { opacity: 0; }
 .cover-on .fx-canvas { opacity: 0; }
+/* hạt trên cover (kiểu mở có hạt, E12 - solution-v4a-2bc.md 0.4): field.setOverCover(true) */
+.cover-on .fx-canvas.is-over-cover { opacity: 1; z-index: calc(var(--z-cover) + 1); }
 
-[data-rva] { transition: opacity var(--rv-d, 700ms) var(--ease-out), transform var(--rv-d, 700ms) var(--ease-out); transition-delay: calc(var(--i, 0) * var(--stagger)); }
-[data-rva="fade"]:not(.is-in) { opacity: 0; }
+/* Thời lượng reveal nhân --rv-k (hệ số gói, gắn theo data-rvk) và --fx-slow (preview 0.5x, R2A-06); độ trễ min(--i, 8) × --stagger (section) */
+[data-rva] { --rv-t: calc(var(--rv-d, 700ms) * var(--rv-k, 1) * var(--fx-slow, 1)); transition: opacity var(--rv-t) var(--ease-out), transform var(--rv-t) var(--ease-out); transition-delay: calc(min(var(--i, 0), 8) * var(--stagger) * var(--fx-slow, 1)); }
+[data-rvk="cinematic"] { --rv-k: 1.25; }
 [data-rva="fade"] { --rv-d: 600ms; }
-[data-rva="fade-fast"] { --rv-d: 200ms; transition-delay: 0s; }
-[data-rva="fade-fast"]:not(.is-in) { opacity: 0; }
+[data-rva="fade"]:not(.is-in), [data-rva="fade-fast"]:not(.is-in) { opacity: 0; }
+[data-rva="fade-fast"] { --rv-d: 200ms; --rv-k: 1; transition-delay: 0s; }
 [data-rva="fade-up"]:not(.is-in) { opacity: 0; transform: translateY(var(--reveal-distance)); }
 [data-rva="zoom-in"]:not(.is-in) { opacity: 0; transform: scale(.94); }
 [data-rva="zoom-in"] { --rv-d: 600ms; }
+[data-rvk="playful"][data-rva="zoom-in"] { transition-timing-function: var(--ease-pop); }
 [data-rva="slide-side"]:not(.is-in) { opacity: 0; transform: translateX(-32px); }
-.person--bride[data-rva="slide-side"]:not(.is-in), .couple-grid > :last-child[data-rva="slide-side"]:not(.is-in) { transform: translateX(32px); }
+.person--bride[data-rva="slide-side"]:not(.is-in), .couple-grid > :last-child[data-rva="slide-side"]:not(.is-in), .fam-col:last-child[data-rva="slide-side"]:not(.is-in) { transform: translateX(32px); }
 [data-rva="rise-tilt"]:not(.is-in) { opacity: 0; transform: translateY(32px) rotate(-4deg); }
+.al-tile:nth-child(even)[data-rva="rise-tilt"]:not(.is-in) { transform: translateY(32px) rotate(4deg); }
 [data-rva="rise-tilt"] { transition-timing-function: var(--ease-pop); }
-/* photo-settle: khung đứng yên, ảnh bên trong scale 1.12 -> 1 */
-[data-rva="photo-settle"] { transition: none; }
-[data-rva="photo-settle"] img { transition: transform 1100ms var(--ease-out), opacity 1100ms var(--ease-out); }
-[data-rva="photo-settle"]:not(.is-in) img { opacity: 0; transform: scale(1.12); }
+/* ô album: stagger tối đa 100ms (giữ section ≤ 2.2s với cinematic) */
+.al-tile[data-rva] { transition-delay: calc(min(var(--i, 0), 8) * min(var(--stagger), 100ms) * var(--fx-slow, 1)); }
+/* photo-settle / wipe ảnh: khung đứng yên (giữ độ trễ để img kế thừa), ảnh bên trong chuyển động */
+[data-rva="photo-settle"], [data-rv="image"][data-rva="wipe"] { transition-property: none; }
+[data-rva="photo-settle"] img { --rv-t: calc(var(--rv-pd, 1100ms) * var(--fx-slow, 1)); transition: transform var(--rv-t) var(--ease-out), opacity var(--rv-t) var(--ease-out); transition-delay: inherit; }
+[data-rva="photo-settle"]:not(.is-in) img { opacity: 0; transform: scale(var(--rv-sc, 1.12)); }
+[data-rvk="cinematic"][data-rva="photo-settle"] { --rv-pd: 1400ms; --rv-sc: 1.15; }
 .fx-kb [data-rva="photo-settle"].is-in .hero-img { transition: none; }
-/* svg-draw: stroke-dasharray kế thừa vào <use> (sprite dùng pathLength=100) */
-[data-rva="svg-draw"] { transition: stroke-dashoffset 1500ms var(--ease-inout), opacity 600ms; stroke-dasharray: 100; }
+/* svg-draw: stroke-dasharray kế thừa vào <use> (sprite dùng pathLength=100); cinematic kẹp 1800ms */
+[data-rva="svg-draw"] { transition: stroke-dashoffset calc(1500ms * var(--rv-k, 1) * var(--fx-slow, 1)) var(--ease-inout), opacity calc(600ms * var(--fx-slow, 1)); transition-delay: calc(min(var(--i, 0), 8) * var(--stagger) * var(--fx-slow, 1)); stroke-dasharray: 100; }
+[data-rvk="cinematic"][data-rva="svg-draw"] { --rv-k: 1.2; }
 [data-rva="svg-draw"]:not(.is-in) { stroke-dashoffset: 100; opacity: .3; }
 .couple-amp[data-rva="svg-draw"]:not(.is-in) { opacity: 0; transform: scale(.6); }
-.couple-amp[data-rva="svg-draw"] { transition: opacity 600ms, transform 600ms var(--ease-pop); }
+.couple-amp[data-rva="svg-draw"] { transition: opacity calc(600ms * var(--fx-slow, 1)), transform calc(600ms * var(--fx-slow, 1)) var(--ease-pop); }
 .fam-rule[data-rva="svg-draw"]:not(.is-in), .tl-axis[data-rva="svg-draw"]:not(.is-in) { transform: scaleY(0); opacity: 1; }
-.fam-rule[data-rva="svg-draw"], .tl-axis[data-rva="svg-draw"] { transition: transform 900ms var(--ease-inout); }
-/* chữ ký viết tay: clip-path wipe, chừa ±0.3em cho dấu (design 4.12) */
-.ty-sig[data-rva="svg-draw"] { transition: clip-path 1800ms cubic-bezier(.55, .1, .35, 1), opacity 300ms; clip-path: inset(-.3em -.2em -.3em -.2em); }
-.ty-sig[data-rva="svg-draw"]:not(.is-in) { clip-path: inset(-.3em 100% -.3em -.2em); opacity: 1; }
+.fam-rule[data-rva="svg-draw"], .tl-axis[data-rva="svg-draw"] { transition: transform calc(900ms * var(--fx-slow, 1)) var(--ease-inout); }
+/* chữ ký viết tay: wipe, chừa ±.5em dọc / .25em ngang trong lúc chạy; xong -> clip-path none (R2A-03) */
+.ty-sig[data-rva="svg-draw"] { transition: clip-path calc(1800ms * var(--fx-slow, 1)) cubic-bezier(.55, .1, .35, 1), opacity 300ms; clip-path: inset(-.5em -.25em); }
+.ty-sig[data-rva="svg-draw"]:not(.is-in) { clip-path: inset(-.5em calc(100% + .25em) -.5em -.25em); opacity: 1; }
+/* wipe chữ (script) */
+[data-rva="wipe"]:not([data-rv="image"]) { clip-path: inset(-.5em -.25em); transition: clip-path calc(900ms * var(--rv-k, 1) * var(--fx-slow, 1)) cubic-bezier(.55, .1, .35, 1); transition-delay: calc(min(var(--i, 0), 8) * var(--stagger) * var(--fx-slow, 1)); }
+[data-rva="wipe"]:not([data-rv="image"]):not(.is-in) { clip-path: inset(-.5em calc(100% + .25em) -.5em -.25em); }
+/* wipe ảnh: clip trên <img> (khung, viền, deco-cut, mask không bị clip) */
+[data-rv="image"][data-rva="wipe"] img { clip-path: inset(0); transition: clip-path calc(var(--rv-wd, 900ms) * var(--fx-slow, 1)) cubic-bezier(.55, .1, .35, 1), transform calc(1100ms * var(--fx-slow, 1)) var(--ease-out); transition-delay: inherit; }
+.frame[data-rva="wipe"]:not(.is-in) img { clip-path: inset(0 100% 0 0); transform: scale(1.06); }
+.al-tile[data-rva="wipe"] { --rv-wd: 450ms; transition-delay: calc(min(var(--i, 0), 8) * 150ms * var(--fx-slow, 1)); }
+.al-tile[data-rva="wipe"]:not(.is-in) img { clip-path: inset(0 100% 0 0); }
+.rv-done[data-rva="wipe"]:not([data-rv="image"]), .rv-done[data-rva="wipe"] img, .ty-sig.rv-done { clip-path: none; transition: none; }
+/* mask-up theo dòng (R2A-01): clip chừa .3em, ẩn = dịch 100% + .55em + mờ; xong thì engine gỡ wrapper */
+[data-rva="mask-up"], [data-rva^="split"] { transition: none; }
+[data-rva="mask-up"] .rv-vis { display: block; }
+.rv-ln { display: block; overflow: hidden; overflow: clip; padding-block: .3em; margin-block: -.3em; }
+.rv-li { display: block; transition: transform calc(var(--rv-md, 800ms) * var(--rv-k, 1) * var(--fx-slow, 1)) var(--ease-out), opacity calc(400ms * var(--fx-slow, 1)) linear; transition-delay: calc((min(var(--i, 0), 8) * var(--stagger) + min(var(--ln, 0), 3) * 90ms) * var(--fx-slow, 1)); }
+[data-fx="high"] .rv-li { --rv-md: 900ms; }
+[data-rva="mask-up"]:not(.is-in) .rv-li { transform: translateY(calc(100% + .55em)); opacity: 0; }
+/* split: không padding/overflow trên span (R2A-04) */
+.rv-w { display: inline-block; white-space: nowrap; }
+.rv-c { display: inline-block; transform-origin: 50% 100%; }
+[data-rva="split-words"] .rv-w, [data-rva="split-chars"] .rv-c { transition: transform calc(var(--rv-pd) * var(--fx-slow, 1)) var(--ease-out), opacity calc(300ms * var(--fx-slow, 1)) linear; transition-delay: calc((min(var(--i, 0), 8) * var(--stagger) + var(--k, 0) * var(--rv-ps, 30ms)) * var(--fx-slow, 1)); }
+[data-rva="split-words"] { --rv-pd: 500ms; }
+[data-rva="split-chars"] { --rv-pd: 450ms; }
+[data-rva="split-words"]:not(.is-in) .rv-w { transform: translateY(12px); opacity: 0; }
+[data-fx="high"] [data-rva="split-words"] .rv-w { transition-timing-function: var(--ease-pop), linear; }
+[data-fx="high"] [data-rva="split-words"]:not(.is-in) .rv-w { transform: translateY(16px); }
+[data-rva="split-chars"]:not(.is-in) .rv-c { transform: translateY(.4em) rotate(8deg); opacity: 0; }
+/* blur-in: chỉ Nhiều + desktop ≥ 1024px, ≤ 3/trang (R2A-02) */
+[data-rva="blur-in"] { transition: filter calc(600ms * var(--fx-slow, 1)) var(--ease-out), opacity calc(600ms * var(--fx-slow, 1)) var(--ease-out); transition-delay: calc(min(var(--i, 0), 8) * var(--stagger) * var(--fx-slow, 1)); }
+[data-rva="blur-in"]:not(.is-in) { filter: blur(8px); opacity: 0; }
+.rv-done[data-rva="blur-in"] { filter: none; }
+/* phát lại trong preview / đổi nguyên tử sau khi tách: về trạng thái ẩn tức thì */
+.rv-replay [data-rva], .rv-replay [data-rva] *, .rv-swap, .rv-swap * { transition: none !important; }
+/* nhịp trong .sec-head (R2A-08) */
+.sec-head > .eyebrow { --i: 0; } .sec-head > .h2 { --i: 1; } .sec-head > .sec-orn { --i: 2; }
 .hero-names[data-rva] > span { display: inline-block; }
 /* stagger con trong hero/announcement */
 .hero-content > :nth-child(2) { --i: 1; } .hero-content > :nth-child(3) { --i: 2; } .hero-content > :nth-child(4) { --i: 3; }
@@ -38,3 +81,64 @@
 .ev-card:nth-child(2) { --i: 1.5; } .ev-card:nth-child(3) { --i: 3; }
 .fam-col:last-child { --i: 1.5; }
 [data-fx="off"] [data-rva], [data-fx="reduced"] [data-rva] { transition-delay: 0s; }
+/* parallax-layers L0: texture phía sau (biến do chunk parallax-layers đặt trên section) */
+.sec-hero::before, .sec-thankyou::before { translate: 0 var(--plx0, 0px); }
+
+/* ---- Micro v4a-2a (design-v4a-2a §4): tự chạy ≤ 5s/đợt; phần tử thêm vào DOM aria-hidden + pointer-events none ---- */
+/* btn-shine: vệt sáng ::after của nút (đã có overflow hidden); nút cover 1 vệt ở 1.2s */
+.is-shine::after, .fx-shine .cv-cta.is-breathe::after { content: ""; position: absolute; inset: 0; pointer-events: none; transform: translateX(-110%); background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, var(--shine-a, .42)) 50%, transparent 70%); animation: btn-shine calc(900ms * var(--fx-slow, 1)) var(--ease-inout); }
+.fx-shine .cv-cta.is-breathe::after { animation-delay: 1.2s; }
+[data-mode="dark"], [data-theme="pastel-han"] { --shine-a: .55; }
+@keyframes btn-shine { to { transform: translateX(110%); } }
+/* photo-tilt */
+.al-tile { position: relative; }
+.is-tilt { transition: none !important; }
+.tilt-out { transition: transform 400ms var(--ease-out) !important; }
+.tilt-glare { position: absolute; inset: 0; z-index: 1; pointer-events: none; border-radius: inherit; background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, .22), transparent 55%); mix-blend-mode: soft-light; opacity: 0; transition: opacity 160ms; }
+.is-tilt > .tilt-glare { opacity: 1; }
+/* countdown slide / odometer: cửa sổ 1em chỉ chứa chữ số (không dấu) */
+.cd--slide .cd-v, .cd--odometer .cd-v { position: relative; height: 1em; overflow: hidden; }
+.cd-old { position: absolute; inset: 0; }
+.cd--slide .cd-v > span { display: inline-block; }
+.od-win { display: inline-block; height: 1em; overflow: hidden; vertical-align: top; }
+.od-strip { display: flex; flex-direction: column; }
+.od-strip > span { height: 1em; }
+/* scroll-progress: dưới nút nổi/sheet/lightbox/cover, trên hạt */
+.scroll-prog { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; height: 2px; z-index: calc(var(--z-petals) + 1); pointer-events: none; background: var(--c-accent); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); opacity: 0; transition: opacity 300ms; }
+[data-theme="son-do"] .scroll-prog { background: var(--c-primary); }
+.scroll-prog.is-on { opacity: 1; }
+.cover-on .scroll-prog, .lb-on .scroll-prog { opacity: 0; }
+@supports (animation-timeline: scroll()) { @media (prefers-reduced-motion: no-preference) { .scroll-prog { animation: sp-grow linear both; animation-timeline: scroll(root); } } }
+@keyframes sp-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* name-sparkle: 3 đốm quanh "&" ở hero, 600ms lệch 120ms */
+.has-spk { position: relative; display: inline-block; }
+.spk { position: absolute; left: 50%; top: 50%; line-height: 0; pointer-events: none; color: var(--c-accent); opacity: 0; translate: calc(var(--x) - 50%) calc(var(--y) - 50%); }
+.spk .ic path { fill: currentColor; }
+.has-img .spk { color: #fff; } .has-img .spk .ic path { stroke: var(--c-accent); }
+.spk:nth-of-type(1) { --x: -.55em; --y: -.25em; }
+.spk:nth-of-type(2) { --x: .85em; --y: -.45em; animation-delay: 120ms !important; }
+.spk:nth-of-type(3) { --x: .7em; --y: .55em; animation-delay: 240ms !important; }
+.is-spk > .spk { animation: spk calc(600ms * var(--fx-slow, 1)) var(--ease-pop) both; }
+@keyframes spk { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1) rotate(45deg); opacity: 1; } 100% { transform: scale(0) rotate(90deg); opacity: 0; } }
+/* music-ripple: 2 vòng lan từ nút nhạc (vòng 2 trễ 300ms) */
+.fl-ripple { display: none; }
+.fx-attn .fl-ripple { display: block; position: absolute; right: 0; bottom: 0; width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--c-primary-decor); pointer-events: none; opacity: 0; animation: fl-ripple 1200ms var(--ease-out); }
+.fl-ripple + .fl-ripple { animation-delay: 300ms; }
+@keyframes fl-ripple { from { transform: scale(1); opacity: .55; } to { transform: scale(1.9); opacity: 0; } }
+/* gift-shake: 2 nhịp ±6° -> ±4°, gốc đáy hộp */
+.gift-art.is-shake { transform-origin: 50% 90%; animation: gift-shake 500ms var(--ease-inout); }
+@keyframes gift-shake { 20% { rotate: -6deg; } 40% { rotate: 6deg; } 60% { rotate: -4deg; } 80% { rotate: 4deg; } }
+/* calendar-flip: lật giả 2D bằng scaleY (press: Nhẹ trở lên); reduced: chỉ đổi độ đậm tờ lịch */
+.cal-page { transform-box: fill-box; transform-origin: 50% 0; }
+.fx-press .is-flip .cal-page { animation: cal-flip 300ms; }
+[data-fx="reduced"] .is-flip .cal-page > path:first-child { animation: cal-dim 300ms; }
+@keyframes cal-flip { 0% { transform: scaleY(1); animation-timing-function: cubic-bezier(.55, 0, 1, .45); } 50% { transform: scaleY(0); animation-timing-function: cubic-bezier(.22, 1, .36, 1); } 100% { transform: scaleY(1); } }
+@keyframes cal-dim { 50% { fill-opacity: .35; } }
+/* couple-heart-tap: tim 56px tại điểm chạm */
+.fx-hearttap .person-photo { touch-action: manipulation; }
+.ht-heart { position: absolute; z-index: 2; width: 56px; height: 56px; margin: -28px 0 0 -28px; pointer-events: none; animation: ht-pop 700ms var(--ease-out) forwards; }
+.ht-heart .ic { width: 100%; height: 100%; overflow: visible; }
+.ht-heart path { fill: var(--c-primary); stroke: #fff; stroke-width: 2px; }
+@keyframes ht-pop { 0% { transform: scale(0); } 25% { transform: scale(1.2); animation-timing-function: var(--ease-pop); } 43% { transform: scale(1); opacity: 1; } 100% { transform: translateY(-24px); opacity: 0; } }
+[data-fx="reduced"] .ht-heart { animation: ht-fade 200ms linear 300ms forwards; }
+@keyframes ht-fade { to { opacity: 0; } }

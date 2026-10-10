@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 28" width="224" height="112">
+<!-- gold: xem thử 2 biến thể (ô 24×24 tâm 0,0; màu tự nhiên). Dữ liệu thật: bursts.json -->
+<g transform="translate(14 14)"><title>v1 w=0.7</title><radialGradient id="gold-0-0g"><stop offset="0" stop-color="#FFF4D6" stop-opacity="1"/><stop offset="0.3" stop-color="#C9A24A" stop-opacity="0.95"/><stop offset="1" stop-color="#C9A24A" stop-opacity="0"/></radialGradient><circle r="12" fill="url(#gold-0-0g)"/></g>
+<g transform="translate(42 14)"><title>v2 w=0.3</title><path d="M0 -11C1.8 -1.8 1.8 -1.8 11 0C1.8 1.8 1.8 1.8 0 11C-1.8 1.8 -1.8 1.8 -11 0C-1.8 -1.8 -1.8 -1.8 0 -11Z" fill="#C9A24A"/><circle cx="0" cy="0" r="1.8" fill="#FFF4D6" fill-opacity="0.95"/></g>
+</svg>

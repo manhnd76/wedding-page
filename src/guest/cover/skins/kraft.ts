@@ -2,8 +2,20 @@
  * Mẫu `kraft`: giấy kraft có thớ (noise tĩnh), dây gai buộc chữ thập + nơ, thẻ tên giấy ngà, nhánh oải hương.
  * Pha mở: nơ tuột (stroke-dashoffset 260ms), dây trượt sang 2 bên + mờ, thẻ tên lắc ±4°.
  */
+import type { Layer } from '../open-kit/sparks';
 import { svg } from '../../dom';
 import { box, path, shell, type EnvelopeSkin } from './kit';
+
+/** e12-lavender (designer B `envelope-e12/e12.json`): ô 24×24; c1 = nụ, c2 = cuống. */
+const LAVENDER: Layer[] = [
+  { d: 'M0 11V-6', stroke: 'c2', lw: 0.9 },
+  { d: 'M0-11.2C1.3-2.2-7.4 2.2-9 2.2-1.6-6.8-1.3-2.2-9-2.2Z', fill: 'c1' },
+  { d: 'M-2.4-7.7C1.3-3.1-3.3.5-6.4 2.2-2.4-3-1.3-3.7-4.8-2.2Z', fill: '#A895D6' },
+  { d: 'M2.4-6.5C1.3-1-3.6 3.7-3.6 2.2-.7-2.9-1.3-.5-5.2-2.2Z', fill: 'c1' },
+  { d: 'M-2.4-3.7C1.3-3.1.7.5-2.4 2.2-2.4 1-1.3-3.7-.8-2.2Z', fill: '#A895D6' },
+  { d: 'M2.4-2.1C1.3-1 .8 3.7.8 2.2-.7 1.5-1.3-.5-.8-2.2Z', fill: 'c1' },
+  { d: 'M-1.9.9C1.3-2.8 5.2.9 2.3 2.2-2 5.6-1.3-3.3 3.7-2.2Z', fill: '#A895D6' },
+];
 
 export const skin: EnvelopeSkin = {
   build(p, o) {
@@ -47,4 +59,11 @@ export const skin: EnvelopeSkin = {
       flapAt: 300,
     };
   },
+  // E12: 10 nhánh oải hương khi nơ bắt đầu tuột.
+  // O01: 2 quạt chéo hướng LÊN-ra-ngoài 20–80° tính từ phương ngang (canvas: -80..-20 phải, -160..-100 trái), |vx| ≥ 60px/s
+  // -> nhánh oải hương bay vòng cung sang 2 bên rồi rơi, né thẻ tên (trước: 20..80 = hướng XUỐNG, rơi thẳng đè thẻ tên)
+  rich: () => [-80, -160].map((a) => ({
+    at: 120, count: 5, angle: [a, a + 60] as [number, number], speed: [160, 300] as [number, number], minVx: 60, gravity: 260, drag: 1.1, life: [1000, 1300] as [number, number],
+    size: [10, 16] as [number, number], spin: 3, colors: ['#8E7CC3', '#7A8F5C'], shapes: [LAVENDER]
+  })),
 };

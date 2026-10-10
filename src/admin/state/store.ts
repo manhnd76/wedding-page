@@ -2,7 +2,7 @@
  * Store của trang quản lý: nháp (IndexedDB, autosave 800ms), bản đang xuất bản, undo/redo,
  * publish/restore qua StorageAdapter, poll "đã lên trang". Không framework state - subscribe + hook.
  */
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useReducer, useRef } from 'preact/hooks';
 import type { WeddingConfig } from '@shared/config/types';
 import { migrate } from '@shared/config/migrations';
 import { mergeWithDefaults } from '@shared/config/merge';
@@ -373,12 +373,22 @@ export class EditorStore {
 
 const stripPublish = (c: WeddingConfig) => ({ ...c, publish: null });
 
-/** Hook: chọn 1 phần state; re-render khi đổi. */
+/**
+ * Hook: chọn 1 phần state; re-render khi đổi. Giá trị luôn tính bằng `pick` CỦA LẦN RENDER HIỆN TẠI (selector đổi
+ * theo props, vd Field đổi `path` khi thẻ danh sách dời chỗ, thì đọc ngay path mới - không giữ selector lúc mount).
+ * Listener dùng `pick` mới nhất qua ref và chỉ re-render khi kết quả khác (Object.is) giá trị đang hiện.
+ */
 export function useStore<T>(store: EditorStore, pick: (s: EditorState) => T): T {
-  const [v, setV] = useState(() => pick(store.s));
+  const v = pick(store.s);
+  const pickRef = useRef(pick);
+  const lastRef = useRef(v);
+  pickRef.current = pick;
+  lastRef.current = v;
+  const [, force] = useReducer((n: number) => n + 1, 0);
   useEffect(() => {
-    setV(pick(store.s));
-    return store.subscribe((s) => setV(() => pick(s)));
+    const check = (s: EditorState) => { if (!Object.is(pickRef.current(s), lastRef.current)) force(0); };
+    check(store.s); // state đổi giữa lúc render và lúc subscribe
+    return store.subscribe(check);
   }, [store]);
   return v;
 }

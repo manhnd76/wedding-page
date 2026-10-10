@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><title>v4a-2 open styles preview</title>
+<style>
+@font-face { font-family: GV; src: url(/nm/@fontsource/great-vibes/files/great-vibes-latin-400-normal.woff2); }
+@font-face { font-family: GV; src: url(/nm/@fontsource/great-vibes/files/great-vibes-vietnamese-400-normal.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: PF; src: url(/nm/@fontsource/playfair-display/files/playfair-display-latin-400-normal.woff2); }
+@font-face { font-family: PF; src: url(/nm/@fontsource/playfair-display/files/playfair-display-vietnamese-400-normal.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: PF; font-style: italic; src: url(/nm/@fontsource/playfair-display/files/playfair-display-latin-400-italic.woff2); }
+@font-face { font-family: PF; font-style: italic; src: url(/nm/@fontsource/playfair-display/files/playfair-display-vietnamese-400-italic.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: BV; font-weight: 600; src: url(/nm/@fontsource/be-vietnam-pro/files/be-vietnam-pro-latin-600-normal.woff2); }
+@font-face { font-family: BV; font-weight: 600; src: url(/nm/@fontsource/be-vietnam-pro/files/be-vietnam-pro-vietnamese-600-normal.woff2); unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+* { box-sizing: border-box; margin: 0; }
+body { background: #e9e6e1; font: 13px/1.4 BV, sans-serif; padding: 18px; color: #222; }
+h1 { font: 600 16px BV, sans-serif; margin-bottom: 12px; }
+.grid { display: grid; grid-template-columns: repeat(5, 260px); gap: 18px 16px; }
+.cell figcaption { font: 600 12px BV, sans-serif; margin-top: 6px; }
+.cell figcaption small { font-weight: 400; color: #666; display: block; }
+/* khung điện thoại 260×520 ~ 360×720 thu .72 */
+.ph { position: relative; width: 260px; height: 520px; overflow: hidden; border-radius: 18px; background: var(--c-bg); color: var(--c-text); box-shadow: 0 6px 18px -8px rgba(0,0,0,.4); isolation: isolate; }
+.mk { background-color: var(--mc, var(--c-accent)); -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+/* token theme */
+.t-son-do { --c-primary:#A3201D; --c-on-primary:#fff; --c-accent:#D4A23C; --c-accent-2:#D4A23C; --c-primary-decor:#A3201D; --c-bg:#FFF8EE; --c-surface:#fff; --c-text:#3B1A14; --c-muted:#6E4A40; --c-line:#EBD6B8; }
+.t-hoai-co { --c-primary:#6B3E26; --c-on-primary:#fff; --c-accent:#C99A8B; --c-accent-2:#C99A8B; --c-primary-decor:#6B3E26; --c-bg:#F4ECDD; --c-surface:#FBF6EC; --c-text:#2E241C; --c-muted:#6A5848; --c-line:#D8C8AE; }
+.t-dat-nung { --c-primary:#9A4A2C; --c-on-primary:#fff; --c-accent:#D9A47E; --c-accent-2:#D9A47E; --c-primary-decor:#9A4A2C; --c-bg:#F6EEE4; --c-surface:#FCF8F2; --c-text:#3A2A20; --c-muted:#6E5A4C; --c-line:#E3D3C1; }
+.t-luc-bao { --c-primary:#1F5A4A; --c-on-primary:#fff; --c-accent:#C2A26A; --c-accent-2:#C2A26A; --c-primary-decor:#1F5A4A; --c-bg:#F3F0E8; --c-surface:#FFFDF8; --c-text:#1E2A25; --c-muted:#56645D; --c-line:#D5D2C6; }
+.t-hong-phan { --c-primary:#A4495A; --c-on-primary:#fff; --c-accent:#E3BDB5; --c-accent-2:#E3BDB5; --c-primary-decor:#A4495A; --c-bg:#FBF3F1; --c-surface:#fff; --c-text:#3A2428; --c-muted:#75585D; --c-line:#E6D3CF; }
+.t-mau-nuoc { --c-primary:#4E6B4A; --c-on-primary:#fff; --c-accent:#A9C3A0; --c-accent-2:#E9C2B8; --c-primary-decor:#4E6B4A; --c-bg:#F7F8F3; --c-surface:#fff; --c-text:#243024; --c-muted:#5A665A; --c-line:#DCE2D6; }
+.t-bien-dao { --c-primary:#1D5C7A; --c-on-primary:#fff; --c-accent:#F2A38A; --c-accent-2:#8FD0CF; --c-primary-decor:#1D5C7A; --c-bg:#FAF6EE; --c-surface:#fff; --c-text:#1B2B33; --c-muted:#4F6370; --c-line:#D8E0E2; }
+.t-dem-nhung { --c-primary:#D9B77E; --c-on-primary:#1C1517; --c-accent:#9C7A45; --c-accent-2:#9C7A45; --c-primary-decor:#D9B77E; --c-bg:#1C1517; --c-surface:#261D20; --c-text:#F2E9E1; --c-muted:#B5A79C; --c-line:#3D3134; }
+.t-pastel-han { --c-primary:#6A5A8C; --c-on-primary:#fff; --c-accent:#F3C6B8; --c-accent-2:#CFC6E8; --c-primary-decor:#6A5A8C; --c-bg:#FBF8F6; --c-surface:#fff; --c-text:#2E2A36; --c-muted:#67606F; --c-line:#E8E2EA; }
+.t-sen-cham { --c-primary:#2D3E5E; --c-on-primary:#fff; --c-accent:#E7A9B6; --c-accent-2:#E7A9B6; --c-primary-decor:#2D3E5E; --c-bg:#F5F3EC; --c-surface:#FCFBF7; --c-text:#1F2533; --c-muted:#545C6B; --c-line:#D9D6CC; }
+.t-muc-giay { --c-primary:#262624; --c-on-primary:#fff; --c-accent:#C2703D; --c-accent-2:#C2703D; --c-primary-decor:#262624; --c-bg:#FAF9F6; --c-surface:#fff; --c-text:#1C1C1A; --c-muted:#5F5E58; --c-line:#E2E0DA; }
+/* chữ dùng chung */
+.eyb { font: 600 8px BV, sans-serif; letter-spacing: .26em; text-transform: uppercase; color: var(--c-muted); }
+.dt { font: 400 12px PF, serif; letter-spacing: .15em; color: var(--c-primary); }
+.nm { font: 400 30px/1.2 GV, cursive; color: var(--c-primary); padding: .1em .18em; text-align: center; }
+.nm .a { display: block; font-size: .6em; color: var(--c-accent); line-height: 1; }
+.pre { font: 600 7.5px BV, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--c-muted); }
+.gst { font: italic 400 15px/1.3 PF, serif; color: var(--c-text); text-align: center; }
+.cta { display: inline-block; background: var(--c-primary); color: var(--c-on-primary); border-radius: 99px; padding: 10px 22px; font: 600 11px BV, sans-serif; }
+.col { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 14px; text-align: center; }
+.plaque { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 10px; padding: 10px 14px; box-shadow: 0 8px 22px -10px rgba(0,0,0,.45); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bottom { position: absolute; left: 0; right: 0; bottom: 22px; display: flex; justify-content: center; z-index: 9; }
+.lbl { position: absolute; left: 6px; top: 6px; z-index: 20; font: 600 9px BV, sans-serif; background: rgba(0,0,0,.6); color: #fff; padding: 2px 5px; border-radius: 4px; }
+</style>
+<style id="styles">
+/* ===== curtain */
+.ct-l, .ct-r { position: absolute; top: 0; bottom: 0; width: 51%; background: linear-gradient(90deg, rgba(0,0,0,.22), rgba(0,0,0,0) 28%, rgba(255,255,255,.10) 52%, rgba(0,0,0,.14) 78%, rgba(0,0,0,.24)) 0 0 / 34px 100%, linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18)), var(--op-fabric); }
+.ct-l { left: 0; } .ct-r { right: 0; }
+.ct-trim { position: absolute; top: 0; bottom: 0; width: 12px; --mc: var(--c-accent); -webkit-mask: url(../../open/curtain/trim.svg) 0 0 / 12px auto repeat-y; mask: url(../../open/curtain/trim.svg) 0 0 / 12px auto repeat-y; }
+.ct-l .ct-trim { right: 3px; } .ct-r .ct-trim { left: 3px; }
+.ct-val { position: absolute; left: 0; right: 0; top: 0; height: 50px; z-index: 3; }
+.ct-val i { position: absolute; inset: 0; -webkit-mask-size: auto 100%; mask-size: auto 100%; -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; -webkit-mask-position: 50% 0; mask-position: 50% 0; }
+.ct-val .f { --mc: var(--op-fabric-deep); -webkit-mask-image: url(../../open/curtain/valance-fill.svg); mask-image: url(../../open/curtain/valance-fill.svg); }
+.ct-val .t { --mc: var(--c-accent); -webkit-mask-image: url(../../open/curtain/valance-trim.svg); mask-image: url(../../open/curtain/valance-trim.svg); }
+[data-op="curtain"] { --op-fabric: color-mix(in srgb, var(--c-primary) 88%, #000); --op-fabric-deep: color-mix(in srgb, var(--c-primary) 62%, #000); }
+[data-op="curtain"].mid .ct-l { transform: translateX(-62%) scaleX(.8); transform-origin: 0 50%; }
+[data-op="curtain"].mid .ct-r { transform: translateX(62%) scaleX(.8); transform-origin: 100% 50%; }
+[data-op="curtain"].mid .plaque { opacity: 0; }
+.ct-behind { position: absolute; inset: 0; background: var(--c-surface); display: grid; place-items: center; }
+
+/* ===== wax-seal */
+[data-op="wax-seal"] { --op-wax: var(--c-primary); }
+.ws-card { position: relative; width: 196px; height: 250px; perspective: 900px; }
+.ws-in { position: absolute; inset: 0; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 4px; display: grid; place-items: center; text-align: center; padding: 16px; }
+.ws-w { position: absolute; top: 0; bottom: 0; width: 50%; background: linear-gradient(90deg, rgba(0,0,0,.04), rgba(0,0,0,0) 30%), var(--c-surface); border: 1px solid var(--c-line); backface-visibility: hidden; box-shadow: 0 6px 14px -8px rgba(0,0,0,.35); }
+.ws-w::after { content: ""; position: absolute; inset: 8px; border: 1px solid color-mix(in srgb, var(--c-accent) 70%, transparent); }
+.ws-l { left: 0; transform-origin: 0 50%; border-radius: 4px 0 0 4px; } .ws-r { right: 0; transform-origin: 100% 50%; border-radius: 0 4px 4px 0; }
+.ws-seal { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; margin: -35px 0 0 -35px; z-index: 5; }
+.ws-seal svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+.ws-mono { position: absolute; inset: 0; display: grid; place-items: center; font: 400 15px PF, serif; color: var(--c-on-primary); letter-spacing: .04em; }
+.wx-body { fill: url(#wxg); } .wx-press { fill: color-mix(in srgb, var(--op-wax) 90%, #000); } .wx-ring { stroke: rgba(255,255,255,.35); stroke-width: 1.2; } .wx-ring2 { stroke: rgba(0,0,0,.3); stroke-width: 1; }
+.wx-crack { stroke: color-mix(in srgb, var(--op-wax) 40%, #000); stroke-width: 1.4; stroke-linejoin: round; }
+.wxs-hi { stop-color: color-mix(in srgb, var(--op-wax) 65%, #fff); } .wxs-mid { stop-color: var(--op-wax); } .wxs-lo { stop-color: color-mix(in srgb, var(--op-wax) 65%, #000); }
+
+[data-op="wax-seal"].mid .ws-seal .h-l { transform: translate(-58px, 34px) rotate(-38deg); opacity: .55; } [data-op="wax-seal"].mid .ws-seal .h-r { transform: translate(60px, 40px) rotate(42deg); opacity: .55; }
+.ws-wb { position: absolute; top: 0; bottom: 0; width: 50%; background: color-mix(in srgb, var(--c-accent) 14%, var(--c-surface)); border: 1px solid var(--c-line); transform: rotateY(180deg); backface-visibility: hidden; }
+.ws-wrap { position: absolute; top: 0; bottom: 0; width: 50%; transform-style: preserve-3d; } .ws-wrap.l { left: 0; transform-origin: 0 50%; } .ws-wrap.r { right: 0; transform-origin: 100% 50%; }
+.ws-wrap > * { left: 0; right: 0; width: auto; }
+[data-op="wax-seal"].mid .ws-wrap.l { transform: rotateY(-120deg); } [data-op="wax-seal"].mid .ws-wrap.r { transform: rotateY(120deg); }
+.ws-seal .h-l, .ws-seal .h-r { position: absolute; inset: 0; }
+
+/* ===== origami */
+[data-op="origami"] { --op-paper: var(--c-surface); --op-paper-2: color-mix(in srgb, var(--c-accent) 26%, var(--c-surface)); }
+.og { position: relative; width: 200px; height: 200px; perspective: 900px; }
+.og-in { position: absolute; inset: 0; background: var(--op-paper); border: 1px solid var(--c-line); display: grid; place-items: center; text-align: center; padding: 18px; }
+.og-f { position: absolute; inset: 0; transform-style: preserve-3d; }
+.og-f > svg, .og-f > .og-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; overflow: visible; }
+.og-back { --mc: var(--c-accent); }
+.og-face { fill: var(--op-paper); stroke: color-mix(in srgb, var(--c-accent) 60%, var(--c-line)); stroke-width: .5; }
+.og-crease { fill: none; stroke: color-mix(in srgb, var(--c-text) 14%, transparent); stroke-width: .4; }
+.og-stk { fill: var(--c-primary); } .og-stk-ring { stroke: rgba(255,255,255,.55); stroke-width: .6; stroke-dasharray: 1 1.2; } .og-stk-heart { fill: #fff; }
+.og-sticker { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px; z-index: 9; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+.og-t { transform-origin: 50% 0; z-index: 4; } .og-b { transform-origin: 50% 100%; z-index: 3; } .og-l { transform-origin: 0 50%; z-index: 2; } .og-r { transform-origin: 100% 50%; z-index: 1; }
+[data-op="origami"].mid .og-t { transform: rotateX(165deg); } [data-op="origami"].mid .og-r { transform: rotateY(150deg); } [data-op="origami"].mid .og-sticker { opacity: 0; } [data-op="origami"].mid .eyb, [data-op="origami"].mid .dt, [data-op="origami"].mid .nm, [data-op="gift-box"].mid .eyb, [data-op="gift-box"].mid .dt, [data-op="gift-box"].mid .nm { opacity: 0; }
+
+/* ===== double-door */
+[data-op="double-door"] { --op-door: color-mix(in srgb, var(--c-primary) 80%, #1a120c); }
+.dd { position: absolute; inset: 0; perspective: 700px; background: radial-gradient(ellipse at 50% 50%, #fff7e0, var(--c-surface) 60%); }
+.dd-d { position: absolute; top: 0; bottom: 0; width: 50%; background: linear-gradient(90deg, rgba(0,0,0,.18), rgba(0,0,0,0) 12%, rgba(0,0,0,0) 88%, rgba(0,0,0,.25)), var(--op-door); }
+.dd-l { left: 0; transform-origin: 0 50%; } .dd-r { right: 0; transform-origin: 100% 50%; }
+.dd-c { position: absolute; inset: 0; --mc: color-mix(in srgb, var(--c-accent) 90%, transparent); -webkit-mask: url(../../open/double-door/door-carve.svg) 50% 50% / 100% auto no-repeat; mask: url(../../open/double-door/door-carve.svg) 50% 50% / 100% auto no-repeat; }
+.dd-r .dd-c { transform: scaleX(-1); }
+.dd-ring { position: absolute; top: 52%; width: 18px; height: 27px; --mc: var(--c-accent); -webkit-mask: url(../../open/double-door/ring.svg) 0 0 / 100% 100%; mask: url(../../open/double-door/ring.svg) 0 0 / 100% 100%; }
+.dd-l .dd-ring { right: 8px; } .dd-r .dd-ring { left: 8px; }
+.dd-light { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 38%, rgba(255,244,214,.9) 50%, transparent 62%); opacity: 0; }
+[data-op="double-door"].mid .dd-l { transform: rotateY(70deg); } [data-op="double-door"].mid .dd-r { transform: rotateY(-70deg); } [data-op="double-door"].mid .dd-light { opacity: .7; } [data-op="double-door"].mid .plaque { opacity: 0; }
+
+/* ===== flower-gate */
+[data-op="flower-gate"] { --op-leaf: color-mix(in srgb, #7E9B76 85%, var(--c-primary)); --op-bloom: var(--c-accent-2); --op-bloom-deep: color-mix(in srgb, var(--c-accent-2) 60%, var(--c-primary)); }
+.fg { position: absolute; inset: 0; }
+.fg-arch { position: absolute; top: 18px; bottom: 0; width: 50%; --mc: var(--c-accent); -webkit-mask: url(../../open/flower-gate/arch.svg) 0 0 / 100% 100%; mask: url(../../open/flower-gate/arch.svg) 0 0 / 100% 100%; }
+.fg-arch.r { right: 0; transform: scaleX(-1); } .fg-arch.l { left: 0; }
+.fg-cl { position: absolute; top: -10px; width: 64%; height: 100%; }
+.fg-cl.l { left: -12%; } .fg-cl.r { right: -12%; transform: scaleX(-1); }
+.fg-cl i { position: absolute; inset: 0; -webkit-mask-size: 100% auto; mask-size: 100% auto; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.fg-cl .lf { --mc: var(--op-leaf); -webkit-mask-image: url(../../open/flower-gate/cluster-leaf.svg); mask-image: url(../../open/flower-gate/cluster-leaf.svg); }
+.fg-cl .bl { --mc: var(--op-bloom); -webkit-mask-image: url(../../open/flower-gate/cluster-bloom.svg); mask-image: url(../../open/flower-gate/cluster-bloom.svg); }
+.fg-cl .dp { --mc: var(--op-bloom-deep); -webkit-mask-image: url(../../open/flower-gate/cluster-deep.svg); mask-image: url(../../open/flower-gate/cluster-deep.svg); }
+.fg-cl .ln { --mc: var(--c-primary-decor); opacity: .5; -webkit-mask-image: url(../../open/flower-gate/cluster-line.svg); mask-image: url(../../open/flower-gate/cluster-line.svg); }
+[data-op="flower-gate"].mid .fg-cl.l { transform: translate(-40%, -14%) rotate(-8deg); } [data-op="flower-gate"].mid .fg-cl.r { transform: scaleX(-1) translate(-40%, -14%) rotate(-8deg); } [data-op="flower-gate"].mid .plaque { opacity: 0; }
+
+/* ===== scroll */
+[data-op="scroll"] { --op-wood: color-mix(in srgb, var(--c-primary) 55%, #2a1608); --op-ribbon: var(--c-primary); }
+.sc { position: relative; width: 210px; display: flex; flex-direction: column; align-items: center; }
+.sc-rod svg { display: block; width: 226px; height: 17px; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
+.sc-paper { width: 196px; background: var(--c-surface); border-inline: 1px solid var(--c-line); box-shadow: inset 0 8px 8px -8px rgba(0,0,0,.25), inset 0 -8px 8px -8px rgba(0,0,0,.25); overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; position: relative; }
+.sc-paper::before { content: ""; position: absolute; inset: 6px 8px; border: 1px solid var(--c-accent); outline: 1px solid var(--c-accent); outline-offset: 2px; opacity: .8; }
+.sc-rod { fill: var(--op-wood); } .sc-knob { fill: var(--c-accent); } .sc-hi { stroke: rgba(255,255,255,.35); stroke-width: 1.5; fill: none; }
+.sc-rib { fill: var(--op-ribbon); } .sc-rib2 { fill: color-mix(in srgb, var(--op-ribbon) 70%, #000); }
+.sc-ribbon { position: absolute; left: 50%; width: 40px; height: 48px; margin-left: -20px; z-index: 3; }
+[data-op="scroll"]:not(.mid) .sc-paper { height: 10px; } [data-op="scroll"]:not(.mid) .sc-paper > * { display: none; }
+[data-op="scroll"].mid .sc-paper { height: 200px; clip-path: inset(0 0 22% 0); } [data-op="scroll"].mid .sc-ribbon { display: none; }
+
+/* ===== card-3d */
+.c3 { position: relative; width: 196px; height: 274px; perspective: 900px; }
+.c3-card { position: absolute; inset: 0; background: var(--c-surface); border-radius: 10px; box-shadow: 0 1px 0 var(--c-line); transform: rotateY(-14deg) rotateX(6deg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; padding: 18px; }
+.c3-frame { position: absolute; inset: 0; --mc: var(--c-accent); -webkit-mask: url(../../open/card-3d/card-frame.svg) 0 0 / 100% 100%; mask: url(../../open/card-3d/card-frame.svg) 0 0 / 100% 100%; }
+.c3-shadow { position: absolute; left: 10%; right: 10%; bottom: -24px; height: 22px; background: radial-gradient(closest-side, rgba(0,0,0,.35), transparent); transform: scaleX(.86); }
+.c3-back { position: absolute; inset: 0; background: var(--c-primary); border-radius: 10px; transform: rotateY(180deg); backface-visibility: hidden; display: grid; place-items: center; color: var(--c-on-primary); font: 400 26px GV, cursive; }
+.c3-rot { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(-14deg) rotateX(6deg); } .c3-rot > .c3-card { transform: none; backface-visibility: hidden; }
+[data-op="card-3d"].mid .c3-rot { transform: rotateY(-120deg); }
+.c3-sheen { position: absolute; inset: 0; border-radius: 10px; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.55) 48%, transparent 60%); }
+ [data-op="card-3d"].mid .c3-shadow { transform: scaleX(.35); opacity: .6; }
+
+/* ===== gift-box */
+[data-op="gift-box"] { --op-box: color-mix(in srgb, var(--c-accent) 40%, var(--c-surface)); --op-box-deep: color-mix(in srgb, var(--c-accent) 70%, var(--c-primary) 10%); --op-ribbon: var(--c-primary); }
+.gb { position: relative; width: 200px; height: 200px; }
+.gb > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.gb-box { fill: var(--op-box); } .gb-side { fill: var(--op-box-deep); opacity: .6; } .gb-rib { fill: var(--op-ribbon); } .gb-line { stroke: var(--c-primary-decor); stroke-width: 1.4; stroke-linejoin: round; }
+.gb-bowl, .gb-tail { fill: none; stroke: var(--op-ribbon); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 0; }
+.gb-knot { fill: color-mix(in srgb, var(--op-ribbon) 75%, #000); }
+.gb-card { position: absolute; left: 22%; right: 22%; top: 40%; height: 46%; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 4px; opacity: 0; display: grid; place-items: center; }
+[data-op="gift-box"].mid .gb-bowl, [data-op="gift-box"].mid .gb-tail { stroke-dashoffset: 100; }
+[data-op="gift-box"].mid .lid { transform: translate(40px, -110px) rotate(15deg); opacity: .5; }
+[data-op="gift-box"].mid .gb-card { opacity: 1; transform: translateY(-70px); } [data-op="gift-box"].mid .gb-knot { opacity: 0; }
+
+/* ===== moon-gate */
+[data-op="moon-gate"] { --op-wood: color-mix(in srgb, var(--c-primary) 78%, #3a2412); --op-wood-line: color-mix(in srgb, var(--c-accent) 55%, var(--op-wood)); --r: 92px; --cy: 40%; }
+.mg-photo { position: absolute; inset: 0; background: radial-gradient(circle at 50% var(--cy), #f7e9d8 0, #e9c8b9 34%, #b88c86 60%, #5d4a55 100%); }
+.mg-photo b { position: absolute; left: 50%; top: var(--cy); translate: -50% -50%; font: 400 22px GV, cursive; color: #fff; opacity: .9; }
+.mg-h { position: absolute; top: 0; bottom: 0; width: 50%; background: var(--op-wood); }
+.mg-h.l { left: 0; -webkit-mask: radial-gradient(circle at 100% var(--cy), transparent var(--r), #000 calc(var(--r) + 1px)); mask: radial-gradient(circle at 100% var(--cy), transparent var(--r), #000 calc(var(--r) + 1px)); }
+.mg-h.r { right: 0; -webkit-mask: radial-gradient(circle at 0 var(--cy), transparent var(--r), #000 calc(var(--r) + 1px)); mask: radial-gradient(circle at 0 var(--cy), transparent var(--r), #000 calc(var(--r) + 1px)); }
+.mg-lat { position: absolute; inset: 0; background: var(--op-wood-line); -webkit-mask: url(../../open/moon-gate/lattice-tile.svg) 0 0 / 36px 36px repeat; mask: url(../../open/moon-gate/lattice-tile.svg) 0 0 / 36px 36px repeat; opacity: .8; }
+.mg-ring { position: absolute; top: var(--cy); width: calc(var(--r) * 2 + 14px); aspect-ratio: 1; border-radius: 50%; border: 7px double var(--c-accent); translate: 0 -50%; }
+.mg-h.l .mg-ring { right: calc(-1 * var(--r) - 7px); } .mg-h.r .mg-ring { left: calc(-1 * var(--r) - 7px); }
+.mg-lotus { position: absolute; left: 50%; top: calc(var(--cy) + var(--r) - 58px); width: 150px; height: 102px; margin-left: -75px; z-index: 3; }
+.mg-lotus i { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.mg-lotus .f { --mc: var(--c-accent); -webkit-mask-image: url(../../open/moon-gate/lotus-fill.svg); mask-image: url(../../open/moon-gate/lotus-fill.svg); }
+.mg-lotus .ln { --mc: var(--c-primary); opacity: .55; -webkit-mask-image: url(../../open/moon-gate/lotus-line.svg); mask-image: url(../../open/moon-gate/lotus-line.svg); }
+[data-op="moon-gate"].mid .mg-h.l { transform: translateX(-70%); } [data-op="moon-gate"].mid .mg-h.r { transform: translateX(70%); } [data-op="moon-gate"].mid .mg-lotus, [data-op="moon-gate"].mid .plaque { opacity: 0; }
+
+/* ===== book */
+.bk { position: relative; width: 190px; height: 266px; perspective: 1000px; }
+.bk-page { position: absolute; inset: 0; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 2px 6px 6px 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 16px; text-align: center; box-shadow: 0 10px 22px -12px rgba(0,0,0,.5); }
+.bk-cover { position: absolute; inset: 0; transform-origin: 0 50%; transform-style: preserve-3d; }
+.bk-cover > div { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 2px 6px 6px 2px; }
+.bk-front { background: linear-gradient(90deg, rgba(0,0,0,.25), rgba(0,0,0,0) 7%), var(--op-cover); display: flex; flex-direction: column; align-items: center; color: var(--c-accent); }
+.bk-frame { position: absolute; inset: 0; --mc: var(--c-accent); -webkit-mask: url(../../open/book/cover-frame.svg) 0 0 / 100% 100%; mask: url(../../open/book/cover-frame.svg) 0 0 / 100% 100%; }
+.bk-mono { position: absolute; left: 0; right: 0; top: 45.2%; translate: 0 -50%; font: 400 22px PF, serif; color: var(--c-accent); }
+.bk-title { position: absolute; left: 0; right: 0; top: 79.5%; font: italic 400 12px PF, serif; color: var(--c-accent); letter-spacing: .08em; }
+.bk-back { transform: rotateY(180deg); background: var(--c-surface); }
+.bk-back::after { content: ""; position: absolute; inset: 0; background: var(--c-accent); opacity: .22; -webkit-mask: url(../../open/book/endpaper.svg) 0 0 / 26px 26px repeat; mask: url(../../open/book/endpaper.svg) 0 0 / 26px 26px repeat; }
+[data-op="book"] { --op-cover: color-mix(in srgb, var(--c-primary) 92%, #000); }
+[data-op="book"].mid .bk-cover { transform: rotateY(-115deg); }
+
+/* ===== ink-spread */
+.ik { position: absolute; width: 520px; height: 520px; left: calc(var(--x) - 260px); top: calc(var(--y) - 260px); transform: scale(var(--s)); }
+.ik i { position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.ik .core { --mc: var(--c-bg); -webkit-mask-image: url(../../open/ink-spread/blob-core.svg); mask-image: url(../../open/ink-spread/blob-core.svg); }
+.ik .rim { --mc: var(--c-accent); opacity: .6; -webkit-mask-image: url(../../open/ink-spread/blob-rim.svg); mask-image: url(../../open/ink-spread/blob-rim.svg); }
+.ik-landing { position: absolute; inset: 0; background: linear-gradient(180deg, #cfd9c8, #8fa886 60%, #4e6b4a); display: grid; place-items: center; color: #fff; font: 400 28px GV, cursive; }
+.ik-cover { position: absolute; inset: 0; background: var(--c-surface); }
+.mid .ik-coverwrap { -webkit-mask: url(../../open/ink-spread/blob-core.svg) var(--mx) var(--my) / var(--ms) var(--ms) no-repeat, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: url(../../open/ink-spread/blob-core.svg) var(--mx) var(--my) / var(--ms) var(--ms) no-repeat exclude, linear-gradient(#000 0 0); }
+.ik-coverwrap { position: absolute; inset: 0; }
+
+/* ===== polaroid */
+.pl { position: relative; width: 186px; height: 222px; perspective: 900px; }
+.pl-in { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotate(-3deg); }
+.pl-in > div { position: absolute; inset: 0; backface-visibility: hidden; background: #FFFDF9; box-shadow: 0 10px 22px -10px rgba(0,0,0,.45); }
+.pl-back { transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 18px; }
+.pl-back::before { content: ""; position: absolute; inset: 0; background: var(--c-muted); opacity: .18; -webkit-mask: url(../../open/polaroid/back-print.svg) 0 0 / 100% 100%; mask: url(../../open/polaroid/back-print.svg) 0 0 / 100% 100%; }
+.pl-front { padding: 9px 9px 34px; }
+.pl-photo { position: relative; width: 100%; height: 100%; background: linear-gradient(160deg, #f0d9c8, #c9a7b0 55%, #6a5a8c); overflow: hidden; }
+.pl-photo .dev1 { position: absolute; inset: 0; background: #F4F1EA; }
+.pl-photo .dev2 { position: absolute; inset: 0; background: #704214; mix-blend-mode: color; }
+.pl-cap { position: absolute; left: 0; right: 0; bottom: 4px; font: 400 18px GV, cursive; color: #3A332E; text-align: center; padding: .05em .2em .1em; }
+.pl-tape { position: absolute; top: -12px; left: 50%; width: 70px; height: 25px; margin-left: -35px; --mc: var(--c-accent-2); opacity: .8; -webkit-mask: url(../../open/polaroid/tape.svg) 0 0 / 100% 100%; mask: url(../../open/polaroid/tape.svg) 0 0 / 100% 100%; transform: rotate(-4deg); z-index: 4; }
+[data-op="polaroid"]:not(.mid) .pl-in { transform: rotate(-3deg) rotateY(180deg); }
+[data-op="polaroid"].mid .pl-photo .dev1 { opacity: .35; } [data-op="polaroid"].mid .pl-photo .dev2 { opacity: .45; } [data-op="polaroid"].mid .pl-cap { clip-path: inset(-.3em 38% -.3em -.3em); }
+</style></head>
+<body>
+<h1>v4a-2 · 13 kiểu mở thiệp - <span id="mode"></span> (360×720 thu .72; theme gợi ý của từng kiểu)</h1>
+<div class="grid" id="grid"></div>
+<svg width="0" height="0" style="position:absolute"><defs><radialGradient id="wxg" cx="40%" cy="35%" r="70%"><stop offset="0" class="wxs-hi"/><stop offset=".55" class="wxs-mid"/><stop offset="1" class="wxs-lo"/></radialGradient></defs></svg>
+<script type="module">
+const MID = new URLSearchParams(location.search).has('mid');
+document.getElementById('mode').textContent = MID ? 'KHUNG GIỮA (≈ 45–60% timeline Vừa)' : 'TRẠNG THÁI ĐÓNG (trước khi chạm)';
+const sym = {};
+for (const id of ['wax-seal', 'origami', 'scroll', 'gift-box']) {
+  const txt = await (await fetch(`../../open/${id}/inline.svg`)).text();
+  const doc = new DOMParser().parseFromString(txt, 'image/svg+xml');
+  doc.querySelectorAll('symbol').forEach((s) => (sym[s.id] = { vb: s.getAttribute('viewBox'), inner: s.innerHTML }));
+}
+const S = (id, cls = '', extra = '') => `<svg class="${cls}" viewBox="${sym[id].vb}" ${extra}>${sym[id].inner}</svg>`;
+const head = (names = true) => `<p class="eyb">Thiệp mời cưới</p><p class="dt">12 · 12 · 2026</p>${names ? '<p class="nm">Minh Anh<span class="a">&amp;</span>Thuỳ Linh</p>' : ''}`;
+const guest = `<p class="pre">Kính gửi</p><p class="gst">Gia đình anh Mạnh</p>`;
+const cta = `<div class="bottom"><span class="cta">♡ Chạm để mở thiệp</span></div>`;
+const cells = {
+  curtain: ['son-do', 'Rèm kéo · gate', `<div class="ct-behind">${head()}</div><div class="ct-l"><i class="ct-trim mk"></i></div><div class="ct-r"><i class="ct-trim mk"></i></div><div class="ct-val"><i class="f mk"></i><i class="t mk"></i></div><div class="col" style="z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
+  'wax-seal': ['hoai-co', 'Dấu sáp vỡ · object', `<div class="col" style="justify-content:flex-start;padding-top:26px">${head()}<div class="ws-card"><div class="ws-in"><div><p class="gst" style="font-size:20px;color:var(--c-primary)">Chúng mình<br>sắp cưới!</p></div></div><div class="ws-wrap l"><div class="ws-w ws-l"></div><div class="ws-wb"></div></div><div class="ws-wrap r"><div class="ws-w ws-r"></div><div class="ws-wb"></div></div><div class="ws-seal"><div class="h-l"><svg viewBox="-48 -48 96 96" style="clip-path:url(#ckl)">${sym['wx-body'].inner}${sym['wx-press'].inner}</svg></div><div class="h-r"><svg viewBox="-48 -48 96 96" style="clip-path:url(#ckr)">${sym['wx-body'].inner}${sym['wx-press'].inner}</svg></div>${MID ? '' : `<svg viewBox="-48 -48 96 96">${sym['wx-crack'].inner}</svg><span class="ws-mono">M&amp;L</span>`}</div></div>${guest}</div>${MID ? '' : cta}<svg width="0" height="0"><clipPath id="ckl" clipPathUnits="userSpaceOnUse">${sym['crack-l'].inner}</clipPath><clipPath id="ckr" clipPathUnits="userSpaceOnUse">${sym['crack-r'].inner}</clipPath></svg>`],
+  origami: ['dat-nung', 'Gấp giấy · object', `<div class="col" style="justify-content:flex-start;padding-top:30px">${head()}<div class="og"><div class="og-in"><div><p class="gst" style="font-size:12px">Trân trọng kính mời</p><p class="gst">Gia đình anh Mạnh</p></div></div>${['l', 'r', 'b', 't'].map((k) => `<div class="og-f og-${k}">${S({ l: 'og-left', r: 'og-right', b: 'og-bottom', t: 'og-top' }[k])}<svg viewBox="0 0 100 100" style="transform:rotate${'tb'.includes(k) ? 'X' : 'Y'}(180deg)"><defs><pattern id="pp${k}" width="12" height="12" patternUnits="userSpaceOnUse"><image href="../../open/origami/flap-pattern.svg" width="12" height="12" opacity=".5"/></pattern></defs><path d="${sym[{ l: 'og-left', r: 'og-right', b: 'og-bottom', t: 'og-top' }[k]].inner.match(/d="([^"]+)"/)[1]}" fill="var(--op-paper-2)"/><path d="${sym[{ l: 'og-left', r: 'og-right', b: 'og-bottom', t: 'og-top' }[k]].inner.match(/d="([^"]+)"/)[1]}" fill="url(#pp${k})"/></svg></div>`).join('')}<div class="og-sticker">${S('og-sticker')}</div></div><p class="pre" style="margin-top:8px">Kính gửi</p><p class="gst">Gia đình anh Mạnh</p></div>${MID ? '' : cta}`],
+  'double-door': ['luc-bao', 'Cửa đôi · gate', `<div class="dd"><div class="col">${head()}</div><div class="dd-light"></div><div class="dd-d dd-l"><i class="dd-c mk"></i><i class="dd-ring mk"></i></div><div class="dd-d dd-r"><i class="dd-c mk"></i><i class="dd-ring mk"></i></div></div><div class="col" style="z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
+  'flower-gate': ['hong-phan', 'Cổng hoa (vector) · gate', `<div class="fg"><i class="fg-arch l mk"></i><i class="fg-arch r mk"></i><div class="fg-cl l"><i class="lf mk"></i><i class="bl mk"></i><i class="dp mk"></i><i class="ln mk"></i></div><div class="fg-cl r"><i class="lf mk"></i><i class="bl mk"></i><i class="dp mk"></i><i class="ln mk"></i></div></div><div class="col" style="z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
+  scroll: ['son-do', 'Cuộn thư · object', `<div class="col" style="justify-content:flex-start;padding-top:40px">${head()}<div class="sc"><div class="sc-rod">${S('sc-rod')}</div><div class="sc-paper">${guest}<p class="gst" style="font-size:11px;color:var(--c-muted)">tới dự lễ thành hôn</p></div><div class="sc-rod">${S('sc-rod')}</div><div class="sc-ribbon" style="top:-14px">${S('sc-ribbon')}</div></div></div>${MID ? '' : cta}`],
+  'card-3d': ['bien-dao', 'Thiệp 3D xoay · object', `<div class="col"><div class="c3"><div class="c3-shadow"></div><div class="c3-rot"><div class="c3-card"><i class="c3-frame mk"></i>${head()}<span style="width:40px;height:1px;background:var(--c-accent)"></span>${guest}${MID ? '' : '<i class="c3-sheen"></i>'}</div><div class="c3-back">M &amp; L</div></div></div></div>${MID ? '' : cta}`],
+  'light-gather': ['dem-nhung', 'Hạt sáng tụ thành tên · gate (canvas)', `<canvas class="lg" width="260" height="520" style="position:absolute;inset:0"></canvas><div class="col" style="justify-content:flex-start;padding-top:70px;gap:8px">${head(false)}<p class="nm lg-names" style="opacity:${MID ? '.12' : '1'}">Minh Anh<span class="a">&amp;</span>Thuỳ Linh</p>${guest.replace('class="gst"', 'class="gst" style="color:var(--c-text)"')}</div>${MID ? '' : cta}`],
+  'gift-box': ['pastel-han', 'Mở hộp quà · object', `<div class="col" style="justify-content:flex-start;padding-top:30px">${head()}<div class="gb"><div class="gb-card"><p class="gst" style="font-size:12px">Chúng mình<br>sắp cưới!</p></div>${S('gb-body')}${S('gb-lid', 'lid')}${S('gb-bow', 'lid')}</div>${guest}</div>${MID ? '' : cta}`],
+  'moon-gate': ['sen-cham', 'Cửa trăng · gate', `<div class="mg-photo"><b>M &amp; L</b></div><div class="mg-h l"><i class="mg-lat"></i><i class="mg-ring"></i></div><div class="mg-h r"><i class="mg-lat"></i><i class="mg-ring"></i></div><div class="mg-lotus"><i class="f mk"></i><i class="ln mk"></i></div><div class="col" style="justify-content:flex-end;padding-bottom:84px;z-index:5"><div class="plaque">${head()}${guest}</div></div>${MID ? '' : cta}`],
+  book: ['muc-giay', 'Thiệp gấp đôi (lật trang) · object', `<div class="col" style="justify-content:flex-start;padding-top:28px">${head()}<div class="bk"><div class="bk-page"><p class="gst" style="font-size:11px;color:var(--c-muted)">Trân trọng kính mời</p><p class="gst">Gia đình anh Mạnh</p><p class="gst" style="font-size:11px;color:var(--c-muted)">tới dự lễ thành hôn</p></div><div class="bk-cover"><div class="bk-front"><i class="bk-frame mk"></i><span class="bk-mono">M · L</span><span class="bk-title">Thiệp mời</span></div><div class="bk-back"></div></div></div></div>${MID ? '' : cta}`],
+  'ink-spread': ['mau-nuoc', 'Mực loang · gate', `${MID ? '<div class="ik-landing">Minh Anh &amp; Thuỳ Linh</div>' : ''}<div class="ik-coverwrap" style="--mx:${170 - 161}px;--my:${330 - 161}px;--ms:322px"><div class="ik-cover"></div><div class="col">${head()}${guest}</div>${MID ? '' : cta}</div>${MID ? `<div class="ik" style="--x:170px;--y:330px;--s:.62"><i class="rim mk"></i></div>` : ''}`],
+  polaroid: ['pastel-han', 'Ảnh polaroid · object', `<div class="col" style="justify-content:flex-start;padding-top:28px">${head()}<div class="pl"><i class="pl-tape mk"></i><div class="pl-in"><div class="pl-front"><div class="pl-photo"><i class="dev1"></i><i class="dev2"></i></div><p class="pl-cap">Minh Anh &amp; Thuỳ Linh</p></div><div class="pl-back"><p class="pre" style="position:relative">Kính gửi</p><p class="gst" style="position:relative">Gia đình anh Mạnh</p></div></div></div></div>${MID ? '' : cta}`],
+};
+const grid = document.getElementById('grid');
+for (const [id, [theme, name, html]] of Object.entries(cells)) {
+  const fig = document.createElement('figure');
+  fig.className = 'cell';
+  fig.innerHTML = `<div class="ph t-${theme}${MID ? ' mid' : ''}" data-op="${id}"><span class="lbl">${id}</span>${html}</div><figcaption>${id} — ${name}<small>theme ${theme}</small></figcaption>`;
+  grid.appendChild(fig);
+}
+await document.fonts.ready;
+// light-gather: lấy mẫu điểm ảnh từ đúng vị trí .lg-names (spec design-v4a-2bc §2.8)
+for (const c of document.querySelectorAll('canvas.lg')) {
+  const ph = c.parentElement; const nm = ph.querySelector('.lg-names');
+  const g = c.getContext('2d');
+  const R = ph.getBoundingClientRect(); const r = nm.getBoundingClientRect();
+  const off = document.createElement('canvas'); off.width = 260; off.height = 520; const o = off.getContext('2d', { willReadFrequently: true });
+  const cs = getComputedStyle(nm);
+  o.font = `${cs.fontSize} ${cs.fontFamily}`; o.textAlign = 'center'; o.textBaseline = 'middle'; o.fillStyle = '#000';
+  const lines = ['Minh Anh', '&', 'Thuỳ Linh']; const lh = r.height / 3;
+  lines.forEach((t, i) => { o.font = `${i === 1 ? parseFloat(cs.fontSize) * 0.6 : parseFloat(cs.fontSize)}px ${cs.fontFamily}`; o.fillText(t, r.left - R.left + r.width / 2, r.top - R.top + lh * (i + 0.5)); });
+  const data = o.getImageData(0, 0, 260, 520).data; const pts = [];
+  for (let y = 0; y < 520; y += 2) for (let x = 0; x < 260; x += 2) if (data[(y * 260 + x) * 4 + 3] > 128) pts.push([x, y]);
+  for (let i = pts.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pts[i], pts[j]] = [pts[j], pts[i]]; }
+  let s = 7; const rnd = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+  g.globalCompositeOperation = 'lighter';
+  const N = MID ? Math.min(420, pts.length) : 120;
+  for (let i = 0; i < N; i++) {
+    const [tx, ty] = pts[i % pts.length] ?? [130, 200];
+    const sx = rnd() * 260, sy = rnd() * 520;
+    const k = MID ? 0.86 + rnd() * 0.14 : 0;
+    const x = sx + (tx - sx) * k, y = sy + (ty - sy) * k;
+    const rr = MID ? 0.7 + rnd() * 0.6 : 0.8 + rnd() * 1.2;
+    if (!MID && x > 40 && x < 220 && y > 100 && y < 260) continue; // né khối tên lúc chờ (vùng dịu)
+    const grd = g.createRadialGradient(x, y, 0, x, y, rr * 2.4);
+    grd.addColorStop(0, `rgba(255,244,214,${MID ? .9 : .7})`); grd.addColorStop(.4, 'rgba(243,212,140,.35)'); grd.addColorStop(1, 'rgba(243,212,140,0)');
+    g.fillStyle = grd; g.fillRect(x - rr * 2.4, y - rr * 2.4, rr * 4.8, rr * 4.8);
+  }
+}
+window.__ready = true;
+</script>
+</body></html>

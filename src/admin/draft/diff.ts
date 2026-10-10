@@ -55,6 +55,8 @@ export function diffConfigs(before: unknown, after: unknown, ignore: string[] = 
     const x = a.get(p);
     const y = b.get(p);
     if (JSON.stringify(x) === JSON.stringify(y)) continue;
+    // lá "{}" của map rỗng (vd ghim reveal đầu tiên): dòng của khoá con đã đủ nghĩa -> bỏ dòng "xoá {}" / "thêm {}"
+    if ((x === undefined || y === undefined) && JSON.stringify(x ?? y) === '{}') continue;
     const label = labelForPath(p);
     let text: string;
     if (p === 'sections.items') text = `${label}: đã đổi`;

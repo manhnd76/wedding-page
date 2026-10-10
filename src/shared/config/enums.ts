@@ -34,6 +34,20 @@ export const DIVIDERS = [
 ] as const;
 export type Divider = (typeof DIVIDERS)[number];
 
+// [v4a-1] >>>
+/** B2 hoạ tiết nền (design 1.7, solution Rev 5 mục 10.1). `none` không nằm trong danh sách bộ. */
+export const MOTIF_SETS = ['dong-son', 'may-cat-tuong', 'song-nuoc', 'hoa-sen', 'chu-hy', 'art-deco', 'la-canh'] as const;
+export type MotifSet = (typeof MOTIF_SETS)[number];
+export const MOTIF_PLACEMENTS = ['pattern', 'corners', 'title', 'band', 'hero'] as const;
+export type MotifPlacement = (typeof MOTIF_PLACEMENTS)[number];
+export const MOTIF_INTENSITIES = ['light', 'medium', 'strong'] as const;
+export type MotifIntensity = (typeof MOTIF_INTENSITIES)[number];
+export const MOTIF_MOTIONS = ['auto', 'off'] as const;
+export type MotifMotion = (typeof MOTIF_MOTIONS)[number];
+/** `--mtf-level` theo độ đậm (design 1.7.4). */
+export const MOTIF_LEVEL: Record<MotifIntensity, number> = { light: 0.1, medium: 0.18, strong: 0.28 };
+// [v4a-1] <<<
+
 export const FONT_PRESETS = ['co-dien', 'thanh-lich', 'am-ap', 'bien-tap', 'truyen-thong'] as const;
 export type FontPresetId = (typeof FONT_PRESETS)[number];
 
@@ -101,6 +115,12 @@ export const REVEAL_ATOMS = [
   'rise-tilt', 'blur-in', 'split-words', 'split-chars', 'svg-draw', 'parallax-layers',
 ] as const;
 export type RevealAtom = (typeof REVEAL_ATOMS)[number] | 'none';
+
+// [v4a-2a] >>>
+/** B1: cách áp gói reveal cho các section (solution-v4a-2a.md 1.1) */
+export const REVEAL_MODES = ['auto', 'uniform'] as const;
+export type RevealMode = (typeof REVEAL_MODES)[number];
+// [v4a-2a] <<<
 
 export const WISH_FLY = ['paper-plane', 'bubble', 'heart'] as const;
 export type WishFly = (typeof WISH_FLY)[number];

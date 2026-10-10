@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Divider dots: ba chấm, chấm giữa lớn hơn. Tự vẽ (ui-ux-designer v4a-1). -->
+<symbol id="divider" viewBox="0 0 160 24"><g fill="currentColor"><circle pathLength="100" cx="68" cy="12" r="1.6"/><circle pathLength="100" cx="80" cy="12" r="2.2"/><circle pathLength="100" cx="92" cy="12" r="1.6"/></g></symbol>
+</svg>

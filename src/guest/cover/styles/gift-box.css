@@ -1,0 +1,17 @@
+/* gift-box (design-v4a-2bc §2.9): hộp phẳng-line, màu theo token (--op-box/-deep/--op-ribbon) */
+.cover[data-open="gift-box"] { --op-box: var(--c-surface); --op-box-deep: var(--c-accent); --op-ribbon: var(--c-primary); --gb-knot: var(--c-primary); }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .cover[data-open="gift-box"] { --op-box: color-mix(in srgb, var(--c-accent) 40%, var(--c-surface)); --op-box-deep: color-mix(in srgb, var(--c-accent) 70%, var(--c-primary) 10%); --gb-knot: color-mix(in srgb, var(--op-ribbon) 75%, #000); }
+  [data-mode="dark"] .cover[data-open="gift-box"] { --op-box: color-mix(in srgb, var(--c-accent) 35%, var(--c-surface)); --op-box-deep: var(--c-accent); }
+}
+.gb { position: relative; width: min(56vw, 220px, calc(100svh - 500px)); min-width: 150px; aspect-ratio: 1; }
+.gb-s { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.gb-card { position: absolute; left: 22%; right: 22%; top: 40%; height: 46%; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 4px; display: grid; place-items: center; padding: 6px; }
+/* O05: thiệp trong hộp quá nhỏ cho script (≥ 28px, §2.1) -> heading italic */
+.gb-card .op-greet { font: italic 500 calc(18px * var(--fs-k))/1.3 var(--ff-heading); padding-inline: .1em; }
+.gb-lid { transform-origin: 50% 40%; }
+.gb-box { fill: var(--op-box); } .gb-side { fill: var(--op-box-deep); opacity: .6; } .gb-rib { fill: var(--op-ribbon); }
+.gb-line { fill: none; stroke: var(--c-primary-decor); stroke-width: 1.4; stroke-linejoin: round; }
+.gb-bowl, .gb-tail { fill: none; stroke: var(--op-ribbon); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 0; }
+.gb-knot { fill: var(--gb-knot); }
+.is-opening .gb-card, .is-opening .gb-lid { will-change: transform; }

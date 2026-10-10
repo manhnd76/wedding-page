@@ -9,11 +9,12 @@ import { guestNameFromUrl } from '@shared/guest-name';
 import { planSections, type PlannedSection } from '@shared/sections/meta';
 import { ctx, emit, watchTyping, type Resolved } from './context';
 import { h } from './dom';
+import { OPEN_META } from '@shared/open-styles';
 import { mountCover } from './cover/cover';
 import { MusicPlayer } from './music/player';
 import { mountFloating } from './floating/floating';
 import { afterOpen, applyFxClasses, computeFx } from './effects/service';
-import { prepareReveal } from './effects/reveal';
+import { prepareReveal, revealApi } from './effects/reveal';
 import { announcement, couple, families, footer, hero, loveStory, thankyou, timeline } from './sections/basic';
 import { events } from './sections/events';
 import { countdown } from './sections/countdown';
@@ -55,10 +56,13 @@ async function loadConfig(boot: PreviewBoot | null): Promise<{ config: WeddingCo
   if (!resolved) {
     const { resolveTheme, themeCssVars } = await import('@shared/theme/resolve');
     const { fontStack } = await import('@shared/fonts/registry');
+    const { planOf } = await import('@shared/reveal-plan');
     resolved = resolveTheme(config);
+    resolved.reveal.plan = planOf(config, resolved.reveal);
     if (boot) {
       const bridge = await import('./preview-bridge');
       resolved.ornamentUrl = await bridge.ornamentUrlFor(import.meta.env.BASE_URL, resolved.ornamentSet);
+      resolved.dividerUrl = await bridge.dividerUrlFor(import.meta.env.BASE_URL, resolved.divider);
       await bridge.ensureFonts(import.meta.env.BASE_URL, [resolved.fonts.heading, resolved.fonts.script, resolved.fonts.body]);
     }
     const vars = themeCssVars(resolved, { heading: fontStack(resolved.fonts.heading), script: fontStack(resolved.fonts.script), body: fontStack(resolved.fonts.body) });
@@ -160,7 +164,21 @@ export async function bootstrap(): Promise<void> {
   const nextSec = main.querySelectorAll<HTMLElement>('.sec')[1];
   if (cue) { if (nextSec?.id) cue.href = `#${nextSec.id}`; else cue.remove(); }
 
+  // [v4a-2a] >>>
+  // [v4a-2a] <<<
   prepareReveal(main, ctx.resolved.reveal, ctx.fx.state);
+  // [v4a-1] >>>
+  // ornament watercolor: vệt .wash hiện dần cùng svg-draw (ornaments.css); polaroid thứ chẵn nghiêng phải (frames.css)
+  document.documentElement.dataset.orn = ctx.resolved.ornamentSet;
+  main.querySelectorAll('.frame--polaroid').forEach((f, i) => { if (i % 2) f.classList.add('tilt-r'); });
+  // hoạ tiết nền B2: chunk lười lúc rảnh (sau khi landing render, không ảnh hưởng LCP) - solution Rev 5 mục 10.5f
+  const mtf = ctx.resolved.motif;
+  if (mtf && mtf.set !== 'none' && mtf.placements.length) {
+    const load = () => void import('./motif/motif').then((m) => m.mountMotifs(main, plan));
+    const ric = (window as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    if (ric) ric(load, { timeout: 1500 }); else setTimeout(load, 200);
+  }
+  // [v4a-1] <<<
 
   const cfgMusic = ctx.config.music;
   const music = new MusicPlayer(cfgMusic.enabled && cfgMusic.src ? assetUrl(cfgMusic.src, ctx.base) : null, {
@@ -224,7 +242,7 @@ function previewAfterOpen(boot: PreviewBoot, target: string | null, bridge: type
     bridge.applyOptions(o);
     return;
   }
-  if (target === 'cover') { done(1600); return; }
+  if (target === 'cover') { done((OPEN_META[ctx.resolved.openStyle]?.ms ?? 1300) + 300); return; }
   if (target === 'autoscroll') {
     window.scrollTo(0, 0);
     void import('./autoscroll/autoscroll').then((m) => {
@@ -233,24 +251,12 @@ function previewAfterOpen(boot: PreviewBoot, target: string | null, bridge: type
     return;
   }
   if (target === 'burst' || target === 'particles') { window.scrollTo(0, 0); done(target === 'burst' ? 2600 : 1200); return; }
-  if (target === 'reveal') {
-    const secs = Array.from(document.querySelectorAll<HTMLElement>('main .sec'));
-    const first = secs.find((s, i) => i > 0 && s.querySelector('img')) ?? secs[1];
-    if (first) {
-      window.scrollTo(0, Math.max(0, first.offsetTop - window.innerHeight * 0.6));
-      setTimeout(() => window.scrollBy({ top: window.innerHeight * 0.9, behavior: 'smooth' }), 250);
-    }
-    done(2200);
+  // v4a-2a: reveal (tour 3 phần), reveal:<id>, micro:<mã> -> chunk lười fx-preview (solution-v4a-2a.md 3.5)
+  if (target === 'reveal' || target.startsWith('reveal:') || target.startsWith('micro:')) {
+    void import('./effects/reveal/fx-preview').then((m) => m.runFxPreview(revealApi, target, { speed: boot.fx?.speed ?? 1, done: () => bridge.post({ type: 'fx:done', target }) }));
     return;
   }
-  // micro:<mã> hoặc tên section -> cuộn tới section liên quan
-  const sec = target.startsWith('micro:') ? MICRO_SECTION[target.slice(6)] ?? '' : target;
-  if (sec) document.getElementById(sec)?.scrollIntoView({ block: 'start' });
-  else if (o.scrollY) window.scrollTo(0, o.scrollY);
+  // tên section -> cuộn tới section đó
+  document.getElementById(target)?.scrollIntoView({ block: 'start' });
   done(900);
 }
-
-const MICRO_SECTION: Record<string, string> = {
-  wishFly: 'guestbook', 'wish-fly': 'guestbook', rsvp: 'rsvp', 'rsvp-success': 'rsvp', countdown: 'countdown',
-  fireworks: 'countdown', photoTilt: 'album', 'photo-tilt': 'album', buttonShine: 'hero',
-};

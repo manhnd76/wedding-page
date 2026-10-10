@@ -1,0 +1,506 @@
+{
+ "$schema": "design-v4a-2bc.md §4.1/§5.1",
+ "unit": "ô 24×24, tâm (0,0); draw: g.scale(s/24) rồi vẽ layers theo thứ tự",
+ "tones": {
+  "c1": "màu 1",
+  "c2": "màu 2",
+  "light": "mix(c1,#fff,.4)",
+  "dark": "mix(c1,#000,.28)"
+ },
+ "items": [
+  {
+   "id": "confetti",
+   "name": "Giấy màu",
+   "motion": "burst",
+   "flip": true,
+   "size": [
+    16,
+    24
+   ],
+   "natural": null,
+   "colorNote": "theme sáng: [accent, accent-2, primary, mix(accent,#fff,.45)]; theme tối: [primary, accent, #F2E9E1, mix(primary,#fff,.3)]. Mỗi mảnh 1 màu ngẫu nhiên -> sprite = hình × màu (4×4 = 16 sprite nhỏ)",
+   "variants": [
+    {
+     "w": 0.4,
+     "key": "cf-rect",
+     "layers": [
+      {
+       "d": "M-4.9 -3H4.9Q5.5 -3 5.5 -2.4V2.4Q5.5 3 4.9 3H-4.9Q-5.5 3 -5.5 2.4V-2.4Q-5.5 -3 -4.9 -3Z",
+       "fill": "c1"
+      }
+     ],
+     "back": [
+      {
+       "d": "M-4.9 -3H4.9Q5.5 -3 5.5 -2.4V2.4Q5.5 3 4.9 3H-4.9Q-5.5 3 -5.5 2.4V-2.4Q-5.5 -3 -4.9 -3Z",
+       "fill": "dark"
+      }
+     ]
+    },
+    {
+     "w": 0.2,
+     "key": "cf-square",
+     "layers": [
+      {
+       "d": "M-3 -3.5H3Q3.5 -3.5 3.5 -3V3Q3.5 3.5 3 3.5H-3Q-3.5 3.5 -3.5 3V-3Q-3.5 -3.5 -3 -3.5Z",
+       "fill": "c1"
+      }
+     ],
+     "back": [
+      {
+       "d": "M-3 -3.5H3Q3.5 -3.5 3.5 -3V3Q3.5 3.5 3 3.5H-3Q-3.5 3.5 -3.5 3V-3Q-3.5 -3.5 -3 -3.5Z",
+       "fill": "dark"
+      }
+     ]
+    },
+    {
+     "w": 0.2,
+     "key": "cf-circle",
+     "layers": [
+      {
+       "circle": [
+        0,
+        0,
+        4
+       ],
+       "fill": "c1"
+      }
+     ]
+    },
+    {
+     "w": 0.2,
+     "key": "cf-strip",
+     "layers": [
+      {
+       "d": "M-1.5-9C3-6-3-2 1.5 1S-3 6 1.5 9",
+       "stroke": "c1",
+       "lw": 2.4
+      }
+     ]
+    }
+   ],
+   "emit": {
+    "counts": [
+     0,
+     80,
+     120
+    ],
+    "rsvpCounts": [
+     0,
+     40,
+     60
+    ],
+    "durationMs": 1800,
+    "onOpen": {
+     "emitters": [
+      {
+       "x": 0.06,
+       "y": 1.02,
+       "angle": [
+        -80,
+        -55
+       ],
+       "share": 0.5
+      },
+      {
+       "x": 0.94,
+       "y": 1.02,
+       "angle": [
+        -125,
+        -100
+       ],
+       "share": 0.5
+      }
+     ],
+     "speedVh": [
+      2,
+      2.8
+     ],
+     "gravityVh": 0.6,
+     "drag": 2.2,
+     "life": [
+      1500,
+      1800
+     ],
+     "spin": [
+      4,
+      9
+     ],
+     "flipRate": [
+      3,
+      7
+     ],
+     "stagger": "trong 120ms đầu, mỗi bên 3 nhịp 40ms",
+     "result": "đỉnh 26–41% chiều cao màn lúc ~950ms, rơi chậm ~200px/s (giới hạn = g/drag), mờ từ 70% đời"
+    },
+    "rsvp": {
+     "emitters": [
+      {
+       "anchor": "nút \"Gửi xác nhận\" (rect.top, giữa ngang)",
+       "angle": [
+        -140,
+        -40
+       ]
+      }
+     ],
+     "speedPx": [
+      520,
+      820
+     ],
+     "gravityPx": 1100,
+     "drag": 1.6,
+     "life": [
+      1100,
+      1400
+     ],
+     "result": "vồng 100–130px trên nút, không phủ form (form là vùng loại trừ, hạt mờ khi vào)"
+    }
+   }
+  },
+  {
+   "id": "gold",
+   "name": "Bụi vàng",
+   "motion": "burst",
+   "flip": false,
+   "size": [
+    3,
+    10
+   ],
+   "natural": [
+    "#C9A24A",
+    "#FFF4D6"
+   ],
+   "naturalDark": [
+    "#F3D48C",
+    "#FFF8E6"
+   ],
+   "colorNote": "theo mode: sáng = vàng đậm #C9A24A/#B8862F (bụi vàng nhạt biến mất trên nền giấy), tối = #F3D48C. Lõi c2 sáng",
+   "variants": [
+    {
+     "w": 0.7,
+     "key": "gd-dot",
+     "layers": [
+      {
+       "radial": [
+        0,
+        0,
+        12
+       ],
+       "stops": [
+        [
+         0,
+         "c2",
+         1
+        ],
+        [
+         0.3,
+         "c1",
+         0.95
+        ],
+        [
+         1,
+         "c1",
+         0
+        ]
+       ]
+      }
+     ]
+    },
+    {
+     "w": 0.3,
+     "key": "gd-star",
+     "layers": [
+      {
+       "d": "M0 -11C1.8 -1.8 1.8 -1.8 11 0C1.8 1.8 1.8 1.8 0 11C-1.8 1.8 -1.8 1.8 -11 0C-1.8 -1.8 -1.8 -1.8 0 -11Z",
+       "fill": "c1"
+      },
+      {
+       "circle": [
+        0,
+        0,
+        1.8
+       ],
+       "fill": "c2",
+       "a": 0.95
+      }
+     ]
+    }
+   ],
+   "emit": {
+    "counts": [
+     0,
+     60,
+     100
+    ],
+    "durationMs": 1400,
+    "onOpen": {
+     "emitters": [
+      {
+       "x": 0.5,
+       "y": 0.42,
+       "angle": [
+        0,
+        360
+       ]
+      }
+     ],
+     "speedPx": [
+      100,
+      420
+     ],
+     "gravity": 30,
+     "drag": 2.4,
+     "life": [
+      1100,
+      1400
+     ],
+     "twinkle": "alpha × (0.6 + 0.4·sin(ph·9)) - nhấp nháy ~1.4Hz, không đồng pha",
+     "sizeByPiece": {
+      "gd-dot": [
+       3,
+       6
+      ],
+      "gd-star": [
+       6,
+       10
+      ]
+     },
+     "result": "toả tròn bán kính 40–175px quanh tâm, tắt dần"
+    }
+   }
+  },
+  {
+   "id": "red-paper",
+   "name": "Xác pháo giấy",
+   "motion": "burst",
+   "flip": true,
+   "size": [
+    8,
+    14
+   ],
+   "natural": [
+    "#C8231F",
+    "#E0392B"
+   ],
+   "naturalDark": [
+    "#D93A2E",
+    "#F04E3E"
+   ],
+   "colorNote": "dùng chung sprite với hạt nền red-paper (particles.json) - 3 biến thể + mặt sau #F2B8A2",
+   "variants": [
+    {
+     "w": 0.45,
+     "layers": [
+      {
+       "d": "M-3.7 -5.5L0 -4.9L3.7 -5.4L3.7 5.5L0.3 4.9L-3.7 5.2Z",
+       "fill": "c1"
+      },
+      {
+       "d": "M-3.7-2.4H3.7",
+       "stroke": "#E8B04A",
+       "lw": 0.6,
+       "a": 0.55
+      }
+     ],
+     "back": [
+      {
+       "d": "M-3.7 -5.5L0 -4.9L3.7 -5.4L3.7 5.5L0.3 4.9L-3.7 5.2Z",
+       "fill": "#F2B8A2"
+      }
+     ],
+     "key": "rp-1"
+    },
+    {
+     "w": 0.35,
+     "layers": [
+      {
+       "d": "M-2.5 -6.8L0 -6L2.5 -6.9L2.5 6.7L0.3 6.6L-2.5 6.6Z",
+       "fill": "c2"
+      }
+     ],
+     "back": [
+      {
+       "d": "M-2.5 -6.8L0 -6L2.5 -6.9L2.5 6.7L0.3 6.6L-2.5 6.6Z",
+       "fill": "#F2B8A2"
+      }
+     ],
+     "key": "rp-2"
+    },
+    {
+     "w": 0.2,
+     "layers": [
+      {
+       "d": "M-3.4 -3.8L3.8 -3L3.2 3.8L-3.8 3.2Z",
+       "fill": "c1"
+      }
+     ],
+     "back": [
+      {
+       "d": "M-3.4 -3.8L3.8 -3L3.2 3.8L-3.8 3.2Z",
+       "fill": "#F2B8A2"
+      }
+     ],
+     "key": "rp-3"
+    }
+   ],
+   "emit": {
+    "counts": [
+     0,
+     80,
+     120
+    ],
+    "durationMs": 1800,
+    "onOpen": {
+     "waves": [
+      {
+       "at": 0,
+       "share": 0.4,
+       "from": "điểm (50%, 12%)",
+       "angle": [
+        20,
+        160
+       ],
+       "speedPx": [
+        300,
+        650
+       ]
+      },
+      {
+       "at": 150,
+       "share": 0.3,
+       "from": "dải mép trên x 12–88%, y -12px",
+       "angle": [
+        70,
+        110
+       ],
+       "speedPx": [
+        150,
+        420
+       ]
+      },
+      {
+       "at": 300,
+       "share": 0.3,
+       "from": "dải mép trên x 12–88%, y -12px",
+       "angle": [
+        70,
+        110
+       ],
+       "speedPx": [
+        150,
+        420
+       ]
+      }
+     ],
+     "gravity": 520,
+     "drag": 1.6,
+     "life": [
+      1500,
+      1800
+     ],
+     "spin": [
+      3,
+      6
+     ],
+     "flipRate": [
+      4,
+      8
+     ],
+     "toBg": "true nếu hạt nền có red-paper (như burst petals)",
+     "result": "bung hình quạt từ trên rồi mưa xác pháo, rơi ~325px/s"
+    }
+   }
+  },
+  {
+   "id": "heart-burst",
+   "name": "Tim bung",
+   "motion": "burst",
+   "flip": false,
+   "size": [
+    10,
+    20
+   ],
+   "natural": null,
+   "colorNote": "theme: [primary, accent, mix(primary,#fff,.35)] (theme tối: primary vàng, accent, #F2E9E1)",
+   "variants": [
+    {
+     "w": 0.6,
+     "key": "hb-solid",
+     "layers": [
+      {
+       "d": "M0 8.9C-11.5 0.5 -7.9 -10 0 -3.7C7.9 -10 11.6 0.5 0 8.9Z",
+       "fill": "c1"
+      },
+      {
+       "d": "M-6.6-4.6C-5.6-7.4-3-7.6-1.8-6",
+       "stroke": "#FFFFFF",
+       "lw": 1.3,
+       "a": 0.55
+      }
+     ]
+    },
+    {
+     "w": 0.25,
+     "key": "hb-line",
+     "layers": [
+      {
+       "d": "M0 8.2C-10.6 0.5 -7.2 -9.1 0 -3.4C7.2 -9.1 10.6 0.5 0 8.2Z",
+       "stroke": "c1",
+       "lw": 1.8
+      }
+     ]
+    },
+    {
+     "w": 0.15,
+     "key": "hb-mini",
+     "layers": [
+      {
+       "d": "M-3 6.6C-9.9 3.6 -9.1 -2.2 -4.4 0.1C-1.1 -3.9 2 1 -3 6.6Z",
+       "fill": "c1"
+      },
+      {
+       "d": "M4.1 0.5C0.5 -3.9 2.9 -7.7 5.4 -4.5C9.1 -6.1 9.4 -1.7 4.1 0.5Z",
+       "fill": "c1",
+       "a": 0.7
+      }
+     ]
+    }
+   ],
+   "emit": {
+    "counts": [
+     0,
+     8,
+     12
+    ],
+    "durationMs": 1200,
+    "onWish": {
+     "emitters": [
+      {
+       "anchor": "nút \"Gửi lời chúc\" (giữa, mép trên)",
+       "angle": [
+        -150,
+        -30
+       ]
+      }
+     ],
+     "speedPx": [
+      220,
+      380
+     ],
+     "gravity": 260,
+     "drag": 1.2,
+     "life": [
+      1000,
+      1200
+     ],
+     "scaleIn": "0.4 -> 1 trong 150ms (--ease-pop)",
+     "spin": [
+      -0.6,
+      0.6
+     ],
+     "result": "vồng 60–100px trên nút, toả ±60°"
+    }
+   }
+  }
+ ],
+ "physics": "vx *= e^(-drag·dt); vy = vy·e^(-drag·dt) + gravity·dt; alpha = 1 tới 70% đời rồi tuyến tính về 0 (field.ts hiện có)"
+}

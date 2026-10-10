@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 28" width="672" height="112">
+<!-- red-paper: xem thử 3 biến thể (ô 24×24 tâm 0,0; màu tự nhiên). Dữ liệu thật: particles.json -->
+<g transform="translate(14 14)"><title>v1 w=0.45</title><path d="M-3.7 -5.5L0 -4.9L3.7 -5.4L3.7 5.5L0.3 4.9L-3.7 5.2Z" fill="#C8231F"/><path d="M-3.7-2.4H3.7" fill="none" stroke="#E8B04A" stroke-width="0.6" stroke-linecap="round" stroke-opacity="0.55"/></g>
+<g transform="translate(42 14)"><title>v1 mặt sau</title><path d="M-3.7 -5.5L0 -4.9L3.7 -5.4L3.7 5.5L0.3 4.9L-3.7 5.2Z" fill="#F2B8A2"/></g>
+<g transform="translate(70 14)"><title>v2 w=0.35</title><path d="M-2.5 -6.8L0 -6L2.5 -6.9L2.5 6.7L0.3 6.6L-2.5 6.6Z" fill="#E0392B"/></g>
+<g transform="translate(98 14)"><title>v2 mặt sau</title><path d="M-2.5 -6.8L0 -6L2.5 -6.9L2.5 6.7L0.3 6.6L-2.5 6.6Z" fill="#F2B8A2"/></g>
+<g transform="translate(126 14)"><title>v3 w=0.2</title><path d="M-3.4 -3.8L3.8 -3L3.2 3.8L-3.8 3.2Z" fill="#C8231F"/></g>
+<g transform="translate(154 14)"><title>v3 mặt sau</title><path d="M-3.4 -3.8L3.8 -3L3.2 3.8L-3.8 3.2Z" fill="#F2B8A2"/></g>
+</svg>

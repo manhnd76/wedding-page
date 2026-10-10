@@ -5,6 +5,7 @@
 > **Bản sửa 2 (2026-10-07, sau Cổng 1):** theo mục "Bổ sung từ người duyệt" trong `decisions.md`, mình mở rộng thư viện lên **12 theme** (mục 1.6), thêm **12 kiểu mở thiệp** (3.4b), danh mục hạt, reveal và micro-interaction (5.6 đến 5.10), admin gallery theme và trình chọn hiệu ứng (8.12, 8.13), phụ lục schema (cuối file). Các phần mới được đánh dấu **(mới)**. Mặc định không đổi: Trầm Vàng, phong bì, cường độ "Vừa".
 > **Bản sửa 3 (2026-10-07, sau "Quyết định vòng 2" trong `decisions.md` và mục "Còn mở" của `solution.md`):** `dem-nhung` có trong bản đầu (không mặc định); hạt nền mặc định **cả trang** với cơ chế giảm mật độ/né form (5.7); pháo hoa đếm ngược chạy **mỗi lần cuộn tới** có cooldown (5.7); link khách thêm toggle "Mã hoá link" (8.9); vẽ màn **Kết nối lần đầu** (8.2b); sửa luồng ảnh và câu chữ khôi phục cho khớp cơ chế "restore cả lần xuất bản gần nhất" (8.7, 8.10); album full thống nhất **1600px**; bỏ nút "Tự tính" âm lịch (8.11); mục 10 chuyển thành danh sách quyết định đã chốt. Các phần sửa được đánh dấu **(v3)**.
 > **Bản sửa 4 (2026-10-08, sau "Quyết định sau review visual v1" trong `decisions.md`):** đưa vào design các nội dung người duyệt đã chốt từ `design-review-v1.md`: **bố cục phong bì mới** (tên cặp đôi ở trên, NGOÀI phong bì; "Kính gửi + tên khách" in trên mặt phong bì) và timeline mở mới (3.2, 3.4); **6 mẫu phong thư** + field `cover.envelope.*` + map gợi ý theo 12 theme (3.4c, 8.13); **tự động cuộn BẬT mặc định** (5.11, thay câu "Tự cuộn: tắt" cũ); **vùng dịu** hạt nền mờ 0.3 ở chữ quan trọng (5.7); **pháo hoa không đè tiêu đề** + màu theo sáng/tối (5.7); và các quyết định visual khác trong 24 điểm R01 đến R24 (2.1, 2.4, 4.x, 7.1). Phần sửa đánh dấu **(v4)**. SVG đầy đủ của ornament, phong bì và seal nằm ở `design-review-v1.md` mục 3 (là một phần của spec này, không chép lại để file gọn).
+> **Bản sửa 5 (2026-10-09, đợt v4a-1):** asset thật cho 9 theme còn lại: 8 bộ ornament, 10 divider, 9 khung ảnh, 7 texture (**1.6.7**, file ở `assets/v4a-1/`); sửa 2 lỗi kiến trúc phát hiện khi đọc code v2.3 (divider `cloud`/`deco-fan` phụ thuộc bộ ornament; texture `body::before` bị nền section che); **B2 hoạ tiết nền** 7 bộ vector + hệ thống kiểu đặt/độ đậm/cap tương phản/chuyển động/UX admin (**1.7**); field schema đề xuất (**Phụ lục C**); trả nợ tài liệu: **8.2/8.2b** theo luồng đăng nhập mới (cổng mật khẩu, token chỉ hỏi khi cần) và **SVG phong bì 3.2** khớp code v2.3. Phần mới đánh dấu **(v5)**.
 > Nguồn tham khảo: `request.md`, `wedding-site/data/config.js`, dự án cũ `wedding-site/` (style.css có 4 theme: tram-vang, xanh-ngoc, hong-phan, xanh-navy), trang mẫu thiepmoicuoi.vn (đã tải HTML và phân tích cấu trúc, font).
 
 ---
@@ -237,6 +238,194 @@ Texture là lớp `body::before` `position:fixed` và **không bao giờ animate
 
 **Divider `sections.divider`** (mở rộng từ 3 lên 13 giá trị): `ornament` · `wave` · `none` (cũ) + `leaf-branch` · `double-line` (2 đường mảnh, thoi ở giữa) · `cloud` (mây cát tường) · `lotus` · `dots` (3 chấm) · `brush-stroke` (vệt cọ) · `torn-paper` (mép giấy xé, SVG path) · `deco-fan` (quạt art-deco) · `wave-ocean` (sóng 2 lớp) · `"theme"` (theo theme, mặc định).
 
+
+#### 1.6.7 Asset cho 9 theme còn lại (v5, đợt v4a-1)
+Asset thật đã vẽ nằm ở `docs/tasks/20261007-wedding-page/assets/v4a-1/` (tự vẽ bằng generator có seed cố định, không sao chép asset có bản quyền). frontend-developer chạy SVGO (giữ `viewBox`, `id`, `pathLength`, `class="wash"`) rồi chuyển vào `src/guest/theme-assets/{ornaments,dividers,frames,textures,motifs}/`. Ảnh xem thử: `screenshots/v4a-1/` (`ornaments.png`, `dividers-frames-textures.png`).
+
+**a) Ornament sprite: 8 bộ mới** (cùng quy ước R14: 6 symbol `divider` 160×24 · `title` 80×16 · `corner` 96×96 · `amp` 120×24 · `monogram` 120×120 · `gift` 64×64; nét 1px, hộp quà 1.2–1.3px; `currentColor`; `pathLength="100"` cho reveal `svg-draw`; không `<use>` lồng nhau)
+| Bộ | Theme | Nội dung chính | File | Cỡ (chưa nén) |
+|---|---|---|---|---|
+| `romantic` | hong-phan | hoa hồng xoắn (bán nguyệt tăng dần), dây leo có tua cuốn, nơ ở monogram, tim ở `amp` và hộp quà | `ornaments/romantic.svg` | 7.7KB |
+| `minimal` | muc-giay | đường kẻ có vạch đầu mút, vòng tròn + chấm, monogram kiểu mặt đồng hồ (vạch 4 hướng, 8 chấm mờ .6) | `ornaments/minimal.svg` | 2.3KB |
+| `deco` | hoai-co | dấu bưu điện (2 vòng + sao 5 cánh) + 3 vạch huỷ tem lượn sóng, khung cắt góc, monogram = **tem răng cưa** (khía bán nguyệt r2 mỗi 8 đơn vị), hộp quà = bưu kiện buộc dây + thẻ treo | `ornaments/deco.svg` | 4.1KB |
+| `lotus` | sen-cham | hoa sen 5 cánh, nụ sen, lá sen nhìn từ trên (có khía + gân), gợn nước; monogram = cửa trăng hở đáy, sen nằm ở khe hở | `ornaments/lotus.svg` | 4.9KB |
+| `watercolor` | mau-nuoc | cành khuynh diệp line-art + **vệt màu nước bằng path** `class="wash"` `fill-opacity` .10–.22 (vệt loang tự sinh, seed cố định) | `ornaments/watercolor.svg` | 11.2KB |
+| `boho` | dat-nung | cầu vồng boho 3 cung, mặt trời, cỏ lau (pampas) có lông vũ, đường khâu gạch; monogram = khung vòm boho | `ornaments/boho.svg` | 4.7KB |
+| `korean` | pastel-han | nơ ruy băng, hoa 5 cánh tròn, lấp lánh 4 cánh, tim, chấm; khung bo tròn lớn (r 26–30) | `ornaments/korean.svg` | 7.9KB |
+| `tropical` | bien-dao | vỏ sò điệp (6 thuỳ + gân), lá cọ, sóng, hoa sứ 5 cánh xoay | `ornaments/tropical.svg` | 7.1KB |
+
+- **`watercolor` không cần ảnh WebP** (thay cho ghi chú "2 vệt màu nước WebP ≤ 40KB" ở 1.6.6): vệt màu là path đặc `fill="currentColor"` mờ nằm dưới nét line. Lợi: tô theo token (đổi màu chủ đạo vẫn khớp), 0 request ảnh, nét sắc ở mọi DPR. Hệ quả cho reveal `svg-draw`: path `.wash` không có nét nên không "vẽ" được, FE cho `.wash` **fade-in** (opacity 0→1, `--dur-reveal`) cùng lúc nét bắt đầu vẽ.
+- 8 bộ đều ≤ 12KB chưa nén (yêu cầu cũ ≤ 4KB gz/bộ vẫn đạt sau SVGO + gzip; `watercolor` lớn nhất vì toạ độ vệt loang).
+
+**b) Divider: tách thành file độc lập (sửa lỗi kiến trúc nhỏ)**
+Phát hiện ở code v2.3 (`sections/common.ts` `divider()`): `cloud` và `deco-fan` đang dùng symbol `divider` **của bộ ornament đang chọn**, nên khi trộn (vd màu Trầm Vàng + divider `cloud`) sẽ ra cành lá thay vì mây. Đề xuất: mỗi divider có hình là **1 file sprite riêng chứa đúng 1 symbol `id="divider"` (160×24)**, dùng lại helper `ornament(url, 'divider', 'orn div-orn')`; riêng `ornament` vẫn là divider của bộ họa tiết. Kích thước hiển thị và nền "khâu" giữ R07.
+| id | File | Hình | Ghi chú CSS |
+|---|---|---|---|
+| `ornament` · `wave` · `none` | (đã có) | divider của bộ ornament / đường cong CSS / không | giữ nguyên |
+| `leaf-branch` | `dividers/leaf-branch.svg` | một cành liền, lá so le, nụ tròn kép ở giữa | |
+| `double-line` | `dividers/double-line.svg` | 2 đường mảnh cách 3px, thoi rỗng + thoi đặc ở giữa | |
+| `cloud` | `dividers/cloud.svg` | mây cát tường (chép từ `traditional#divider`) | tách khỏi bộ ornament |
+| `lotus` | `dividers/lotus.svg` | hoa sen trên mặt nước, gợn 2 bên | |
+| `dots` | `dividers/dots.svg` | 3 chấm (giữa lớn hơn) | `.divider--dots .div-orn { width:120px }` (desktop 160px) |
+| `brush-stroke` | `dividers/brush-stroke.svg` | vệt cọ khô thon 2 đầu, 3 khe xước (evenodd) | `opacity:.75` |
+| `deco-fan` | `dividers/deco-fan.svg` | quạt art-deco (chép từ `luxe#divider`) | tách khỏi bộ ornament |
+| `wave-ocean` | `dividers/wave-ocean.svg` | 2 lớp sóng (lớp sau .5) + 3 chấm bọt | |
+| `torn-paper` | `dividers/torn-paper.svg` | **không phải hình giữa trang**: mép giấy xé chạy hết chiều ngang, là mép trên của section sau | mask tile 240×20 lặp ngang, cao 20px (desktop 26px), màu `--div-bg`, bóng mảnh `drop-shadow` đặt ở phần tử cha (xem `dividers/dividers.css`) |
+
+**c) Khung ảnh: 9 khung mới** (CSS đầy đủ ở `frames/frames.css`; chỉ cắt ảnh, không cắt chữ; mọi khung giữ `aspect-ratio` → không CLS)
+| id | Kỹ thuật | Chi tiết |
+|---|---|---|
+| `arch` · `circle-moon` · `deco-cut` | (đã có, xác nhận) | giữ nguyên |
+| `arch-double` | `border-radius: var(--arch)` + 2 `box-shadow` (vành nền 6px + vành accent 1px) + `::after` chỉ trắng .6 thụt 6px | `margin:7px` để vành không bị cắt |
+| `rect-offset` | `box-shadow: 10px 10px 0 -1px var(--sec-bg), 10px 10px 0 0 var(--c-accent)` = khung 1px lệch | `margin: 0 10px 10px 0` |
+| `soft-rect` | bo 14px + `box-shadow: 0 0 0 1px var(--c-line)` + bóng rất nhẹ | |
+| `oval` | `border-radius:50%` + vành 5px/1px như arch-double | hợp ảnh dọc 4:5 |
+| `polaroid` | giấy ảnh `#FFFDF9` padding 10/10/38px, `rotate:-2deg`; ảnh thứ chẵn `rotate:1.6deg` qua **class `tilt-r` do JS gắn** (không inline style) | chú thích tuỳ chọn ở dải dưới: **heading italic 15px**, màu mực `#3A332E`, 1 dòng, ellipsis (không dùng script < 28px, 2.1). Theme tối vẫn giấy trắng (ảnh vật lý) |
+| `stamp` | `mask` 5 lớp: lõi đặc thụt 4px + 4 dải mép có lỗ bán nguyệt r 4px mỗi ~11px (`repeat round` → số lỗ nguyên, 4 góc đều có lỗ); giấy `#FFFDF8` 11px quanh ảnh | bóng đặt ở phần tử bọc `.frame-wrap--stamp` (mask cắt mất bóng của chính nó) |
+| `scallop` | `mask` 5 lớp: lõi thụt 7px + chuỗi tròn r 7px ở 4 mép (`radial-gradient closest-side`, `repeat round`) | ảnh tràn tới mép lượn (không viền giấy) |
+| `wash-mask` | `mask: url(frames/wash-mask.svg) / 100% 100%` (SVG: rect + `feTurbulence` + `feDisplacementMap` + blur + bảng alpha) | mép loang không đều, không cần WebP |
+
+Token phụ đề xuất: `.tone-bg{--sec-bg:var(--c-bg)} .tone-surface{--sec-bg:var(--c-surface)}` (vành nền của khung cần đúng màu section). Selector khung dạng `.frame.frame--x` để thắng `box-shadow` lệch 6px của `.person-photo`/`.fam-photo`. Trình duyệt không có `mask`: 3 khung mask lùi về chữ nhật bo 14px.
+
+**d) Texture: 7 công thức chốt + sửa lớp hiển thị** (CSS ở `textures/textures.css`, ảnh tile SVG cùng thư mục)
+**Lỗi phát hiện khi đọc code v2.3:** texture là `body::before` (fixed, z 0) nằm dưới `#app` (z 1), trong khi mọi section có nền đặc (`.tone-bg`/`.tone-surface`) → **texture gần như bị che toàn bộ** (kết luận từ đọc CSS, chưa chụp trên build thật; FE xác nhận khi làm). Đề xuất: texture thành lớp riêng của từng section: `.sec{isolation:isolate}`, `.sec::before{position:absolute; inset:0; z-index:0}`, `.sec-in{position:relative; z-index:1}`. Texture cuộn theo trang như giấy in thật; Hero/Cảm ơn có ảnh thì không texture. Theme tối: đảo màu noise bằng `filter: invert(1)` + `mix-blend-mode: screen` (tĩnh, vẽ 1 lần). Texture **không bao giờ animate** (giữ 1.6.6).
+| id | File | Công thức | Opacity |
+|---|---|---|---|
+| `paper-aged` | `textures/paper-aged.svg` (tile 240) | noise .85 nâu + vết ố tần số thấp .018 đã nâng ngưỡng (foxing) + CSS gradient tối 2 mép trái/phải (liền mạch giữa các section vì chỉ theo trục ngang) | .08 |
+| `linen` | `textures/linen.svg` (160) | 2 lớp noise dị hướng (`.012 .9` và `.9 .012`) = sợi ngang + dọc. **Không dùng** 2 lớp `repeating-linear-gradient` 1px như ghi ở 1.6.6 vì dễ moiré trên màn DPR 2.6–3 | .06 |
+| `kraft` | `textures/kraft.svg` (200) | noise thô .6 nâu + 70 sợi ngắn ngẫu nhiên | .10 |
+| `rice-paper` | `textures/rice-paper.svg` (400) | noise mịn + 30 sợi dài cong; sợi tràn mép được vẽ lặp ở mép đối diện nên tile liền | .08 |
+| `watercolor-wash` | `textures/watercolor-wash.svg` (mask 520) | **1 vệt màu nước ở góc**, không phủ cả section: section lẻ góc trên-phải màu `accent` .5, section chẵn góc dưới-trái màu `accent-2` .42; mép đậm hơn lòng (sắc tố đọng mép) + hạt; `.sec{overflow:clip}` để vệt không đè section kề, không tạo cuộn ngang. Không cần WebP | .5 / .42 (tối: .14) |
+| `grain-fine` | `textures/grain-fine.svg` (128) | noise 1.15, 1 octave | .035 (tối .05) |
+| `sand` | `textures/sand.svg` (200) | noise thô ấm + hạt thưa (ngưỡng cao) | .07 |
+| `paper` · `velvet` · `none` | (đã có) | chuyển `paper`/`velvet` sang `.sec::before`; vignette `velvet` (`body::after`) cũng đang bị che → đổi thành gradient tối 2 mép trong `.sec::before` | giữ |
+
+### 1.7 Hoạ tiết trang trí nền - B2 (v5, đợt v4a-1)
+Backlog B2: hoạ tiết vector kiểu trống đồng Đông Sơn, mây, sóng, sen, chữ Hỷ… phủ mờ nền hoặc làm điểm nhấn. Asset thật: `assets/v4a-1/motifs/<bộ>/{medallion,corner,band,tile}.svg`; CSS spec: `assets/v4a-1/motifs/motifs.css`. Ảnh: `screenshots/v4a-1/motifs-all.png`, `motif-dong-son-medallion.png`, `motif-mock-mobile.png` (375px, 3 theme).
+
+#### 1.7.1 Nguyên tắc
+- Hoạ tiết là **"in chìm" (watermark) trên giấy thiệp**: không bao giờ tranh với tên cặp đôi, tiêu đề, form. Luôn tô `--c-accent` (token chỉ dùng để trang trí, 1.2), không mang thông tin → `aria-hidden="true"`, không alt, ẩn khi in.
+- Tự vẽ, lấy cảm hứng từ mô-típ dân gian, không chép ảnh scan/thiết kế có bản quyền.
+- **Tôn trọng biểu tượng:** trống đồng là biểu tượng văn hoá quốc gia: dùng nguyên vẹn, không cắt méo lệch tâm (góc dùng đúng 1/4 mặt trống, tâm đặt đúng đỉnh góc), xoay rất chậm hoặc đứng yên. **Chữ Hỷ luôn đứng thẳng**: không xoay, không lật, không dùng làm pattern lặp dày. Không dùng hoạ tiết chữ vạn (dễ bị hiểu nhầm với biểu tượng xấu ở người xem nước ngoài); hồi văn dùng dạng móc vuông mở.
+- Ít mà chắc (giống 1.1): tối đa **2 kiểu đặt** cùng lúc; đa số theme mặc định **tắt**.
+
+#### 1.7.2 Bảy bộ hoạ tiết
+| id | Tên hiển thị (admin) | Cảm hứng / hình | Mảnh | Tổng (chưa nén) |
+|---|---|---|---|---|
+| `dong-son` | Trống đồng | mặt trống: sao 14 cánh đặc + hình chữ V giữa các cánh, vòng tròn chấm giữa nối tiếp tuyến, răng cưa, vạch thang, **8 chim Lạc bay ngược chiều kim đồng hồ**; dải viền tròn-tiếp-tuyến + răng cưa | medallion, band, tile (góc = 1/4 medallion) | 14.0KB |
+| `may-cat-tuong` | Mây cát tường | mây cuộn có xoắn, vòng 8 mây lớn + 8 mây nhỏ quanh tâm | 4 mảnh | 8.6KB |
+| `song-nuoc` | Sóng nước | sóng cuộn 3 lớp (đầu sóng xoắn), vảy sóng 3 cung lồng lệch hàng | 4 mảnh | 7.9KB |
+| `hoa-sen` | Hoa sen | đoá sen nhìn từ trên 8+8 cánh, gương sen 7 hạt, vòng 24 cánh nhỏ, sen nhìn ngang + lá sen | 4 mảnh | 10.3KB |
+| `chu-hy` | Song Hỷ | song hỷ **dựng bằng nét vuông** (không cần font CJK, cùng hình học `traditional#songhy`), vòng hồi văn, mây nhỏ; tile = **kim tiền** (đồng xu lồng nhau) | 4 mảnh | 7.0KB |
+| `art-deco` | Art-deco (hiện đại) | sunburst tia dài/ngắn xen kẽ, bậc thang, quạt; tile vảy quạt | 4 mảnh | 7.0KB |
+| `la-canh` | Cành lá (hiện đại) | vòng nguyệt quế line-art, cành lá, dây leo lượn | 4 mảnh | 12.3KB |
+
+Quy ước mảnh: `medallion` 400×400 (tâm 200,200) · `corner` 200×200 vẽ cho góc trên-trái (3 góc kia lật bằng `transform: scale`) · `band` 240×40 lặp ngang liền mạch · `tile` lặp 2 chiều liền mạch (cỡ khác nhau theo bộ: 60–200px). File là ảnh dùng làm mask nên được dùng `<defs>`/`<use>` nội bộ để giảm dung lượng (không áp quy tắc "không `<use>` lồng" của sprite ornament, vì không đi qua `<use>` ngoài).
+
+#### 1.7.3 Kiểu đặt (`placement`)
+| id | Tên admin | Vị trí và kích thước (mobile → desktop) | Section áp dụng | Nằm sau chữ? |
+|---|---|---|---|---|
+| `pattern` | Phủ nền | tile lặp phủ cả section (`inset:0`), cỡ tile gốc, desktop ×1.25 | mọi section trừ danh sách loại trừ | **Có** → chịu cap |
+| `corners` | Góc | 2 góc chéo `clamp(72px, 24vw, 180px)` (360px → 86px). Section lẻ: trên-trái + dưới-phải; chẵn: trên-phải + dưới-trái | mọi section trừ loại trừ | Có thể chạm mép tiêu đề → chịu cap |
+| `title` | Sau tiêu đề | medallion giữa, sau `.sec-head`, `clamp(200px, 58vw, 300px)` | section có tiêu đề, trừ loại trừ | **Có** → chịu cap |
+| `band` | Dải viền | dải lặp ngang cao 24px (desktop 32px), cách mép trên section 10px (14px) | section `tone-surface` + footer | Không (nằm trong padding 64px) |
+| `hero` | Nền Hero | medallion lớn `min(118vw, 760px)` sau tên cặp đôi | Hero **không ảnh** + Cảm ơn **không ảnh** | **Có** → chịu cap |
+
+- **Loại trừ:** Hero/Cảm ơn có ảnh (ảnh đã đủ chi tiết), Album (ảnh), RSVP + Lời chúc (form: không `pattern`/`title`/`corners`; chỉ cho `band`). Thẻ có `data-fx-exclude` (thẻ sự kiện, form) vốn có nền đặc nên pattern không lộ dưới chữ nhập.
+- **Không cho chọn cùng lúc `pattern` + `title`** (hai lớp chồng nhau sau cùng một chữ, rối mắt). Admin chọn tối đa 2 kiểu.
+- Thứ tự lớp trong section (cần `.sec{isolation:isolate}` như texture 1.6.7d): nền section → texture `::before` → `.mtf` (z 0) → `.sec-in` (z 1). Divider (z 2) và hạt nền (z 20) vẫn nằm trên.
+- Không áp cho màn cover/phong bì ở v4a-1 (để sau, nếu người duyệt muốn).
+
+#### 1.7.4 Độ đậm (`intensity`) và màu
+`--mtf-level`: **Nhạt** `.10` · **Vừa** `.18` (mặc định) · **Đậm** `.28`. Opacity thực tế theo kiểu đặt:
+| Kiểu đặt | Opacity |
+|---|---|
+| `pattern`, `title`, `hero` | `min(level, --motif-cap)` |
+| `corners` | `min(level × 3, --motif-cap, .8)` |
+| `band` | `min(level × 2.5, .7)` (không nằm sau chữ) |
+Màu luôn là `--c-accent` (theme tối `dem-nhung`: accent `#9C7A45` sáng hơn nền nên vẫn đúng chiều). Accent nhạt (hồng sen, đào) cần opacity cao hơn mới thấy, nên góc nhân ×3; cap bảo đảm chữ không tụt dưới AA.
+
+#### 1.7.5 Giới hạn opacity theo tương phản (`--motif-cap`)
+Cách tính (script WCAG relative luminance, 2026-10-09): pixel xấu nhất là chữ nằm đúng trên nét hoạ tiết, tức nền = `mix(bg|surface, accent, α)`. `--motif-cap` = α lớn nhất mà **text, muted và primary đều còn ≥ 4.5:1 trên cả bg lẫn surface** (bước .01).
+| Theme | cap | Theme | cap | Theme | cap |
+|---|---|---|---|---|---|
+| `tram-vang` | **.05** | `muc-giay` | .28 | `dat-nung` | .29 |
+| `hong-phan` | .34 | `hoai-co` | .35 | `pastel-han` | .63 |
+| `luc-bao` | .27 | `sen-cham` | .54 | `dem-nhung` | .33 |
+| `son-do` | .60 | `mau-nuoc` | .39 | `bien-dao` | .41 |
+- `tram-vang` cap rất thấp vì primary chỉ đạt 4.68:1 (sát ngưỡng) → hoạ tiết sau chữ gần như vô hình; theme này mặc định **tắt** hoạ tiết, admin bật thì có cảnh báo (1.7.9). `band` không chịu cap nên vẫn dùng được.
+- Khi admin đổi `primaryColor`/`overrides.accent`, resolver/derive **tính lại cap** bằng cùng công thức (vài chục phép tính, chạy lúc resolve, không tốn khung hình) và gắn `--motif-cap` lên `:root`.
+
+#### 1.7.6 Chuyển động (`motion`: `auto` theo `effects.intensity` | `off`)
+| Hiệu ứng | off | low | medium | high |
+|---|---|---|---|---|
+| Medallion `title`/`hero` xoay (`rotate`, compositor) | đứng yên | 1 vòng / 360s | 1 vòng / 240s | 1 vòng / 150s |
+| `band` trôi ngang (chỉ `song-nuoc`, `may-cat-tuong`) | đứng yên | đứng yên | 1 chu kỳ / 40s | 1 chu kỳ / 24s |
+| `pattern` parallax (CSS `animation-timeline: view()`) | không | không | ±16px | ±28px |
+| `corners` | xuất hiện cùng reveal của section (fade 700ms, 1 lần) | | | |
+- Không xoay: `chu-hy` (chữ phải đứng thẳng). Các bộ đối xứng tròn còn lại được xoay.
+- Chỉ chạy khi section trong viewport: module motif dùng 1 IntersectionObserver gắn `.is-playing` (animation mặc định `paused`).
+- `prefers-reduced-motion: reduce`, `data-fx="off"`, máy yếu bị hạ cấp (perf-probe) → đứng yên hoàn toàn. Parallax chỉ ở trình duyệt có scroll-driven animation; không có thì đứng yên (không viết JS dự phòng, giữ ngân sách JS).
+- Tốc độ xoay chậm (≤ 2.4°/s) dưới ngưỡng gây khó chịu tiền đình; không có chuyển động nhanh hay nhấp nháy.
+
+#### 1.7.7 Gợi ý theo 12 theme
+| Theme | Mặc định | Bộ | Kiểu đặt | Độ đậm | Gợi ý khác (hiện trong gallery) |
+|---|---|---|---|---|---|
+| `tram-vang` ★ | **Tắt** | - | - | - | `la-canh` (band) |
+| `hong-phan` | Tắt | - | - | - | `la-canh` |
+| `luc-bao` | Tắt | - | - | - | `la-canh`, `art-deco` |
+| `son-do` | **Bật** | `dong-son` | `title` + `band` | Nhạt | `may-cat-tuong`, `chu-hy` |
+| `muc-giay` | Tắt | - | - | - | `art-deco` |
+| `hoai-co` | Tắt | - | - | - | `art-deco`, `la-canh` |
+| `sen-cham` | **Bật** | `hoa-sen` | `title` + `corners` | Nhạt | `song-nuoc`, `dong-son` |
+| `mau-nuoc` | Tắt | - | - | - | `la-canh` |
+| `dat-nung` | Tắt | - | - | - | `la-canh` |
+| `pastel-han` | Tắt | - | - | - | `la-canh` |
+| `dem-nhung` | **Bật** | `art-deco` | `corners` + `band` | Vừa | - |
+| `bien-dao` | **Bật** | `song-nuoc` | `band` | Vừa | - |
+Lý do: mặc định chỉ bật ở 4 theme mà hoạ tiết là bản sắc (truyền thống, Á Đông, art-deco, biển) và đã có ornament/texture riêng không đụng nhau. Theme mặc định Trầm Vàng giữ nguyên diện mạo đã duyệt.
+
+#### 1.7.8 Render, CSP và hiệu năng
+- **Kỹ thuật: phần tử rỗng + `mask-image`.** Module lười `motif.ts` chèn `<div class="mtf mtf--{placement}" aria-hidden="true">` vào section theo luật 1.7.3; tô `background: var(--c-accent)` + `mask-image: url(<bộ>/<mảnh>.svg)`. Lý do chọn:
+  - An toàn CSP: url nằm trong stylesheet, không inline style; ảnh cùng origin (`img-src 'self'`).
+  - Màu theo token: 1 file dùng cho mọi theme. Background SVG thường thì màu cứng trong file, `<img>` không nhận `currentColor`.
+  - Lặp tile/dải được (sprite `<use>` không lặp được), 1 lớp raster mỗi phần tử, xoay bằng compositor.
+  - So với `<svg><use>` inline: không thêm hàng trăm node SVG vào DOM, không tính lại style SVG khi cuộn.
+- **Tải lười:** `motif.ts` + `motif.css` là chunk động, chỉ import khi bộ đã resolve ≠ `none` → **0 byte thêm vào JS ban đầu** (ngân sách guest JS 60KB không đổi). Ước tính: JS ≤ 1KB gz, CSS ≤ 2KB gz. Ảnh chỉ tải khi rule `[data-motif=…]` khớp và phần tử tồn tại, nên chỉ những mảnh của kiểu đặt đang dùng được tải. Ví dụ `son-do` (title + band): medallion 9.0KB + band 2.0KB chưa nén (~4KB gz).
+- Phần tử chèn **sau** khi landing render xong (requestIdleCallback, có timeout 1.5s) → không ảnh hưởng LCP (tên cặp đôi/ảnh hero). Kích thước phần tử cố định, `position:absolute` → không CLS.
+- Trình duyệt không hỗ trợ mask (rất hiếm): `@supports not (mask-image…) { .mtf{display:none} }`.
+
+#### 1.7.9 UX admin
+Vị trí: tab **Theme & Màu**, danh sách "Thành phần của theme" (8.12) thêm dòng **"Hoạ tiết nền  Theo theme · Trống đồng  [Đổi]"**. Bấm [Đổi] mở panel:
+```
+┌ Hoạ tiết nền ──────────────────────────────────────────────┐
+│ (•) Theo theme (Son Đỏ: Trống đồng · Sau tiêu đề + Dải viền)│
+│ ( ) Tự chọn                                                 │
+│ ┌────────┐┌────────┐┌────────┐┌────────┐                    │  gallery thẻ (radiogroup)
+│ │  ⊘     ││ ◎ trống││ ☁ mây  ││ ≋ sóng │  ...7 bộ + "Không dùng"
+│ │Không   ││Trống   ││Mây cát ││Sóng    │                    │  thẻ = medallion tô accent
+│ │dùng    ││đồng ★  ││tường   ││nước    │                    │  trên nền bg của theme đang chọn
+│ └────────┘└────────┘└────────┘└────────┘                    │  ★ = "Hợp theme này"
+│ Vị trí (tối đa 2)                                           │
+│ [✓] Sau tiêu đề  [✓] Dải viền  [ ] Góc  [ ] Phủ nền  [ ] Nền Hero │
+│   "Phủ nền" không dùng cùng "Sau tiêu đề" (hai lớp chồng nhau). │
+│ Độ đậm      ( Nhạt | Vừa | Đậm )                            │
+│ Chuyển động ( Theo mức hiệu ứng | Tắt )                     │
+│ ⚠ Màu theme này sát ngưỡng tương phản: hoạ tiết sau chữ sẽ  │  chỉ hiện khi cap < .10
+│   rất mờ. Nên dùng "Dải viền".                              │
+└────────────────────────────────────────────────────────────┘
+```
+- Thẻ là HTML/CSS thật (dùng cùng `motif.css`), tải ảnh medallion của 7 bộ chỉ khi panel mở. Chạm thẻ = áp vào preview ngay + toast có [Hoàn tác] (như 8.12). Preview điện thoại cuộn tới section đầu tiên có hoạ tiết.
+- Checkbox thứ 3 bị vô hiệu khi đã chọn 2, kèm dòng giải thích ngay dưới (không chỉ làm mờ). Chọn "Phủ nền" khi đã có "Sau tiêu đề" (hoặc ngược lại) → tự bỏ chọn cái kia + thông báo `aria-live` "Đã bỏ 'Sau tiêu đề' vì không dùng cùng 'Phủ nền'".
+- "Theo theme" giữ quy tắc 1.6.1: đổi theme thì phần "Theo theme" đổi theo; đã "Tự chọn" thì giữ.
+- A11y: gallery `role="radiogroup"`, thẻ `role="radio"` + `aria-checked`, nhãn đọc "Trống đồng, hợp theme Son Đỏ"; checkbox có `<label>`; segmented control là radio group; vùng chạm ≥ 44px. Mobile: thẻ 2 cột, checkbox xếp dọc.
+
+#### 1.7.10 Trường hợp biên
+- Section rất ngắn (footer, lời cảm ơn không ảnh nhưng ít chữ): `title` chỉ chèn khi `.sec-head` tồn tại; medallion bị cắt bởi section kề → chấp nhận (`overflow` mặc định, section sau vẽ đè), riêng Hero/Cảm ơn đã `overflow:hidden`.
+- Admin đổi accent quá đậm (vd accent gần text): cap tự giảm, hoạ tiết sau chữ mờ đi tương ứng.
+- Hạt nền + hoạ tiết cùng lúc: không xung đột (hạt ở z 20); khuyến nghị (không ép) theme đã có hoạ tiết `pattern` thì hạt giữ mật độ theo theme.
+- In / lưu PDF: ẩn hoạ tiết.
+
 ---
 
 ## 2. Typography
@@ -358,6 +547,30 @@ Tạo khoảnh khắc "nhận thiệp", cá nhân hóa bằng tên khách, và l
 - **Desktop ≥ 1024px (R17):** phong bì 560px. Nền `radial-gradient(ellipse at 50% 45%, var(--c-surface), var(--c-bg) 70%)` + texture, ornament góc 120px.
 - Nền phía sau dùng ảnh cover mờ (blur tĩnh dựng sẵn, **không animate filter**) hoặc texture giấy, admin chọn.
 - `cover.envelope.guestOnFront = false` thì "Kính gửi …" quay về thẻ bên trong như v1, mặt phong bì chỉ còn seal và ornament.
+
+**(v5) SVG phong bì khớp code v2.3** (nguồn thật: `src/shared/envelope.ts` `envelopeGeom()` + `src/guest/cover/skins/kit.ts` `shell()`; **thay** bản vẽ ở `design-review-v1.md` 3.2, phần seal ở đó vẫn đúng). Mọi lớp dùng chung `viewBox="0 0 340 238"`, `preserveAspectRatio="none"`, màu qua class CSS → biến `--env-*` (không thuộc tính style, đúng CSP):
+```svg
+<!-- env-back: lòng phong bì -->
+<rect x=".5" y=".5" width="339" height="237" rx="6" class="ep2"/>
+<!-- env-front: túi (2 cánh bên + cánh đáy). KHÁC bản v1: túi bắt đầu từ góc (y=.5 thay vì 6.5) -->
+<path class="ep" d="M.5 .5 162 128Q170 134 178 128L339.5 .5V231.5Q339.5 237.5 333.5 237.5H6.5Q.5 237.5 .5 231.5Z"/>
+<path class="es" d="M.5 237 150 118M339.5 237 190 118"/>                      <!-- nếp gấp -->
+<!-- env-flap-f: nắp nhọn. KHÁC bản v1: mũi ở y=131–137 (v1: 124–133), dốc hơn túi -> nắp luôn phủ mép túi, hết khe hình nêm lộ thẻ -->
+<path class="ep" d="M.5 .5H339.5L178 131Q170 137 162 131Z"/>
+<path class="el-l" d="M12 .5 170 123 328 .5"/>                                  <!-- chỉ viền lót (classic) -->
+<!-- env-flap-b (rotateX(180deg) sẵn): nền ep2 + lót sọc chéo; cover.envelope.liner=false thì chỉ còn nền -->
+<pattern id="envl-{uid}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path class="el-s" d="M0 5h10"/></pattern>
+<path class="ep2" d="M.5 .5H339.5L178 131Q170 137 162 131Z"/>
+<path class="el-f" fill="url(#envl-{uid})" d="M14 .5 166 124Q170 127 174 124L326 .5Z"/>
+```
+| Mẫu | Nắp (`flap`) | Túi / nếp | `tipY` (seal + `--env-tip`) | Nét thêm trên nắp |
+|---|---|---|---|---|
+| `classic` · `kraft` · `velvet` | nhọn `M.5 .5H339.5L178 131Q170 137 162 131Z` | túi + nếp chuẩn ở trên | 132 | classic: `M12 .5 170 123 328 .5`; velvet: 2 chỉ `M8 .5 170 121 332 .5` + `M18 .5 170 113 322 .5` (mảnh .5); kraft: lớp hạt giấy |
+| `lace` | nhọn, **2 cạnh viền ren lượn**: 9 cung tròn mỗi cạnh từ (339.5,.5) → (170,136) → (.5,.5) (`scallopFlap()`), thêm lỗ ren | túi + nếp chuẩn | 132 | lỗ ren |
+| `song-hy` | **vát tù (~150°)** `M.5 .5H339.5L178 47Q170 50 162 47Z`; lót `M16 .5 166 42Q170 44 174 42L324 .5Z` | túi vát nông `M.5 .5 164 44Q170 46 176 44L339.5 .5V231.5…Z`, nếp `M.5 237 120 60M339.5 237 220 60` | 47 | chỉ `M10 .5 170 40 330 .5` |
+| `minimal` | **chữ nhật thấp 38%** `M.5 .5H339.5V90H.5Z`; lót `M10 .5H330V82H10Z` | túi `M.5 82H339.5V231.5…Z`, nếp = 1 đường ngang y 82 | 90 | - |
+- `--env-tip = tipY / 238` (%) do `shell()` gắn qua CSSOM để đặt seal và khối "Kính gửi" (`.env-addr` top = `--env-tip` + 42% cỡ seal).
+- Lật nắp: `.env-flap{transform-origin:50% 0; perspective(1200px) rotateX(0→180deg)}`, mặt sau `rotateX(180deg)` + `backface-visibility:hidden` 2 mặt. Mốc bắt đầu lật (`flapAt`) và pha "mở khoá" (seal tách đôi / nơ kraft tuột / con dấu song-hy…) do từng skin khai báo (`unlock()`), thay cho mốc cố định 180ms ở timeline v1.
 
 ### 3.3 Tên khách từ URL
 - `?to=gia-đình-anh-Mạnh` (tên tham số lấy từ config `guestUrlParam`) xử lý thành `decodeURIComponent`, rồi NFC, rồi đổi `-`/`_`/`+` thành khoảng trắng, gộp khoảng trắng thừa, **viết hoa chữ cái đầu tiên của chuỗi**, giữ nguyên phần còn lại. Kết quả: "Gia đình anh Mạnh".
@@ -996,31 +1209,47 @@ Hằng số trong code (không đưa vào config): ramp 800ms, ngưỡng lệch 
 - Thẩm mỹ admin: **trung tính, gọn**, dùng cùng body font, nền `#F7F6F3`, primary admin cố định `#2F4A43`, để không lẫn với theme đang chỉnh trong preview.
 - Mọi thay đổi **hiện ngay** trong preview (debounce 150ms), nhưng chỉ ra trang thật khi bấm **Xuất bản**.
 
-### 8.2 Màn Login (mở khoá bằng passphrase) (v3)
-Chỉ hiện khi máy này **đã có token lưu mã hoá** (vault, xem solution mục 2). Ô duy nhất là **passphrase** đã đặt ở màn Kết nối lần đầu (8.2b), không phải mật khẩu GitHub.
+### 8.2 Màn Đăng nhập: cổng mật khẩu (v5, thay bản v3 "mở khoá bằng passphrase")
+Theo decisions "Đổi luồng đăng nhập admin" + "Bảo mật login" (2026-10-08), khớp code v2.3 (`src/admin/screens/login.tsx`, `state/connection.ts`):
+```
+/admin ─► [Đăng nhập: 1 ô mật khẩu] ─► Trang quản lý
+                                        · đọc bản đang xuất bản từ chính site (/content/config.json), nháp ở IndexedDB
+                                        · sửa / xem trước / tải ảnh-nhạc vào nháp: KHÔNG cần token GitHub
+          Xuất bản · Khôi phục · [Kết nối GitHub] ở Tổng quan
+                 └─ chưa có token? ─► 8.2b Kết nối GitHub ─► quay lại ĐÚNG thao tác đang làm
+```
 ```
 ┌──────────────────────────────┐
-│        [monogram M&L]        │
+│    [chữ lồng M&L | ổ khoá]   │  chữ lồng thật lưu từ lần vào trước; chưa có thì icon ổ khoá
 │   Quản lý thiệp cưới         │
-│   Kết nối: minhanh/wedding   │  muted 14px: owner/repo đã lưu
-│  Passphrase của máy này      │
-│  [••••••••••••       👁]     │  input 48px, nút hiện/ẩn
-│  [        Mở khoá          ] │
-│  ⚠ Passphrase chưa đúng      │  lỗi dưới ô, giữ nội dung ô
-│  Quên passphrase? Kết nối lại│  link -> 8.2b (cần dán lại token)
+│  [banner cảnh báo, nếu có]   │
+│  Mật khẩu                    │
+│  [••••••••••••       👁]     │  input 48px, nút hiện/ẩn 44px
+│  ⚠ Mật khẩu chưa đúng        │  aria-live, ô được xoá + giữ focus
+│  [    Vào trang quản lý    ] │
+│  Đóng tab là phải đăng nhập  │  muted 14px
+│  lại. Quên mật khẩu: người   │
+│  giữ mã nguồn đặt lại (README)│
 └──────────────────────────────┘
 ```
-- Cho phép paste và trình quản lý mật khẩu (`autocomplete="current-password"`, đáp ứng WCAG 3.3.8). Không CAPTCHA.
-- Trạng thái: **Đang kiểm tra** (nút spinner "Đang mở khoá…": giải mã + kiểm tra quyền repo) · **Sai passphrase** · **Khoá tạm 30s** sau 5 lần sai, có đếm ngược hiển thị · **Token không còn dùng được** (giải mã được nhưng GitHub trả 401/403: chuyển sang 8.2b với thông báo tương ứng, giữ sẵn owner/repo/branch) · **Phiên hết hạn** khi đang làm việc (401): quay về màn này, **giữ bản nháp**, toast "Phiên đã hết, mở khoá lại để tiếp tục. Bản nháp vẫn còn".
-- "Quên passphrase? Kết nối lại": dialog "Token đã lưu trên máy này sẽ bị xoá. Bạn cần dán lại token GitHub. Bản nháp và trang đang xuất bản không bị ảnh hưởng." [Huỷ] [Kết nối lại].
-- Không có vault (lần đầu, hoặc lần trước không tick "Ghi nhớ") thì vào thẳng 8.2b.
+- Mật khẩu do người duyệt cung cấp, **chỉ tồn tại dạng hash PBKDF2 trong code**: không có chuỗi rõ trong repo, bundle hay tài liệu này. Người giữ mã nguồn đặt lại bằng `npm run admin:hash` (README).
+- Cho phép dán và trình quản lý mật khẩu (`autocomplete="current-password"`, đáp ứng WCAG 3.3.8). Không CAPTCHA.
+- Trạng thái: **Đang kiểm tra** (nút có spinner "Đang kiểm tra…") · **Sai** ("Mật khẩu chưa đúng", xoá ô, focus lại ô) · **Khoá 30s sau 5 lần sai** (nút thành "Thử lại sau N giây", đếm ngược) · **Thiếu WebCrypto** ("Trình duyệt này không hỗ trợ đăng nhập… Hãy dùng Chrome, Edge, Safari hoặc Firefox bản mới").
+- **Phiên chỉ trong tab** (sessionStorage): tải lại trang vẫn vào thẳng, đóng tab phải đăng nhập lại. Mật khẩu chỉ giữ trong bộ nhớ của tab để mở/mã hoá token "Ghi nhớ"; tải lại trang thì mất, khi đó bước ③ của 8.2b hỏi lại.
+- **Sau khi đăng nhập**, nếu máy có token đã ghi nhớ: tự giải mã bằng chính mật khẩu vừa nhập rồi vào trang quản lý ở trạng thái **đã kết nối**, không hỏi gì thêm. Giải mã thất bại (mật khẩu đã được đặt lại): xoá token cũ + toast 7s "Token GitHub đã ghi nhớ trước đây không mở được bằng mật khẩu này. Khi Xuất bản sẽ hỏi lại token."
+- **Đăng xuất**: xoá phiên tab + token của phiên; token ghi nhớ (đã mã hoá) giữ lại cho lần sau.
+- **Token bị thu hồi/hết hạn giữa phiên (401):** xoá token (cả bản ghi nhớ), về trạng thái "chưa kết nối", **giữ nguyên nháp**; nếu đang Xuất bản/Khôi phục thì mở lại 8.2b kèm thông báo, kết nối xong làm tiếp thao tác đó.
+- **Thẻ "Kết nối GitHub" ở Tổng quan:** chưa kết nối → "Chưa kết nối. Bạn vẫn sửa, xem trước và tải ảnh/nhạc vào nháp bình thường; chỉ Xuất bản và Khôi phục cần token." + [Kết nối GitHub]; đã kết nối → owner/repo, hạn token, [Ngắt kết nối GitHub] (xoá token phiên + ghi nhớ, giữ owner/repo để điền sẵn lần sau). Chế độ .zip/máy chủ dev cũng hiện ở thẻ này.
+- Bảo mật (ghi nhận quyết định): "Ghi nhớ token" **mặc định BẬT** theo lựa chọn của người duyệt; token mã hoá bằng mật khẩu đăng nhập; rủi ro "mật khẩu ngắn có thể bị dò nếu lộ localStorage" được nói thẳng ở bước ③ 8.2b. Cloudflare Access cho `/admin/*` (khuyến nghị của solution) là lớp bảo vệ thêm, không thay cổng này.
 
-### 8.2b Màn "Kết nối lần đầu" (v3)
+### 8.2b Màn "Kết nối GitHub" (v3; v5: chỉ mở khi cần)
+**(v5) Khi nào mở:** không còn là bước bắt buộc khi vào admin (8.2). Mở khi lần đầu **Xuất bản**, **Khôi phục**, hoặc bấm [Kết nối GitHub] ở Tổng quan. Đầu màn: nút "← Quay lại chỉnh sửa", tiêu đề "Kết nối GitHub", dòng lý do theo thao tác (vd "Để xuất bản, cần kết nối GitHub 1 lần. Bản nháp của bạn vẫn giữ nguyên."). Màn này tải lười (chunk riêng). Kết nối xong **quay lại đúng thao tác** (mở tiếp dialog Xuất bản/Khôi phục).
+
 **Mục tiêu:** cô dâu/chú rể không rành kỹ thuật vẫn tự kết nối được trong khoảng 5 phút. Chia **3 bước** có thanh tiến trình (đọc lướt được, Hick's Law), mỗi bước một màn trên mobile, cùng một trang cuộn trên desktop (cột 640px, căn trái).
 
 ```
-┌ Kết nối trang quản lý với GitHub ───────────────────────────────┐
-│ ①──────②──────③   Tạo token · Kết nối · Bảo vệ trên máy này      │
+┌ ← Quay lại chỉnh sửa · Kết nối GitHub ─────────────────────────────┐
+│ ①──────②──────③   Tạo token · Kết nối · Ghi nhớ trên máy này     │
 │                                                                  │
 │ ① TẠO TOKEN (làm 1 lần, khoảng 3 phút)            [▾ Thu gọn]     │
 │  1. Mở trang tạo token của GitHub  [Mở GitHub ↗]                 │
@@ -1051,16 +1280,18 @@ Chỉ hiện khi máy này **đã có token lưu mã hoá** (vault, xem solution
 │  │ ✓ Token hết hạn 12/01/2027 (sau ngày cưới 12/12)    │          │
 │  └─────────────────────────────────────────────────────┘          │
 │                                                                  │
-│ ③ BẢO VỆ TRÊN MÁY NÀY                                            │
-│  ☑ Ghi nhớ trên máy này (token được mã hoá bằng passphrase)      │
-│  Passphrase            [••••••••••   👁]  ≥ 8 ký tự              │
-│  Nhập lại passphrase   [••••••••••   👁]                         │
-│  ⓘ Lần sau chỉ cần nhập passphrase. Quên passphrase thì dán lại  │
-│    token là xong, không mất dữ liệu.                             │
-│  Bỏ tick: token chỉ giữ tới khi đóng tab, lần sau phải dán lại.  │
-│  [   Lưu và vào trang quản lý   ]   (sáng khi bước ② đạt hết ✓)  │
+│ ③ GHI NHỚ TRÊN MÁY NÀY                                           │
+│  [●━] Ghi nhớ token trên máy này (mã hoá bằng mật khẩu đăng nhập)│  công tắc, mặc định BẬT
+│  Mật khẩu đăng nhập    [••••••••••   👁]                         │  CHỈ hiện khi trang vừa tải lại
+│  ⓘ Lần sau chỉ cần đăng nhập là dùng được ngay. Có thể "Ngắt kết │
+│    nối GitHub" ở trang Tổng quan bất cứ lúc nào.                 │
+│  ⚠ Token sẽ được khoá bằng mật khẩu quản trị. Mật khẩu ngắn có   │  banner vàng, luôn hiện khi bật
+│    thể bị dò ra. Chỉ ghi nhớ trên máy riêng có khoá màn hình.    │
+│  (Tắt: "Token chỉ giữ tới khi đóng tab; lần sau Xuất bản sẽ hỏi lại.") │
+│  Hoàn tất bước 2 (đủ dấu ✓) trước.   ← lý do nút đang tắt (A09)  │
+│  [   Kết nối và tiếp tục   ]                                     │
 │                                                                  │
-│  Không có token? [Dùng chế độ xem thử và xuất file]              │
+│  Không có token? [Tải gói .zip để tự commit (chế độ không kết nối)] │
 └──────────────────────────────────────────────────────────────────┘
 ```
 **Hành vi và trạng thái:**
@@ -1078,10 +1309,10 @@ Chỉ hiện khi máy này **đã có token lưu mã hoá** (vault, xem solution
   | Giới hạn tần suất (403 rate limit) | "GitHub tạm giới hạn, thử lại sau khoảng {n} phút." | Nút "Thử lại" có đếm ngược |
   | Mất mạng | "Không kết nối được tới GitHub. Kiểm tra mạng rồi thử lại." | Nút "Thử lại" |
   | Token sắp hết hạn (< 14 ngày) hoặc hết hạn **trước ngày cưới** | Cảnh báo vàng (không chặn): "Token hết hạn 01/12, trước ngày cưới. Nên tạo token có hạn dài hơn." | |
-- Passphrase: validate khi rời ô; ≥ 8 ký tự; 2 ô phải khớp (lỗi dưới ô thứ 2). Chỉ báo độ mạnh dạng chữ ("Yếu / Được / Tốt"), không chặn ngoài quy tắc ≥ 8. Bước ③ khi bấm lưu hiện "Đang mã hoá…" (PBKDF2 có thể mất 0.5 đến 1s trên điện thoại cũ).
-- Thành công: vào Tổng quan, toast "Đã kết nối với minhanh/wedding". Nếu repo đã có config: tải về như luồng bình thường.
-- "Dùng chế độ xem thử và xuất file": vào admin không có quyền ghi; top bar hiện nhãn "Chế độ không kết nối" và nút Xuất bản đổi thành "Tải gói xuất bản (.zip)".
-- Mobile: 3 bước là 3 màn có nút "Tiếp" ở dưới (vùng ngón cái); nút "Mở GitHub ↗" mở tab mới để quay lại không mất dữ liệu đã nhập. Bước ① có thể bỏ qua bằng link "Tôi đã có token".
+- **(v5) Bước ③:** công tắc "Ghi nhớ" mặc định bật. Ô "Mật khẩu đăng nhập" chỉ hiện khi tab đã tải lại (mật khẩu không còn trong bộ nhớ), kiểm tra với hash trước khi mã hoá; sai thì lỗi dưới ô "Mật khẩu đăng nhập chưa đúng." Nút chính "Kết nối và tiếp tục" tắt thì luôn có dòng lý do ngay trên (A09). Bấm lưu hiện "Đang mã hoá…" (PBKDF2 600k vòng, 0.5 đến 1s trên điện thoại cũ). Lưu thất bại (thiếu WebCrypto, localStorage đầy/bị chặn) thì không kẹt spinner: báo lỗi + gợi ý "bỏ tick Ghi nhớ để tiếp tục" (A10). Không còn passphrase riêng.
+- **(v5)** Thành công: quay lại trang quản lý, chuyển sang lưu qua GitHub (giữ nguyên nháp) rồi **làm tiếp thao tác đã yêu cầu**; toast "Đã kết nối với minhanh/wedding".
+- **(v5)** "Tải gói .zip để tự commit (chế độ không kết nối)": quay lại trang quản lý; nút Xuất bản đổi thành "Tải gói xuất bản (.zip)", thẻ Tổng quan ghi rõ chế độ. Khi chạy `vite dev` có thêm nút "Dùng máy chủ dev".
+- Mobile: 3 bước là 3 màn có nút "Tiếp" ở dưới (vùng ngón cái), **(v5)** thêm "← Bước trước"; bước đã qua trong stepper bấm được để quay về, giữ dữ liệu đã nhập; desktop là 1 trang cuộn, bước hiện tại = 1 nếu chưa có token, 2 nếu chưa kiểm tra đạt, 3 sau đó; nút "Mở GitHub ↗" mở tab mới để quay lại không mất dữ liệu đã nhập. Bước ① có thể bỏ qua bằng link "Tôi đã có token".
 - Accessibility: tiến trình 3 bước là `<ol>` có `aria-current="step"`; lỗi dùng `role="alert"`; không có giới hạn thời gian trên màn này.
 
 ### 8.3 Kiến trúc thông tin (IA)
@@ -1300,6 +1531,7 @@ Chỉ báo ở top bar (chấm + chữ, không chỉ dùng màu):
 - Chip lọc (một lựa chọn, có "Tất cả"): Cổ điển (tram-vang, hong-phan, luc-bao), Truyền thống (son-do, sen-cham), Hiện đại (muc-giay, pastel-han, hoai-co), Thiên nhiên (mau-nuoc, dat-nung, bien-dao), Tối (dem-nhung). Một theme có thể thuộc 2 nhóm.
 - **Mobile (< 768px):** thẻ 2 cột (khoảng 160px rộng); phía trên gallery có **mini preview dính** (khung điện thoại thu 0.45, cao tối đa 38vh) để thấy ngay theme trên trang thật mà không phải sang tab "Xem trước"; nút "Xem toàn màn hình" mở tab Xem trước.
 - Thành phần "Đổi" mở danh sách lựa chọn dạng thẻ nhỏ có hình (họa tiết, khung ảnh, divider, texture), mỗi danh sách có mục đầu "Theo theme".
+- **(v5)** Danh sách "Thành phần của theme" thêm dòng **Hoạ tiết nền** (B2), panel chi tiết ở 1.7.9. Danh sách "Đổi" của họa tiết/khung ảnh/divider/texture hiển thị đủ giá trị ở 1.6.7 (thẻ nhỏ có hình thật lấy từ asset).
 
 ### 8.13 Chọn hiệu ứng: xem trước trong khung điện thoại + "Phát lại" (mới)
 
@@ -1428,7 +1660,7 @@ Toàn bộ câu hỏi Q1 đến Q20 của các bản trước **đã chốt** (C
 | Bản đồ | Bấm mới tải | 4.5 |
 | Nhạc | 1 bài, lặp, upload ≤ 8MB | 6 |
 | Âm lịch | Nhập tay, không có nút "Tự tính" | 8.11 |
-| Login | GitHub fine-grained token + passphrase; màn Kết nối lần đầu | 8.2, 8.2b |
+| Login | **(v5)** Cổng mật khẩu khi vào /admin (hash trong code); token GitHub fine-grained chỉ hỏi khi Xuất bản/Khôi phục; "Ghi nhớ token" mặc định bật, mã hoá bằng mật khẩu đăng nhập | 8.2, 8.2b |
 | Khôi phục | Chỉ cả trang (config + ảnh) về trước lần xuất bản gần nhất, hoán đổi, bấm lại = làm lại; nút ở ImageSlot chỉ là thao tác nháp | 8.7, 8.10 |
 | Ảnh | Hero/cover 2000px, album full 1600px + thumb 600px, chân dung/khác 1200px | 4.8, 8.7 |
 
@@ -1439,7 +1671,7 @@ Toàn bộ câu hỏi Q1 đến Q20 của các bản trước **đã chốt** (C
 
 ### Phụ lục: các điểm design cần solution-designer xác nhận/hỗ trợ trong schema
 - Trường mới đề xuất: `cover.openStyle`, `cover.guestPrefix`, `cover.background`, `effects.intensity`, `sections.items[{id, enabled}]` (thay cho chỉ `order`), `sections.showNumbers`, `sections.divider`, `theme.preset`, `theme.primaryColor`, `theme.overrides{}`, `theme.ornamentSet`, `fonts.{heading, script, body, preset}`, `couple.order`, `events[].mapEmbedUrl/image`, `mainEventId`, `countdown.afterLabel/style`, `album.images[]` thành object {src, thumb, alt, w, h, dominantColor}, `gift.bankAccounts[].role/bankBin/qrImage`, `guestbook.maxLength/showBubbles`, `rsvp.maxGuests/deadline/askEvents/askNote`, `thankYou.photo/signatureSvg`, `music.startAt`, `loveStory[]`, metadata ảnh {focalPoint, dominantColor, lqip, updatedAt}. **(v3)** "Bản trước" của ảnh **không** lưu trong config, lấy từ `backup/manifest.json` (field `slot`) theo solution.
-- Cơ chế: lưu nháp, xuất bản, sao lưu 1 bản cho cả trang + khôi phục (hoán đổi), login token + passphrase, nơi lưu RSVP/lời chúc. Design đã chừa đủ trạng thái loading/lỗi cho các thao tác này.
+- Cơ chế: lưu nháp, xuất bản, sao lưu 1 bản cho cả trang + khôi phục (hoán đổi), login (cổng mật khẩu + token khi cần, v5), nơi lưu RSVP/lời chúc. Design đã chừa đủ trạng thái loading/lỗi cho các thao tác này.
 
 ### Phụ lục B (mới): field schema cho theme và hiệu ứng mở rộng
 Quy ước: giá trị `"theme"` (hoặc vắng mặt) = theo gói của theme đang chọn (1.6.1). Enum dưới đây là danh sách đầy đủ để solution-designer đồng bộ.
@@ -1502,3 +1734,18 @@ ThemePreset {
 | `countdown.milestones` (mới) | boolean | `true` |
 
 Tương thích ngược: config cũ có `theme: "xanh-navy"` thì map sang `luc-bao` (như 1.3); `effects.petals.type` cũ (`petal|heart|leaf|snow-dot`) map sang `particles.types` = `petal-rose` · `heart` · `leaf-green` · `snow`. **(v4)** Config không có `cover.envelope` thì merge mặc định (không cần bump version; nếu solution muốn bump thì để v2). `effects.autoScroll` từ `wedding-site` (`enabled:true, speed:55, startDelayMs:650`): giữ `enabled` và `speed`, kẹp `startDelayMs` lên 1500, thêm `mode:"flow"`, `dwellMs:1200`. Config mới tạo (không import) lấy mặc định mới ở bảng trên; config v1 đã lưu với mặc định cũ `enabled:false` (do v1 sinh, không phải do người dùng chọn) thì solution quyết định có chuyển sang `true` hay không (design khuyên: chuyển, vì người dùng chưa từng có công tắc này trong admin).
+
+### Phụ lục C (v5): field schema đề xuất cho B2 + asset v4a-1 (để solution-designer chốt)
+**Config (mới, tất cả mặc định `"theme"`):**
+| Field | Kiểu / enum | Mặc định | Ghi chú |
+|---|---|---|---|
+| `theme.motif.set` | `"theme"` · `none` · `dong-son` · `may-cat-tuong` · `song-nuoc` · `hoa-sen` · `chu-hy` · `art-deco` · `la-canh` | `"theme"` | `"theme"` → `ThemePreset.motif.set` (1.7.7) |
+| `theme.motif.placements` | `"theme"` hoặc mảng 1–2 phần tử: `pattern` · `corners` · `title` · `band` · `hero` | `"theme"` | không chứa đồng thời `pattern` và `title`; sanitize: bỏ trùng, cắt còn 2, nếu có cả 2 thì giữ phần tử đầu |
+| `theme.motif.intensity` | `"theme"` · `light` · `medium` · `strong` | `"theme"` | → `--mtf-level` .10/.18/.28 |
+| `theme.motif.motion` | `auto` · `off` | `auto` | `auto` = theo `effects.intensity` + reduced-motion (1.7.6) |
+
+**Preset (trong code):** `ThemePreset.motif: { set: MotifSet | "none", placements: MotifPlacement[], intensity: MotifIntensity }` + `ThemePreset.motifSuggest: MotifSet[]` (cột "Gợi ý khác" 1.7.7, dùng cho dấu ★ trong gallery).
+**Resolved (guest):** `motifSet`, `motifPlacements`, `motifIntensity`, `motifMotion`, `motifCap: number` (tính trong `theme/derive` từ token cuối cùng theo 1.7.5; theme preset có thể hardcode bảng 1.7.5 nhưng khi có `primaryColor`/`overrides.accent` thì phải tính lại).
+**enums.ts:** `MOTIF_SETS`, `MOTIF_PLACEMENTS`, `MOTIF_INTENSITIES`, `MOTIF_MOTIONS`. **capabilities.ts:** thêm khoá `motifSet` (supported = 7 bộ + `none`, fallback `none`), và mở rộng `ornamentSet`/`texture`/`photoFrame`/`divider` theo 1.6.7 khi FE đưa asset vào.
+**Tương thích:** config không có `theme.motif` → merge mặc định (`"theme"`), không cần bump version. Hệ quả: config cũ đang dùng `son-do`/`sen-cham`/`dem-nhung`/`bien-dao` sẽ tự có hoạ tiết sau khi nâng cấp (chưa có config nào được publish nên chấp nhận được, xem câu hỏi trong report).
+**Không phải schema (chỉ CSS/JS):** `--sec-bg`, class `tilt-r` của polaroid, `data-motif`/`data-mtf-level` trên `<html>`, `--motif-cap`, chuyển texture sang `.sec::before`.

@@ -1,0 +1,21 @@
+/* flower-gate (design-v4a-2bc §2.5): cụm hoa vector 4 lớp mask tô theo token; cụm phải = scaleX(-1) */
+.cover[data-open="flower-gate"] { --op-leaf: #7E9B76; --op-bloom: var(--c-accent-2); --op-bloom-deep: var(--c-primary); }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .cover[data-open="flower-gate"] { --op-leaf: color-mix(in srgb, #7E9B76 85%, var(--c-primary)); --op-bloom-deep: color-mix(in srgb, var(--c-accent-2) 60%, var(--c-primary)); }
+  [data-mode="dark"] .cover[data-open="flower-gate"] { --op-leaf: color-mix(in srgb, #7E9B76 60%, var(--c-bg)); --op-bloom: var(--c-primary); --op-bloom-deep: color-mix(in srgb, var(--c-primary) 60%, #000); }
+}
+.cover[data-open="flower-gate"] .op-layers { background: var(--c-bg); }
+.cover[data-open="flower-gate"].is-opening .op-layers { background: none; }
+.fg-arch { position: absolute; inset: 18px 0 0; }
+.fg-al, .fg-ar { top: 0; bottom: 0; width: 50%; background: var(--c-accent); -webkit-mask-image: url(../theme-assets/flower-gate/arch.svg); mask-image: url(../theme-assets/flower-gate/arch.svg); }
+.fg-al { left: 0; }
+.fg-ar { right: 0; transform: scaleX(-1); }
+.fg-c { position: absolute; top: -10px; width: 64vw; max-width: 420px; aspect-ratio: 260 / 560; }
+.fg-cl { left: -12%; }
+.fg-cr { right: -12%; transform: scaleX(-1); }
+.fg-c .mk { inset: 0; }
+.fg-lf { background: var(--op-leaf); -webkit-mask-image: url(../theme-assets/flower-gate/cluster-leaf.svg); mask-image: url(../theme-assets/flower-gate/cluster-leaf.svg); }
+.fg-bl { background: var(--op-bloom); -webkit-mask-image: url(../theme-assets/flower-gate/cluster-bloom.svg); mask-image: url(../theme-assets/flower-gate/cluster-bloom.svg); }
+.fg-dp { background: var(--op-bloom-deep); -webkit-mask-image: url(../theme-assets/flower-gate/cluster-deep.svg); mask-image: url(../theme-assets/flower-gate/cluster-deep.svg); }
+.fg-ln { background: var(--c-primary-decor); opacity: .5; -webkit-mask-image: url(../theme-assets/flower-gate/cluster-line.svg); mask-image: url(../theme-assets/flower-gate/cluster-line.svg); }
+.is-opening .fg-c { will-change: transform; }

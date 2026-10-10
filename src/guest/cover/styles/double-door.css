@@ -1,0 +1,22 @@
+/* double-door (design-v4a-2bc §2.4): nền cánh --op-door + bóng 2 mép (CSS); hoạ tiết chạm + vòng nắm = mask tô accent */
+.cover[data-open="double-door"] { --op-door: var(--c-primary); --dd-carve: var(--c-accent); }
+@supports (color: color-mix(in srgb, red 50%, blue)) {
+  .cover[data-open="double-door"] { --op-door: color-mix(in srgb, var(--c-primary) 80%, #1A120C); --dd-carve: color-mix(in srgb, var(--c-accent) 90%, transparent); }
+  [data-mode="dark"] .cover[data-open="double-door"] { --op-door: color-mix(in srgb, var(--c-surface) 85%, var(--c-primary)); }
+}
+.dd { position: absolute; inset: 0; }
+.dd-light { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 38%, rgba(255,244,214,.9) 50%, transparent 62%); opacity: 0; }
+.dd-d { position: absolute; top: 0; bottom: 0; width: 50%; background: linear-gradient(90deg, rgba(0,0,0,.18), rgba(0,0,0,0) 12%, rgba(0,0,0,0) 88%, rgba(0,0,0,.25)), var(--op-door); box-shadow: inset 0 0 0 6px var(--op-door), inset 0 0 0 7px var(--dd-carve); }
+.dd-l { left: 0; transform-origin: 0 50%; }
+.dd-r { right: 0; transform-origin: 100% 50%; }
+.dd-c { inset: 0; background: var(--dd-carve); -webkit-mask: url(../theme-assets/double-door/door-carve.svg) 50% 50% / 100% auto no-repeat; mask: url(../theme-assets/double-door/door-carve.svg) 50% 50% / 100% auto no-repeat; }
+.dd-r .dd-c { transform: scaleX(-1); }
+/* O03: desktop cánh rộng ~720px -> hoạ tiết 200×520 phóng 3.6× bị cắt. Giữ trọn tấm chạm theo CHIỀU CAO màn, đặt sát khe giữa
+   (cánh phải lật gương nên 100% cũng là phía khe); phần cánh phía ngoài để trơn như mảng tường/khung. */
+@media (min-width: 1024px) {
+  .dd-c { -webkit-mask-size: auto 100%; mask-size: auto 100%; -webkit-mask-position: 100% 50%; mask-position: 100% 50%; }
+}
+.dd-ring { top: 52%; width: 24px; height: 36px; background: var(--c-accent); -webkit-mask-image: url(../theme-assets/double-door/ring.svg); mask-image: url(../theme-assets/double-door/ring.svg); }
+.dd-l .dd-ring { right: 10px; }
+.dd-r .dd-ring { left: 10px; }
+.is-opening .dd-d { will-change: transform; }

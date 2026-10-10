@@ -1,0 +1,17 @@
+/* Panel "Hoạ tiết nền" (design 1.7.9) - chunk lười cùng motif-panel.tsx. Thẻ 2 cột mobile, 4 cột desktop; vùng chạm ≥ 44px. */
+.mpanel { border: 1px solid var(--a-line); border-radius: 12px; padding: .8rem; margin: .6rem 0 1rem; display: grid; gap: .6rem; background: var(--a-surface); }
+.mpanel fieldset[disabled] { opacity: .55; }
+.mgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+@media (min-width: 768px) { .mgrid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.mcard { display: grid; justify-items: center; gap: .3rem; padding: .6rem .4rem; min-height: 44px; border: 1px solid var(--a-line); border-radius: 10px;
+  background: var(--mc-bg); color: var(--mc-text); cursor: pointer; text-align: center; transition: transform .15s; }
+.mcard:hover { transform: translateY(-2px); border-color: var(--a-line-strong); }
+.mcard.is-on { outline: 2px solid var(--a-primary); outline-offset: 0; }
+.mcard:focus-visible { outline: 2px solid var(--a-primary); outline-offset: 2px; }
+.mcard-img { display: block; width: 64px; height: 64px; background: var(--mc-accent);
+  -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+.mcard-none { display: grid; place-items: center; width: 64px; height: 64px; font-size: 2rem; color: var(--mc-text); opacity: .6; }
+.mcard-name { font-size: .85rem; line-height: 1.3; }
+.mchecks { display: flex; flex-wrap: wrap; gap: .2rem 1rem; }
+@media (max-width: 767px) { .mchecks { flex-direction: column; } }
+@media (prefers-reduced-motion: reduce) { .mcard { transition: none; } .mcard:hover { transform: none; } }

@@ -59,13 +59,14 @@ test.describe('desktop 1360×900', () => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await offline(page);
-    // Son Đỏ gợi ý kiểu mở "scroll" chưa có -> nhãn ghi đúng cái khách thấy
+    // Son Đỏ gợi ý kiểu mở "scroll" - đã có từ v4a-2b -> nhãn ghi đúng kiểu khách thấy, không còn "sẽ có ở bản sau" cho kiểu mở
     await page.goto('/admin/#/theme');
     await page.getByTestId('theme-son-do').click();
     await expect(page.getByTestId('theme-son-do')).toHaveAttribute('aria-checked', 'true');
-    await expect(page.locator('.comp')).toContainText('Cuộn thư sẽ có ở bản sau');
+    await expect(page.locator('.comp')).toContainText('Cuộn thư');
+    await expect(page.locator('.comp')).not.toContainText('Cuộn thư sẽ có ở bản sau');
     await page.goto('/admin/#/effects');
-    await expect(page.getByTestId('open-theme')).toContainText('Theo theme (Phong bì · Cuộn thư sẽ có ở bản sau)');
+    await expect(page.getByTestId('open-theme')).toContainText('Theo theme (Cuộn thư)');
     await page.getByTestId('open-card-flip').click();
 
     const hits: Record<string, string[]> = {};

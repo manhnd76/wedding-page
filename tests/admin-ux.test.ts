@@ -85,7 +85,10 @@ describe('A07 nhãn tiếng Việt cho mọi enum', () => {
     expect(followThemeLabel(OPEN_STYLE_LABEL, 'envelope', 'envelope')).toBe('Theo theme (Phong bì)');
     expect(followThemeLabel(OPEN_STYLE_LABEL, 'scroll', 'envelope')).toBe('Theo theme (Phong bì · Cuộn thư sẽ có ở bản sau)');
     expect(followThemeLabel(BURST_LABEL, 'red-paper', 'petals')).toBe('Theo theme (Cánh hoa · Pháo giấy đỏ sẽ có ở bản sau)');
-    expect(capLabel('particle', PARTICLE_LABEL, 'red-paper')).toBe('Giấy đỏ (sẽ có ở bản sau)');
+    // v4a-2c bật đủ 21 loại hạt, v4a-2a bật đủ 6 gói reveal -> không còn hậu tố; hậu tố vẫn đúng cho giá trị chưa bật
+    expect(capLabel('particle', PARTICLE_LABEL, 'red-paper')).toBe('Giấy đỏ');
+    expect(capLabel('revealStyle', REVEAL_LABEL, 'cinematic')).toBe('Điện ảnh');
+    expect(capLabel('revealStyle', { ...REVEAL_LABEL, 'chua-co': 'Chưa có' } as never, 'chua-co' as never)).toBe('Chưa có (sẽ có ở bản sau)');
     expect(capLabel('particle', PARTICLE_LABEL, 'petal-peach')).toBe('Hoa đào');
   });
   it('tên mẫu phong bì khớp ENVELOPE_META (một nguồn hiển thị)', () => {

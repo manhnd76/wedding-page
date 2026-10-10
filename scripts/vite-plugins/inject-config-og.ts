@@ -3,8 +3,9 @@
  *  - đọc public/content/config.json -> migrate -> merge -> resolveTheme (cùng code với guest)
  *  - inline vào index.html: #wp-config, #wp-resolved, <style id="wp-theme"> (CSS vars + @font-face 3 family),
  *    data-mode/data-theme, <title>, meta/OG, preload font cover + ornament sprite + ảnh hero,
- *    modulepreload cho module openStyle + loại hạt đang dùng
- *  - emit font woff2 (@fontsource) + ornament sprite có hash
+ *    modulepreload cho module openStyle + loại hạt đang dùng; với kiểu mở đang dùng: + chunk `open-kit` nó import,
+ *    `<link rel="stylesheet">` CSS riêng của kiểu, `<link rel="preload" as="image">` ảnh import trong module
+ *  - emit font woff2 (@fontsource) + ornament sprite + divider sprite riêng (v4a-1) có hash
  *  - ghi dist/_headers (CSP style-src kèm sha256 của <style> inline)
  *  - ghi .wp-build/budget.json cho size-limit
  */
@@ -18,9 +19,11 @@ import type { WeddingConfig } from '../../src/shared/config/types.ts';
 import { FONT_REGISTRY, FONT_SUBSETS, fontStack, fontsourceFile, type FontMeta } from '../../src/shared/fonts/registry.ts';
 import { planSections } from '../../src/shared/sections/meta.ts';
 import { resolveTheme, themeCssVars, type ResolvedTheme } from '../../src/shared/theme/resolve.ts';
+import { planOf } from '../../src/shared/reveal-plan.ts';
 import { assetUrl, safeHttpsUrl } from '../../src/shared/assets.ts';
 import { CAPABILITIES } from '../../src/shared/capabilities.ts';
 import type { FontId } from '../../src/shared/config/enums.ts';
+import { DIVIDER_SPRITES, isDividerSprite } from '../../src/shared/theme/parts.ts';
 
 interface FontFile { url: string; abs: string; family: string; weight: number; style: string; subset: string; range: string; role: string }
 interface Asset { url: string; abs: string }
@@ -31,6 +34,8 @@ export interface State {
   warnings: string[];
   fonts: FontFile[];
   ornament: Asset;
+  /** sprite divider riêng đang dùng (v4a-1, design 1.6.7b); url rỗng nếu divider không phải sprite */
+  divider: Asset;
   styleText: string;
   styleHash: string;
 }
@@ -39,6 +44,18 @@ const hash8 = (buf: Buffer | string) => createHash('sha256').update(buf).digest(
 const jsonForHtml = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
 const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const IMAGE_RE = /\.(webp|avif|png|jpe?g|gif|svg)$/i;
+
+/** Chunk trong bundle (chỉ các trường plugin dùng; `viteMetadata` do Vite gắn). */
+interface BundleChunk {
+  type: string; fileName: string; name?: string; facadeModuleId?: string | null; isEntry?: boolean;
+  imports?: string[]; moduleIds?: string[];
+  viteMetadata?: { importedCss?: Set<string>; importedAssets?: Set<string> };
+}
+const normId = (id: string | null | undefined) => (id ?? '').replace(/\\/g, '/');
+/** Chunk helper dùng chung của kiểu mở (vite.config.ts gom `src/guest/cover/open-kit/**`). */
+export const isOpenKitChunk = (ch: BundleChunk) =>
+  ch.name === 'open-kit' || (ch.moduleIds ?? []).some((m) => normId(m).includes('/cover/open-kit/'));
 
 
 /** File woff2 (vietnamese + latin) của 1 family; null nếu thiếu package. */
@@ -67,6 +84,13 @@ export function fontFiles(root: string, id: FontId, role: string): FontFile[] | 
 export interface PreviewAssets {
   fonts: Record<string, FontFile[]>;
   ornaments: Record<string, Asset>;
+  dividers: Record<string, Asset>;
+}
+
+/** Sprite divider riêng `/ornaments/divider-<id>.<hash8>.svg` (chung tiền tố /ornaments/ -> _headers + middleware dev không đổi). */
+export function dividerAsset(root: string, id: string): Asset {
+  const abs = path.join(root, 'src', 'guest', 'theme-assets', 'dividers', `${id}.svg`);
+  return { abs, url: isDividerSprite(id) && existsSync(abs) ? `/ornaments/divider-${id}.${hash8(readFileSync(abs))}.svg` : '' };
 }
 
 /**
@@ -85,7 +109,12 @@ export function previewAssets(root: string): PreviewAssets {
     const abs = path.join(root, 'src', 'guest', 'theme-assets', 'ornaments', `${set}.svg`);
     if (existsSync(abs)) ornaments[set] = { abs, url: `/ornaments/${set}.${hash8(readFileSync(abs))}.svg` };
   }
-  return { fonts, ornaments };
+  const dividers: Record<string, Asset> = {};
+  for (const id of DIVIDER_SPRITES) {
+    const a = dividerAsset(root, id);
+    if (a.url) dividers[id] = a;
+  }
+  return { fonts, ornaments, dividers };
 }
 
 export function previewAssetsJson(p: PreviewAssets): string {
@@ -93,7 +122,9 @@ export function previewAssetsJson(p: PreviewAssets): string {
   for (const [id, list] of Object.entries(p.fonts)) fonts[id] = list.map((f) => ({ family: f.family, weight: f.weight, style: f.style, url: f.url, range: f.range }));
   const ornaments: Record<string, string> = {};
   for (const [k, a] of Object.entries(p.ornaments)) ornaments[k] = a.url;
-  return JSON.stringify({ fonts, ornaments });
+  const dividers: Record<string, string> = {};
+  for (const [k, a] of Object.entries(p.dividers)) dividers[k] = a.url;
+  return JSON.stringify({ fonts, ornaments, dividers });
 }
 
 /** Tính toàn bộ dữ liệu inject từ config thô (tách riêng để unit test). */
@@ -102,6 +133,8 @@ export function buildState(root: string, raw: unknown, fail: (m: string) => neve
   const merged = mergeWithDefaults(m.config);
   const config = merged.config;
   const r = resolveTheme(config);
+  // v4a-2a B1: gói reveal từng section tính sẵn (guest entry không mang thuật toán xen kẽ)
+  r.reveal.plan = planOf(config, r.reveal);
   const warnings = [...m.warnings, ...merged.warnings, ...r.warnings];
   planSections(config, r.divider, (w) => warnings.push(w));
 
@@ -115,6 +148,7 @@ export function buildState(root: string, raw: unknown, fail: (m: string) => neve
 
   const ornAbs = path.join(root, 'src', 'guest', 'theme-assets', 'ornaments', `${r.ornamentSet}.svg`);
   const ornament: Asset = { abs: ornAbs, url: existsSync(ornAbs) ? `/ornaments/${r.ornamentSet}.${hash8(readFileSync(ornAbs))}.svg` : '' };
+  const divider = dividerAsset(root, r.divider);
 
   const stacks = { heading: fontStack(r.fonts.heading), script: fontStack(r.fonts.script), body: fontStack(r.fonts.body) };
   const vars = themeCssVars(r, stacks);
@@ -123,7 +157,8 @@ export function buildState(root: string, raw: unknown, fail: (m: string) => neve
     .join('');
   const styleText = `:root{${Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(';')}}${faces}`;
   const styleHash = createHash('sha256').update(styleText, 'utf8').digest('base64');
-  return { config, resolved: { ...r, warnings, ornamentUrl: ornament.url }, warnings, fonts, ornament, styleText, styleHash };
+  const resolved = { ...r, warnings, ornamentUrl: ornament.url, ...(divider.url ? { dividerUrl: divider.url } : {}) };
+  return { config, resolved, warnings, fonts, ornament, divider, styleText, styleHash };
 }
 
 export function injectConfigOg(): Plugin {
@@ -149,7 +184,7 @@ export function injectConfigOg(): Plugin {
     return buildState(root, raw, fail);
   }
 
-  function headTags(s: State, bundle?: Record<string, { type: string; fileName: string; facadeModuleId?: string | null }>): string {
+  function headTags(s: State, bundle?: Record<string, BundleChunk>): string {
     const c = s.config;
     const r = s.resolved;
     const out: string[] = [];
@@ -183,10 +218,21 @@ export function injectConfigOg(): Plugin {
         ...(r.openStyle === 'envelope' ? [`/cover/skins/${r.envelope.style}.ts`] : []),
         ...r.particles.types.map((t) => `/particles/types/${t}.ts`),
       ];
+      const extra: string[] = [];
       for (const ch of Object.values(bundle)) {
-        const id = (ch.facadeModuleId ?? '').replace(/\\/g, '/');
-        if (ch.type === 'chunk' && want.some((w) => id.endsWith(w))) out.push(`<link rel="modulepreload" href="/${ch.fileName}">`);
+        const id = normId(ch.facadeModuleId);
+        if (ch.type !== 'chunk' || !want.some((w) => id.endsWith(w))) continue;
+        out.push(`<link rel="modulepreload" href="/${ch.fileName}">`);
+        if (!id.includes('/cover/styles/')) continue;
+        // kiểu mở đang dùng: chunk open-kit nó import, CSS riêng, ảnh import trong module (solution-v4a-2bc.md 0.7b)
+        for (const imp of ch.imports ?? []) {
+          const c = bundle[imp];
+          if (c?.type === 'chunk' && isOpenKitChunk(c)) extra.push(`<link rel="modulepreload" href="/${c.fileName}">`);
+        }
+        ch.viteMetadata?.importedCss?.forEach((css) => extra.push(`<link rel="stylesheet" href="/${css}">`));
+        ch.viteMetadata?.importedAssets?.forEach((a) => { if (IMAGE_RE.test(a)) extra.push(`<link rel="preload" href="/${a}" as="image">`); });
       }
+      out.push(...new Set(extra));
     }
     out.push(`<style id="wp-theme">${s.styleText}</style>`);
     out.push(`<script type="application/json" id="wp-config">${jsonForHtml(c)}</script>`);
@@ -226,7 +272,7 @@ export function injectConfigOg(): Plugin {
         }
         if (!state || !(url.startsWith('/fonts/') || url.startsWith('/ornaments/'))) return next();
         pa ??= previewAssets(root);
-        const all = [...state.fonts, state.ornament, ...Object.values(pa.fonts).flat(), ...Object.values(pa.ornaments)];
+        const all = [...state.fonts, state.ornament, state.divider, ...Object.values(pa.fonts).flat(), ...Object.values(pa.ornaments), ...Object.values(pa.dividers)];
         const hit = all.find((a) => a.url === url);
         if (!hit) return next();
         res.setHeader('Content-Type', url.endsWith('.svg') ? 'image/svg+xml' : 'font/woff2');
@@ -243,10 +289,12 @@ export function injectConfigOg(): Plugin {
       };
       state.fonts.forEach(emit);
       emit(state.ornament);
+      emit(state.divider);
       // asset cho khung preview admin (không nằm trong trang đầu của khách)
       const pa = previewAssets(root);
       Object.values(pa.fonts).flat().forEach(emit);
       Object.values(pa.ornaments).forEach(emit);
+      Object.values(pa.dividers).forEach(emit);
       this.emitFile({ type: 'asset', fileName: 'preview-assets.json', source: previewAssetsJson(pa) });
 
       // phân loại chunk cho size-limit
@@ -256,6 +304,11 @@ export function injectConfigOg(): Plugin {
       const skins: string[] = [];
       const particle: string[] = [];
       const lazy: string[] = [];
+      const openKit: string[] = [];
+      const openCss: string[] = [];
+      const burst: string[] = [];
+      const motif: string[] = [];
+      const motifCss: string[] = [];
       const chunks = Object.values(bundle).filter((c) => c.type === 'chunk');
       const byName = new Map(chunks.map((c) => [c.fileName, c]));
       const visit = (name: string) => {
@@ -295,17 +348,27 @@ export function injectConfigOg(): Plugin {
       const r = state.resolved;
       for (const ch of chunks) {
         if (ch.type !== 'chunk' || ch.isEntry || !guestAll.has(ch.fileName)) continue;
-        const id = (ch.facadeModuleId ?? '').replace(/\\/g, '/');
-        if (id.includes('/cover/skins/') && !id.endsWith('/kit.ts')) {
+        const id = normId(ch.facadeModuleId);
+        if (isOpenKitChunk(ch as BundleChunk)) {
+          // helper kiểu mở dùng chung: ≤ 3 KB; vào JS ban đầu qua `visit` khi kiểu đang dùng import nó
+          openKit.push(ch.fileName);
+        } else if (id.includes('/cover/skins/') && !id.endsWith('/kit.ts')) {
           // mẫu phong bì (skin): ≤ 1.5 KB/mẫu; mẫu đang dùng nằm trong JS ban đầu (vẽ trước khi khách chạm)
           skins.push(ch.fileName);
           if (r.openStyle === 'envelope' && id.endsWith(`/cover/skins/${r.envelope.style}.ts`)) visit(ch.fileName);
         } else if (id.includes('/cover/styles/')) {
           open.push(ch.fileName);
+          (ch as BundleChunk).viteMetadata?.importedCss?.forEach((css) => openCss.push(css));
           if (id.endsWith(`/cover/styles/${r.openStyle}.ts`)) visit(ch.fileName);
         } else if (id.includes('/particles/types/')) {
           particle.push(ch.fileName);
           if (r.particles.types.some((t) => id.endsWith(`/particles/types/${t}.ts`))) visit(ch.fileName);
+        } else if (id.includes('/effects/burst/') && !/\/burst\/(fireworks[^/]*|registry)\.ts$/.test(id)) {
+          burst.push(ch.fileName);
+        } else if (id.endsWith('/guest/motif/motif.ts')) {
+          // hoạ tiết nền B2 (v4a-1): chunk lười riêng, ngân sách JS ≤ 1.5 KB + CSS ≤ 3 KB (không tính vào lazy chung)
+          motif.push(ch.fileName);
+          (ch as BundleChunk).viteMetadata?.importedCss?.forEach((css) => motifCss.push(css));
         } else if (!initialJs.has(ch.fileName)) lazy.push(ch.fileName);
       }
       // admin (solution 9.1: "Admin JS ban đầu ≤ 150 KB"; route nặng lazy)
@@ -318,6 +381,9 @@ export function injectConfigOg(): Plugin {
       }
       budget = {
         initialJs: [...initialJs], initialCss: [...initialCss], openStyle: open, envelopeSkin: skins, particle, lazy: lazy.filter((x) => !initialJs.has(x)),
+        openKit, openStyleCss: [...new Set(openCss)], burst,
+        // chunk hoạ tiết nền B2 (v4a-1, solution.md Rev 5 mục 10.7): JS + CSS chunk `/guest/motif/motif.ts`
+        motif, motifCss: [...new Set(motifCss)],
         adminInitialJs: [...adminInitial], adminInitialCss: [...adminCss],
         adminLazy: [...adminAll].filter((x) => !adminInitial.has(x) && !guestAll.has(x)),
       };

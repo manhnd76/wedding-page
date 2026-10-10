@@ -89,11 +89,11 @@ export function afterRestore(restored: WeddingConfig): { published: WeddingConfi
 
 // ------------------------------------------------------------------ đổi theme (Q17)
 
-export type ThemeGroup = 'colors' | 'fonts' | 'ornament' | 'texture' | 'photoFrame' | 'divider' | 'openStyle' | 'burst' | 'particles' | 'reveal';
+export type ThemeGroup = 'colors' | 'fonts' | 'ornament' | 'texture' | 'photoFrame' | 'divider' | 'motif' | 'openStyle' | 'burst' | 'particles' | 'reveal';
 
 export const THEME_GROUP_LABEL: Record<ThemeGroup, string> = {
   colors: 'Màu sắc', fonts: 'Font chữ', ornament: 'Hoạ tiết', texture: 'Texture nền', photoFrame: 'Khung ảnh',
-  divider: 'Đường phân cách', openStyle: 'Kiểu mở thiệp', burst: 'Hiệu ứng sau khi mở', particles: 'Hạt nền', reveal: 'Hiện nội dung khi cuộn',
+  divider: 'Đường phân cách', motif: 'Hoạ tiết nền', openStyle: 'Kiểu mở thiệp', burst: 'Hiệu ứng sau khi mở', particles: 'Hạt nền', reveal: 'Hiện nội dung khi cuộn',
 };
 
 /** Nhóm nào đang "Đã chỉnh riêng" (khác mặc định-theo-theme). */
@@ -106,12 +106,17 @@ export function customizedGroups(c: WeddingConfig): ThemeGroup[] {
   if (c.theme.texture !== 'theme') out.push('texture');
   if (c.theme.photoFrame !== 'theme') out.push('photoFrame');
   if (c.sections.divider !== 'theme') out.push('divider');
+  // B2 hoạ tiết nền (v4a-1): `motion` là sở thích của chủ nhà, không thuộc nhóm (giống effects.intensity)
+  const mo = c.theme.motif;
+  if (mo && (mo.set !== 'theme' || mo.placements !== 'theme' || mo.intensity !== 'theme')) out.push('motif');
   // mẫu phong bì (v2.1) thuộc nhóm "Kiểu mở thiệp"
   if (c.cover.openStyle !== 'theme' || (c.cover.envelope && c.cover.envelope.style !== 'theme')) out.push('openStyle');
   if (c.effects.burst.onOpen !== 'theme') out.push('burst');
   if (c.effects.particles.types !== 'theme' || c.effects.particles.color !== 'theme') out.push('particles');
   const r = c.effects.reveal;
-  if (r.style !== 'theme' || r.heading !== null || r.block !== null || r.image !== null || r.ornament !== null) out.push('reveal');
+  // v4a-2a: + cách áp dụng và ghim theo section (design-v4a-2a 5.2)
+  if (r.style !== 'theme' || (r.mode ?? 'auto') !== 'auto' || Object.keys(r.sections ?? {}).length > 0
+    || r.heading !== null || r.block !== null || r.image !== null || r.ornament !== null) out.push('reveal');
   return out;
 }
 
@@ -125,10 +130,11 @@ export function resetGroup(c: WeddingConfig, g: ThemeGroup): WeddingConfig {
     case 'texture': n.theme.texture = 'theme'; break;
     case 'photoFrame': n.theme.photoFrame = 'theme'; break;
     case 'divider': n.sections.divider = 'theme'; break;
+    case 'motif': n.theme.motif = { ...(n.theme.motif ?? { motion: 'auto' }), set: 'theme', placements: 'theme', intensity: 'theme' }; break;
     case 'openStyle': n.cover.openStyle = 'theme'; if (n.cover.envelope) n.cover.envelope.style = 'theme'; break;
     case 'burst': n.effects.burst.onOpen = 'theme'; break;
     case 'particles': n.effects.particles.types = 'theme'; n.effects.particles.color = 'theme'; break;
-    case 'reveal': n.effects.reveal = { style: 'theme', heading: null, block: null, image: null, ornament: null }; break;
+    case 'reveal': n.effects.reveal = { style: 'theme', mode: 'auto', sections: {}, heading: null, block: null, image: null, ornament: null }; break;
   }
   return n;
 }

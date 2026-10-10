@@ -4,6 +4,12 @@ import type {
   ParticleScope, ParticleType, PhotoFrame, RevealAtom, RevealStyle, ScriptFontId, SectionType,
   Texture, ThemeId, WishFly,
 } from './enums.ts';
+// [v4a-1] >>>
+import type { MotifIntensity, MotifMotion, MotifPlacement, MotifSet } from './enums.ts';
+// [v4a-1] <<<
+// [v4a-2a] imports >>>
+import type { RevealMode } from './enums.ts';
+// [v4a-2a] imports <<<
 
 /** Ảnh trong config (solution 5.5). `null` = chưa có ảnh. */
 export type ImageRef = {
@@ -57,6 +63,15 @@ export interface WeddingConfig {
     ornamentSet: ThemeOr<OrnamentSet>;
     texture: ThemeOr<Texture>;
     photoFrame: ThemeOr<PhotoFrame>;
+    // [v4a-1] >>>
+    /** B2 hoạ tiết nền (solution Rev 5 mục 10.1); `motion` không thuộc nhóm "Theo theme" */
+    motif: {
+      set: ThemeOr<MotifSet | 'none'>;
+      placements: ThemeOr<MotifPlacement[]>;
+      intensity: ThemeOr<MotifIntensity>;
+      motion: MotifMotion;
+    };
+    // [v4a-1] <<<
   };
   fonts: {
     preset: ThemeOr<FontPresetId>;
@@ -81,6 +96,12 @@ export interface WeddingConfig {
     reveal: {
       style: ThemeOr<RevealStyle>;
       heading: RevealAtom | null; block: RevealAtom | null; image: RevealAtom | null; ornament: RevealAtom | null;
+      // [v4a-2a] >>>
+      /** B1: "auto" = xen kẽ tự động, "uniform" = giống nhau mọi phần */
+      mode: RevealMode;
+      /** ghim gói theo section: khoá = sections.items[].id */
+      sections: Record<string, RevealStyle>;
+      // [v4a-2a] <<<
     };
     parallax: boolean;
     kenBurns: boolean;

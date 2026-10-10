@@ -33,10 +33,15 @@ export const skin: EnvelopeSkin = {
     if (light) return { steps: [{ el: p.seal, frames: [{ opacity: 1 }, { opacity: 0 }], start: 0, dur: 120 }], flapAt: 0 };
     return {
       steps: [
-        { el: p.seal, frames: [{ transform: 'perspective(300px) rotateY(0)', opacity: 1 }, { transform: 'perspective(300px) rotateY(90deg)', opacity: 0 }], start: 0, dur: 200 },
+        { el: p.seal, frames: [{ transform: 'perspective(300px) rotateY(0deg)', opacity: 1 }, { transform: 'perspective(300px) rotateY(90deg)', opacity: 0 }], start: 0, dur: 200 },
         sheen(p, 40, 300),
       ],
       flapAt: 200,
     };
   },
+  // E12: 24 xác pháo đỏ bung quạt lên từ huy hiệu 囍 (hạt `red-paper`, lật thấy mặt sau) + 8 sao vàng (`sparkle`) - v4a-2c
+  rich: () => [
+    { at: 60, count: 24, kind: ['red-paper', 'petal-rose'], colors: ['#C8231F', '#E0392B'], size: [7, 11], angle: [-160, -20], speed: [180, 420], gravity: 520, drag: 1.6, life: [1100, 1400], spin: 4 },
+    { at: 60, count: 8, kind: ['sparkle', 'gold-dust'], colors: ['#E8C46A', '#FFF4D6'], size: [4, 7], speed: [60, 160], gravity: 40, drag: 2.4, life: [700, 900] },
+  ],
 };

@@ -76,3 +76,65 @@
 ## Bảo mật login (2026-10-08)
 - "Ghi nhớ token trên máy này": **mặc định BẬT** (người duyệt chọn, chấp nhận rủi ro token mã hoá bằng mật khẩu ngắn có thể bị giải nếu lộ localStorage).
 - Không sửa lịch sử commit 55b8b69 (có mật khẩu rõ trong decisions.md, chưa push) — người duyệt chấp nhận.
+
+## Kế hoạch (2026-10-08)
+- Đưa backlog **B1 "mỗi section một kiểu reveal"** vào **v4a** (cùng 4 gói reveal còn lại). Trước khi code cần: ui-ux-designer thiết kế (gán theo section, chế độ tự động xen kẽ, UX admin), solution-designer bổ sung schema.
+- Cập nhật: đưa luôn **B2** (hoạ tiết nền vector) và **B3** (mascot theo scroll/nghiêng máy) vào **v4a**. Cả B1–B3 cần thiết kế (ui-ux) + schema (solution) trước khi code.
+
+## Quy ước làm việc của agent (2026-10-08)
+- Ghi tiến độ liên tục vào report theo từng phần (vd mỗi bug/ID xong ghi 1 lần) để agent sau tiếp tục được khi bị ngắt.
+- Hạn chế e2e/chụp màn hình lặp: designer lưu ảnh bằng chứng cho từng lỗi (`docs/tasks/<task-id>/screenshots/...`), FE dùng ảnh đó thay vì chạy lại e2e để tái hiện; full e2e chỉ chạy 1 lần cuối. Đã ghi vào `CLAUDE.md` dự án (mục "Quy ước làm việc của agent"). Thư mục screenshots được gitignore.
+
+## Review plan đầu phiên (2026-10-09)
+- Thứ tự: **v4a trước v3** (RSVP/lời chúc để sau).
+- Chia v4a thành 3 đợt, mỗi đợt kiểm tra/duyệt/commit riêng:
+  - **v4a-1**: 9 theme còn lại + asset (ornament/texture/photoFrame/divider) + **B2** hoạ tiết nền vector.
+  - **v4a-2**: animation — 13 kiểu mở, 16 hạt, 4 burst, 4 gói reveal, micro, **B1** reveal theo section, **E12**.
+  - **v4a-3**: **B3** mascot theo scroll/nghiêng máy.
+- Quy trình mỗi đợt: ui-ux-designer thiết kế + asset -> solution-designer bổ sung schema/kế hoạch -> frontend-developer code -> designer review.
+- Ghi nhận: người duyệt đã sửa `public/_redirects` thành `/invite/*  /  200` cho Cloudflare Pages (commit 60f385c).
+
+## Review toàn bộ plan + chạy song song (2026-10-09, phiên cloud)
+- Phiên cloud: Claude đóng vai orchestrator theo `.claude/agents/orchestrator.md`.
+- E2E chạy được trên cloud: `PW_EXECUTABLE_PATH=/opt/pw-browsers/chromium`; cổng e2e tham số hoá `PW_PREVIEW_PORT`/`PW_DEV_PORT` để nhiều worktree chạy song song.
+- **Tách v4a-2 thành 3 đợt** (người duyệt đồng ý):
+  - **v4a-2a**: B1 reveal theo section + 4 gói reveal (`editorial`, `letter`, `playful`, `cinematic`) + micro còn lại.
+  - **v4a-2b**: 13 kiểu mở còn lại + E12 ("Nhiều" riêng từng mẫu phong thư).
+  - **v4a-2c**: 16 loại hạt còn lại + 4 burst (`confetti`, `gold`, `red-paper`, `heart-burst`).
+- **Chạy song song nhiều agent** (người duyệt yêu cầu): các đợt độc lập làm đồng thời, mỗi FE một git worktree + cặp cổng e2e riêng; tối đa 2 FE cùng lúc (máy 4 nhân, test hiệu năng dễ nhiễu); designer/solution viết vào file riêng theo đợt, không 2 agent cùng sửa một file. Orchestrator merge lần lượt sau mỗi cổng duyệt.
+- **B2** (người duyệt đồng ý cả 4 giả định designer): motif mặc định BẬT chỉ ở `son-do` (trống đồng), `sen-cham` (sen), `dem-nhung` (art-deco), `bien-dao` (sóng), TẮT ở 8 theme còn lại kể cả Trầm Vàng; trống đồng xoay 1 vòng/240s ở mức Vừa, chữ Hỷ không bao giờ xoay; chưa áp motif cho cover/phong bì ở v4a-1.
+- **Font v4a-1**: thêm đủ 14 gói `@fontsource` cho 6 theme mới (newsreader, birthstone, manrope, old-standard-tt, josefin-sans, prata, allura, eb-garamond, nunito, style-script, lexend, crimson-pro, moon-dance, spectral); kiểm subset tiếng Việt + font ban đầu ≤ 180 KB.
+- **Ngày cưới còn > 2 tháng** -> giữ thứ tự v4a -> v3 -> v4b.
+- **B3 (mascot) dời sau v4b**; chốt nhân vật + giấy phép khi tới lượt.
+- **Git**: giữ **1 nhánh** `claude/keen-albattani-k0ds71` cho phiên cloud. Agent con không commit/push; chỉ orchestrator commit + push sau khi kiểm tra/duyệt. FE song song dùng worktree + nhánh cục bộ `wt/<đợt>` (không push), orchestrator merge lần lượt vào nhánh phiên. Không đụng `main`; đưa vào `main` bằng PR khi người duyệt yêu cầu.
+
+## Cổng 1 v4a-2b/2c + duyệt thiết kế v4a-2a (2026-10-09)
+- `solution-v4a-2bc.md`: người duyệt đồng ý cả 14 giả định. Riêng thứ tự: **Bước 0 làm trước MỌI đợt song song (kể cả v4a-1)**, trên branch phiên; sau đó FE-1 (v4a-1) + FE-2 (v4a-2b) song song, FE-3 (v4a-2c) khi có slot.
+- Chấp nhận config "Theo theme" đổi kiểu mở/burst sau deploy (ghi chú phát hành); `light-gather` canvas riêng + chính sách FPS (≥ 45 fps kiểm tay máy thật).
+- `design-v4a-2a.md` (B1): đồng ý cả 7 giả định — "Xen kẽ tự động" mặc định cả config cũ; Ảnh bìa + phần thông tin giữ gói chính; ghim theo section chỉ chọn cả gói; UI ghi đè vai trò cấp trang để v4b; rút ngắn `btn-shine`/`name-sparkle` (WCAG 2.2.2); thanh tiến độ đọc chỉ khi admin bật; ô giây đồng hồ chỉ quay ở mức Nhiều. Sửa 8 lỗi spec R2A-01..08 theo designer.
+- `design-v4a-2bc.md` (asset 2b/2c, ui-ux-designer B): người duyệt đồng ý — `flower-gate` vẽ vector minh hoạ phẳng (không WebP); `ink-spread` khoét lỗ hình vệt mực bằng mask (`mask-composite`), thay `clip-path: circle` (giữ phương án dự phòng); họ "cổng toàn màn" (rèm, cửa đôi, cổng hoa, cửa trăng) gom chữ vào biển nổi `.cv-plaque`. Không kiểu/hạt nào cần raster. Kiến trúc hạt trên cover theo `solution-v4a-2bc.md` (`setOverCover`, Bước 0.4); tải sẵn canvas trong `prepare()` + vùng dịu `.env-addr`/`.cv-plaque` thuộc FE-2.
+- **Orchestrator chốt Còn mở #18 (solution.md Rev 5)**: (1) `vite.config.ts` `assetsInlineLimit` loại trừ `theme-assets` + (2) 2 nhóm size-limit motif -> gộp vào Bước 0 (đã gửi FE Bước 0); (3) xoá khối texture `body::before/::after` trong `base.css` + (4) 1 dòng gán `dividerUrl` ở nhánh preview `bootstrap.ts` -> FE-1 (v4a-1) được sửa đúng 2 hunk này.
+
+## Cổng 1 v4a-1 (2026-10-09)
+- `solution.md` Rev 5 mục 10: người duyệt đồng ý. Còn mở #11–#17 theo giả định: (#11) theme tắt motif mà admin chọn bộ -> `band` + `medium`; (#12) 7 texture mới lên cover qua `textures.css`, không sửa `cover.css`; (#13) Texture/Khung/Divider giữ Select, thẻ hình để v4b (riêng Hoạ tiết nền có thẻ hình); (#14) theme vượt 180 KB font -> FE báo số đo, designer chọn face bỏ, không nới ngân sách; (#15) `font-synthesis-weight: none` toàn cục, Prata nghiêng giả chấp nhận; (#16) polaroid chưa có chú thích; (#17) orchestrator đặt `STAGE` khi merge.
+- FE-1 (v4a-1) bắt đầu sau khi Bước 0 merge, song song FE-2 (v4a-2b).
+
+## Cổng 1 v4a-2a (2026-10-09)
+- `solution-v4a-2a.md`: người duyệt đồng ý cả 4 giả định — ghim gói chưa bật -> bỏ ghim + cảnh báo (theo tự động); hoạ tiết ở cấp Nhẹ giữ như hiện nay (hiện ngay, không vẽ nét); cho sửa 1 hunk `diff.ts` bỏ dòng "xoá {}"; micro thêm ≤ +0.6 KB JS ban đầu (ngoài +2.5 KB reveal).
+- Orchestrator: cho 2a sửa 1 hunk mỗi file `checklist.ts`, `icons.ts`, `.size-limit.cjs`; **2a tách nhánh SAU khi v4a-1 merge** (chung `resolve.ts`, `merge.ts`, `labels.ts`, `schema-meta.ts`, `ops.ts`).
+- Thứ tự: Bước 0 -> FE-1 v4a-1 ‖ FE-2 v4a-2b -> slot trống: v4a-2c, rồi v4a-2a (sau merge v4a-1).
+
+## Sau tạm dừng (2026-10-09)
+- v4a-1 code xong (merge vào branch phiên, full e2e 46/46); chờ designer review.
+- Người duyệt cho phép **push branch `wt/v4a-2b`** lên GitHub (giữ WIP v4a-2b).
+- **Từ nay chỉ chạy 1 frontend-developer, không song song.** Thứ tự: hoàn tất v4a-2b -> (designer review v4a-1, v4a-2b) -> v4a-2c -> v4a-2a.
+- Vì không còn song song: FE v4a-2b được sửa 1 hunk `SOFT_SELECTOR` trong `geometry.ts` (thuộc 2c) cho vùng dịu `.env-addr`/`.cv-plaque`.
+
+## Sau designer review v4a-1 + v4a-2b (2026-10-10)
+- Câu 1 (designer vẽ lại asset `watercolor-wash` trước vòng sửa FE): **HOÃN** — ghi backlog, sửa sau. Kéo theo **T02** và **O04** (phụ thuộc asset màu nước) hoãn cùng.
+- Câu 2–5 chấp nhận giả định designer: bỏ nền "pill" của divider trên mọi theme có texture; lời chào trong vật nhỏ + caption polaroid dùng heading italic thay script (< 28px); hạt E12 giữ alpha .75 trong vùng dịu quanh tên khách; "&" của Pinyon Script vẽ bằng heading italic (áp cả `luc-bao`).
+- FE sửa 15 lỗi còn lại: T01, T03, T04, T05, T06, O01, O02, O03, O05–O11 (≤ 3 vòng).
+
+## Sau designer review v4a-2c (2026-10-10)
+- Người duyệt đồng ý cả 6 giả định: Q1 burst phát từ nút được bỏ qua vùng loại trừ form; Q2 đưa script sinh module hạt vào repo; Q3 sao lấp lánh `double-door` dùng vàng nhạt cố định `#F3D48C/#FFF8E6` cho mọi theme; Q4 `leaf-maple` cỡ [18, 28]; Q5 tăng cỡ confetti, `gift-box` giữ cỡ riêng; Q6 giữ vệt bắn phụ `ink-spread`.
+- FE sửa 11 lỗi P01–P11 (vòng 1/3) -> designer xác nhận lại các ID cần mắt người -> commit.

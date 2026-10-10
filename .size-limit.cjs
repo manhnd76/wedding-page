@@ -14,6 +14,11 @@ const b = JSON.parse(fs.readFileSync(budgetPath, 'utf8'));
 // size-limit dùng glob -> luôn dùng "/" (kể cả trên Windows)
 const p = (f) => `${b.outDir.split(path.sep).join('/')}/${f}`;
 const base = (f) => path.basename(f).replace(/-[\w-]{8}\.js$/, '');
+const baseCss = (f) => path.basename(f).replace(/-[\w-]{8}\.css$/, '');
+const TIGHT = {
+  'reveal-split': '3 KB', 'parallax-layers': '1.5 KB', 'fx-preview': '4 KB', 'micro-attn': '2 KB', 'photo-tilt': '2 KB',
+  'heart-tap': '1 KB', 'scroll-progress': '1 KB', odometer: '2 KB',
+};
 
 module.exports = [
   { name: 'JS ban đầu (entry + openStyle + hạt đang dùng)', path: b.initialJs.map(p), limit: '60 KB', gzip: true },
@@ -21,7 +26,15 @@ module.exports = [
   ...b.openStyle.map((f) => ({ name: `openStyle: ${base(f)}`, path: p(f), limit: '4 KB', gzip: true })),
   ...(b.envelopeSkin ?? []).map((f) => ({ name: `mẫu phong bì: ${base(f)}`, path: p(f), limit: '1.5 KB', gzip: true })),
   ...b.particle.map((f) => ({ name: `hạt: ${base(f)}`, path: p(f), limit: '1.5 KB', gzip: true })),
-  ...b.lazy.map((f) => ({ name: `lazy: ${base(f)}`, path: p(f), limit: '15 KB', gzip: true })),
+  // v4a (solution-v4a-2bc.md 0.8): helper kiểu mở dùng chung, CSS riêng từng kiểu mở, burst sau khi mở (chặt hơn lazy chung)
+  ...(b.openKit ?? []).map((f) => ({ name: 'open-kit', path: p(f), limit: '3 KB', gzip: true })),
+  ...(b.openStyleCss ?? []).map((f) => ({ name: `openStyle CSS: ${baseCss(f)}`, path: p(f), limit: '1.5 KB', gzip: true })),
+  ...(b.burst ?? []).map((f) => ({ name: `burst: ${base(f)}`, path: p(f), limit: '3 KB', gzip: true })),
+  // v4a-1 (solution.md Rev 5 mục 10): chunk hoạ tiết nền B2 - plugin của v4a-1 ghi khoá `motif`/`motifCss`
+  ...(b.motif ?? []).map((f) => ({ name: `motif JS: ${base(f)}`, path: p(f), limit: '1.5 KB', gzip: true })),
+  ...(b.motifCss ?? []).map((f) => ({ name: `motif CSS: ${baseCss(f)}`, path: p(f), limit: '3 KB', gzip: true })),
+  // v4a-2a (solution-v4a-2a.md 3.1, 6.3): chunk lười reveal/micro có ngân sách chặt hơn 15 KB chung
+  ...b.lazy.map((f) => ({ name: `lazy: ${base(f)}`, path: p(f), limit: TIGHT[base(f)] ?? '15 KB', gzip: true })),
   // admin (v2) - solution 9.1 cho phép ≤ 150 KB; đặt chặt hơn để phát hiện phình sớm (frontend-report-v2 mục ngân sách)
   ...(b.adminInitialJs?.length ? [{ name: 'Admin JS ban đầu', path: b.adminInitialJs.map(p), limit: '80 KB', gzip: true }] : []),
   ...(b.adminInitialCss?.length ? [{ name: 'Admin CSS', path: b.adminInitialCss.map(p), limit: '10 KB', gzip: true }] : []),

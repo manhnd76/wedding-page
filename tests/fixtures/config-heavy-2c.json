@@ -1,0 +1,513 @@
+{
+ "schemaVersion": 1,
+ "publish": {
+  "id": "",
+  "at": ""
+ },
+ "meta": {
+  "siteUrl": "",
+  "title": "Minh Anh & Thuỳ Linh · 12.12.2026",
+  "description": "Trân trọng kính mời bạn đến chung vui ngày trọng đại của chúng tôi. Tổ chức ngày 12 tháng 12, 2026.",
+  "ogImage": null,
+  "favicon": null,
+  "locale": "vi_VN",
+  "noindex": true
+ },
+ "theme": {
+  "preset": "tram-vang",
+  "primaryColor": null,
+  "overrides": {},
+  "ornamentSet": "theme",
+  "texture": "theme",
+  "photoFrame": "theme"
+ },
+ "fonts": {
+  "preset": "theme",
+  "heading": "theme",
+  "script": "theme",
+  "body": "theme",
+  "scaleStep": 0
+ },
+ "effects": {
+  "intensity": "high",
+  "respectReducedMotion": true,
+  "autoDowngrade": true,
+  "guestToggle": true,
+  "particles": {
+   "enabled": true,
+   "types": [
+    "petal-sakura",
+    "petal-dried"
+   ],
+   "color": "theme",
+   "scope": "all",
+   "wind": true
+  },
+  "burst": {
+   "onOpen": "confetti",
+   "onRsvp": true,
+   "countdownFireworks": "every-view"
+  },
+  "reveal": {
+   "style": "theme",
+   "heading": null,
+   "block": null,
+   "image": null,
+   "ornament": null
+  },
+  "parallax": true,
+  "kenBurns": true,
+  "micro": {
+   "buttonShine": true,
+   "photoTilt": true,
+   "wishFly": "paper-plane",
+   "scrollProgress": false,
+   "coupleHeartTap": false
+  },
+  "autoScroll": {
+   "enabled": true,
+   "speed": 45,
+   "startDelayMs": 2500,
+   "mode": "flow",
+   "dwellMs": 1200
+  }
+ },
+ "music": {
+  "enabled": true,
+  "src": "content/audio/sample-chime.455e8abf.wav",
+  "title": "Nhạc mẫu (thay bằng bài của bạn)",
+  "autoplayAfterOpen": true,
+  "loop": true,
+  "startAt": 0
+ },
+ "guest": {
+  "fromUrl": true,
+  "queryParam": "to",
+  "pathPrefix": "invite",
+  "fallbackName": "Quý khách",
+  "template": "{name}",
+  "maxLength": 60
+ },
+ "cover": {
+  "enabled": true,
+  "openStyle": "theme",
+  "background": "paper",
+  "backgroundImage": null,
+  "eyebrow": "Thiệp mời cưới",
+  "dateText": "12 · 12 · 2026",
+  "monogram": "M & L",
+  "guestPrefix": "Kính gửi:",
+  "tapToOpenLabel": "Chạm để mở thiệp",
+  "musicHint": "Thiệp có nhạc, bật loa",
+  "showOpenedGreeting": true,
+  "openedGreeting": "Chúng mình sắp cưới!",
+  "openedSubline": "Hai con người, một câu chuyện —\nvà một lời hẹn trọn đời.",
+  "envelope": {
+   "style": "theme",
+   "color": "auto",
+   "guestOnFront": true,
+   "liner": true
+  }
+ },
+ "sections": {
+  "items": [
+   {
+    "id": "hero",
+    "type": "hero",
+    "enabled": true
+   },
+   {
+    "id": "couple",
+    "type": "couple",
+    "enabled": true
+   },
+   {
+    "id": "families",
+    "type": "families",
+    "enabled": true
+   },
+   {
+    "id": "announcement",
+    "type": "announcement",
+    "enabled": true
+   },
+   {
+    "id": "events",
+    "type": "events",
+    "enabled": true
+   },
+   {
+    "id": "countdown",
+    "type": "countdown",
+    "enabled": true
+   },
+   {
+    "id": "timeline",
+    "type": "timeline",
+    "enabled": true
+   },
+   {
+    "id": "loveStory",
+    "type": "loveStory",
+    "enabled": false
+   },
+   {
+    "id": "album",
+    "type": "album",
+    "enabled": true
+   },
+   {
+    "id": "gift",
+    "type": "gift",
+    "enabled": true
+   },
+   {
+    "id": "guestbook",
+    "type": "guestbook",
+    "enabled": true
+   },
+   {
+    "id": "rsvp",
+    "type": "rsvp",
+    "enabled": true
+   },
+   {
+    "id": "thankyou",
+    "type": "thankyou",
+    "enabled": true
+   },
+   {
+    "id": "footer",
+    "type": "footer",
+    "enabled": true
+   }
+  ],
+  "showNumbers": true,
+  "divider": "theme"
+ },
+ "content": {
+  "hero": {
+   "eyebrow": "Save the Date",
+   "image": {
+    "src": "content/images/hero/hero.6c286d3b.svg",
+    "w": 900,
+    "h": 1600,
+    "alt": "Minh Anh và Thuỳ Linh trong ngày chụp ảnh cưới",
+    "dominantColor": "#c9a88a"
+   },
+   "dateText": "12 · 12 · 2026",
+   "lunarText": "Tức ngày 3 tháng 11 năm Bính Ngọ"
+  },
+  "couple": {
+   "eyebrow": "The Bride & Groom",
+   "heading": "Cô Dâu & Chú Rể",
+   "order": "groom-first",
+   "groom": {
+    "labelEn": "The Groom",
+    "label": "Chú rể",
+    "fullName": "Nguyễn Minh Anh",
+    "shortName": "Minh Anh",
+    "photo": {
+     "src": "content/images/couple/groom.0b6e8b4a.svg",
+     "w": 800,
+     "h": 1000,
+     "alt": "Chú rể Nguyễn Minh Anh",
+     "dominantColor": "#8d9db5"
+    },
+    "bio": "Con trai của ông Nguyễn Văn Bình và bà Lê Thị Hoa"
+   },
+   "bride": {
+    "labelEn": "The Bride",
+    "label": "Cô dâu",
+    "fullName": "Trần Thuỳ Linh",
+    "shortName": "Thuỳ Linh",
+    "photo": {
+     "src": "content/images/couple/bride.bd35268c.svg",
+     "w": 800,
+     "h": 1000,
+     "alt": "Cô dâu Trần Thuỳ Linh",
+     "dominantColor": "#c2a3b5"
+    },
+    "bio": "Con gái của ông Trần Văn Long và bà Phạm Thị Mai"
+   }
+  },
+  "families": {
+   "eyebrow": "Our Families",
+   "heading": "Hai bên gia đình",
+   "groom": {
+    "title": "Nhà Trai",
+    "parentsLabel": "Ông bà",
+    "father": "Nguyễn Văn Bình",
+    "mother": "Lê Thị Hoa",
+    "address": "Số 12 Ngõ 88, Ba Đình, Hà Nội",
+    "photo": null
+   },
+   "bride": {
+    "title": "Nhà Gái",
+    "parentsLabel": "Ông bà",
+    "father": "Trần Văn Long",
+    "mother": "Phạm Thị Mai",
+    "address": "Số 45 Đường Láng, Đống Đa, Hà Nội",
+    "photo": null
+   },
+   "showPhotos": false
+  },
+  "announcement": {
+   "eyebrow": "Wedding Announcement",
+   "heading": "Trân trọng báo tin",
+   "subheading": "Lễ Thành Hôn của con chúng tôi",
+   "inviteLine": "Trân trọng kính mời {guest} tới dự",
+   "inviteLine2": "bữa tiệc chung vui cùng gia đình chúng tôi"
+  },
+  "events": {
+   "eyebrow": "Wedding Events",
+   "heading": "Sự kiện cưới",
+   "mainEventId": "thanh-hon",
+   "items": [
+    {
+     "id": "an-hoi",
+     "name": "Lễ Ăn Hỏi",
+     "startAt": "2026-12-10T08:30:00+07:00",
+     "endAt": null,
+     "welcomeTime": "08:00",
+     "displayDate": "Thứ Năm 10 Tháng 12 · 2026",
+     "lunarText": "Tức ngày 1 tháng 11 năm Bính Ngọ",
+     "venueName": "Tư Gia Nhà Gái",
+     "address": "Số 45 Đường Láng, Đống Đa, Hà Nội",
+     "mapUrl": "https://www.google.com/maps?q=21.0186,105.8107",
+     "mapEmbedUrl": "",
+     "image": null,
+     "rsvpEnabled": true,
+     "addToCalendar": true
+    },
+    {
+     "id": "thanh-hon",
+     "name": "Lễ Thành Hôn",
+     "startAt": "2026-12-12T11:30:00+07:00",
+     "endAt": null,
+     "welcomeTime": "11:00",
+     "displayDate": "Thứ Bảy 12 Tháng 12 · 2026",
+     "lunarText": "Tức ngày 3 tháng 11 năm Bính Ngọ",
+     "venueName": "Trung Tâm Tiệc Cưới Hoa Cưới",
+     "address": "Số 200 Trần Duy Hưng, Cầu Giấy, Hà Nội",
+     "mapUrl": "https://www.google.com/maps?q=21.0091,105.7889",
+     "mapEmbedUrl": "",
+     "image": null,
+     "rsvpEnabled": true,
+     "addToCalendar": true
+    }
+   ]
+  },
+  "countdown": {
+   "eyebrow": "Countdown",
+   "heading": "Đếm ngược ngày cưới",
+   "targetAt": null,
+   "style": "flip",
+   "milestones": true,
+   "todayLabel": "Hôm nay là ngày trọng đại!",
+   "afterLabel": "Cảm ơn bạn đã đến chung vui",
+   "hideAfter": false
+  },
+  "timeline": {
+   "eyebrow": "Schedule",
+   "heading": "Lịch trình",
+   "items": [
+    {
+     "date": "Ngày 10 tháng 12",
+     "time": "08:30",
+     "label": "Lễ Ăn Hỏi tại Tư gia Nhà gái"
+    },
+    {
+     "date": "Ngày 12 tháng 12",
+     "time": "11:00",
+     "label": "Đón khách tại Trung Tâm Tiệc Cưới"
+    },
+    {
+     "date": "Ngày 12 tháng 12",
+     "time": "11:30",
+     "label": "Lễ Thành Hôn & khai tiệc"
+    }
+   ]
+  },
+  "loveStory": {
+   "eyebrow": "Our Story",
+   "heading": "Chuyện chúng mình",
+   "items": [
+    {
+     "year": "2019",
+     "title": "Lần đầu gặp nhau",
+     "text": "Một buổi chiều mưa ở Hà Nội.",
+     "photo": null
+    },
+    {
+     "year": "2025",
+     "title": "Lời cầu hôn",
+     "text": "Và cô ấy đã nói đồng ý.",
+     "photo": null
+    }
+   ]
+  },
+  "album": {
+   "eyebrow": "Gallery",
+   "heading": "Album cưới",
+   "layout": "masonry",
+   "previewCount": 6,
+   "images": [
+    {
+     "src": "content/images/album/album-01.0ae1e384.svg",
+     "w": 900,
+     "h": 1200,
+     "alt": "Ảnh cưới 1",
+     "dominantColor": "#c9a88a"
+    },
+    {
+     "src": "content/images/album/album-02.8205508d.svg",
+     "w": 1200,
+     "h": 800,
+     "alt": "Ảnh cưới 2",
+     "dominantColor": "#b08968"
+    },
+    {
+     "src": "content/images/album/album-03.119cf6ca.svg",
+     "w": 900,
+     "h": 1200,
+     "alt": "Ảnh cưới 3",
+     "dominantColor": "#c2a3b5"
+    },
+    {
+     "src": "content/images/album/album-04.a60cf6a2.svg",
+     "w": 1000,
+     "h": 1000,
+     "alt": "Ảnh cưới 4",
+     "dominantColor": "#9fb3a6"
+    },
+    {
+     "src": "content/images/album/album-05.80990f1f.svg",
+     "w": 1200,
+     "h": 800,
+     "alt": "Ảnh cưới 5",
+     "dominantColor": "#d2a679"
+    },
+    {
+     "src": "content/images/album/album-06.0e56e4f4.svg",
+     "w": 900,
+     "h": 1350,
+     "alt": "Ảnh cưới 6",
+     "dominantColor": "#a98b76"
+    },
+    {
+     "src": "content/images/album/album-07.09bc9c79.svg",
+     "w": 1200,
+     "h": 900,
+     "alt": "Ảnh cưới 7",
+     "dominantColor": "#8d9db5"
+    },
+    {
+     "src": "content/images/album/album-08.9f4cd63f.svg",
+     "w": 900,
+     "h": 1200,
+     "alt": "Ảnh cưới 8",
+     "dominantColor": "#c48e7e"
+    }
+   ]
+  },
+  "gift": {
+   "eyebrow": "Wedding Gift",
+   "heading": "Mừng cưới",
+   "message": "Sự hiện diện của quý khách là món quà quý giá nhất.\nNếu muốn gửi lời chúc qua quà mừng, bạn có thể dùng mã QR bên dưới.",
+   "showBankInfo": true,
+   "buttonLabel": "Gửi quà mừng cưới",
+   "bankAccounts": [
+    {
+     "role": "Chú rể",
+     "owner": "Nguyễn Minh Anh",
+     "bank": "Vietcombank",
+     "bankBin": "970436",
+     "accountNumber": "0123456789",
+     "qrImage": null
+    },
+    {
+     "role": "Cô dâu",
+     "owner": "Trần Thuỳ Linh",
+     "bank": "Techcombank",
+     "bankBin": "970407",
+     "accountNumber": "9876543210",
+     "qrImage": null
+    }
+   ]
+  },
+  "guestbook": {
+   "eyebrow": "Guestbook",
+   "heading": "Sổ lưu bút",
+   "subheading": "Để lại đôi lời thân thương cho cô dâu chú rể",
+   "maxLength": 300,
+   "pageSize": 6,
+   "pollIntervalSec": 30,
+   "suggestions": [
+    "Trăm năm hạnh phúc",
+    "Sớm có tin vui",
+    "Mãi yêu thương nhau nhé",
+    "Chúc mừng hạnh phúc"
+   ],
+   "seedMessages": [
+    {
+     "name": "Bạn thân",
+     "message": "Chúc mừng đám cưới, chúc hai bạn mãi bên nhau!",
+     "time": "2 tuần trước"
+    },
+    {
+     "name": "Đồng nghiệp",
+     "message": "Chúc hai bạn trăm năm hạnh phúc, sớm có tin vui!",
+     "time": "3 tuần trước"
+    }
+   ],
+   "showBubbles": false
+  },
+  "rsvp": {
+   "eyebrow": "RSVP",
+   "heading": "Xác nhận tham dự",
+   "subheading": "Hai chúng tôi sẽ vui hơn rất nhiều nếu bạn xác nhận trước",
+   "attendingLabel": "Tôi sẽ đến",
+   "notAttendingLabel": "Rất tiếc, tôi không thể đến",
+   "guestCountLabel": "Bạn đi mấy người?",
+   "maxGuests": 5,
+   "deadline": null,
+   "deadlineText": "",
+   "askEvents": true,
+   "askNote": true,
+   "contactPhone": "0900000000"
+  },
+  "thankyou": {
+   "heading": "Trân trọng cảm ơn",
+   "message": "Sự hiện diện và lời chúc của quý khách là niềm vinh hạnh lớn lao, kỷ niệm khó quên trong ngày trọng đại của chúng tôi.",
+   "signature": "Minh Anh & Thuỳ Linh",
+   "photo": {
+    "src": "content/images/thankyou/thankyou.17db1789.svg",
+    "w": 1200,
+    "h": 800,
+    "alt": "Minh Anh và Thuỳ Linh",
+    "dominantColor": "#d2a679"
+   },
+   "signatureSvg": null
+  },
+  "footer": {
+   "monogram": "M & L",
+   "dateText": "12 · 12 · 2026",
+   "madeWithText": "Thiệp được làm với ♡",
+   "vendor": {
+    "show": false,
+    "name": "",
+    "tagline": "",
+    "phone": "",
+    "logo": null
+   }
+  }
+ },
+ "floating": {
+  "quickAction": true,
+  "scrollTop": true
+ },
+ "integrations": {
+  "appsScriptUrl": ""
+ }
+}

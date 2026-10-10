@@ -1,0 +1,26 @@
+/*
+ * Divider sections.divider (design 1.6.6, v5 / v4a-1) - ui-ux-designer.
+ * Hiện tại (v2.3): divider() trong common.ts chỉ chèn ornament(<ornamentUrl>, 'divider') cho 'ornament' | 'cloud' | 'deco-fan'
+ *   -> 'cloud'/'deco-fan' chỉ đúng khi bộ ornament là traditional/luxe; trộn với bộ khác sẽ ra sai hình.
+ * Đề xuất: mỗi divider (trừ 'ornament', 'wave', 'none', 'torn-paper') là 1 file sprite riêng có đúng 1 symbol id="divider" (160x24),
+ *   dùng lại helper ornament(url, 'divider', 'orn div-orn'). 'ornament' = divider của bộ họa tiết đang dùng (như cũ).
+ *   File: dividers/{leaf-branch,double-line,cloud,lotus,dots,brush-stroke,deco-fan,wave-ocean}.svg  (mỗi file ≤ 2KB).
+ * Kích thước + nền "khâu" 2 section giữ như R07 (.div-orn 140x21 mobile / 200x30 desktop, nền --div-bg).
+ */
+.divider--brush-stroke .div-orn { opacity: .75; }   /* vệt cọ đặc: hạ đậm để không nặng hơn tiêu đề */
+.divider--dots .div-orn { width: 120px; }            /* 3 chấm không cần khung rộng */
+@media (min-width: 1024px) { .divider--dots .div-orn { width: 160px; } }
+
+/* wave (đã có, CSS) giữ nguyên. */
+
+/* torn-paper (Đất Nung): mép giấy xé chạy hết chiều ngang, là mép trên của section SAU (màu = --div-bg).
+   Không có ornament ở giữa. Mask tile 240x20 lặp ngang; cao 20px mobile / 26px desktop, đặt nhô lên trên ranh giới. */
+.divider--torn-paper { filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, .08)); } /* bóng mảnh ở mép xé: đặt ở CHA vì mask cắt mất filter của chính phần tử */
+.divider--torn-paper::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 20px;
+  background: var(--div-bg, var(--c-bg));
+  -webkit-mask: url("./torn-paper.svg") 0 100% / 240px 100% repeat-x; mask: url("./torn-paper.svg") 0 100% / 240px 100% repeat-x;
+}
+@media (min-width: 1024px) { .divider--torn-paper::before { height: 26px; -webkit-mask-size: 320px 100%; mask-size: 320px 100%; } }
+[data-mode="dark"] .divider--torn-paper { filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, .08)); }
+/* Mép xé chỉ thấy khi 2 section kề nhau khác nền -> planSections đã xen kẽ tone; nếu trùng tone, vẫn ổn (mép chìm). */

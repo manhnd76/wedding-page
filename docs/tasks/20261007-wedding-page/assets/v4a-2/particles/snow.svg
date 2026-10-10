@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="112" height="112">
+<!-- snow: xem thử 1 biến thể (ô 24×24 tâm 0,0; màu tự nhiên). Dữ liệu thật: particles.json -->
+<g transform="translate(14 14)"><title>v1 w=1</title><radialGradient id="snow-0-0g"><stop offset="0" stop-color="#EEF3F8" stop-opacity="1"/><stop offset="0.6" stop-color="#EEF3F8" stop-opacity="0.95"/><stop offset="0.8" stop-color="#9FB3C8" stop-opacity="0.45"/><stop offset="1" stop-color="#9FB3C8" stop-opacity="0"/></radialGradient><circle r="12" fill="url(#snow-0-0g)"/></g>
+</svg>

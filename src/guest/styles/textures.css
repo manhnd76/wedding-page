@@ -1,0 +1,67 @@
+/*
+ * Texture `theme.texture` (design 1.6.7d, solution Rev 5 mục 10.5b) - CSS lõi, import từ sections/common.ts.
+ * Sửa lỗi v2.3: texture là `body::before` (fixed, z 0 dưới #app) bị nền đặc của section che gần hết -> chuyển thành lớp
+ * RIÊNG MỖI SECTION (cuộn theo trang như giấy in): nền section -> texture ::before (z 0) -> .mtf (z 0) -> .sec-in (z 1).
+ * Ảnh là file SVG cùng origin; chỉ rule khớp data-texture mới tải ảnh. Texture KHÔNG bao giờ animate.
+ * Overlay (lightbox, sheet, toast, floating, canvas hạt) gắn vào body nên isolation của section không nhốt chúng.
+ */
+.sec { isolation: isolate; }
+.sec > .sec-in { position: relative; z-index: 1; }
+.sec::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background-repeat: repeat; }
+.sec-hero:not(.no-img)::before, .sec-thankyou.has-img::before, [data-texture="none"] .sec::before { content: none; }
+/* theme tối: đảo màu noise bằng filter tĩnh (vẽ 1 lần) */
+[data-mode="dark"] .sec::before { filter: invert(1); mix-blend-mode: screen; }
+
+/* paper (chuyển từ body::before của base.css, giữ data-URI) */
+[data-texture="paper"] .sec::before {
+  opacity: .05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .15 0 0 0 0 .1 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* paper-aged (Hoài Cổ): giấy ố + foxing + tối dần 2 mép trái/phải (liền mạch giữa các section vì chỉ theo trục ngang) */
+[data-texture="paper-aged"] .sec::before {
+  opacity: .08;
+  background-image: linear-gradient(90deg, rgba(90, 60, 30, .9), transparent 9%, transparent 91%, rgba(90, 60, 30, .9)), url("../theme-assets/textures/paper-aged.svg");
+  background-size: 100% 100%, 240px 240px; background-repeat: no-repeat, repeat;
+}
+/* linen (Lục Bảo): noise dị hướng (không dùng repeating-linear-gradient 1px: moiré trên DPR cao) */
+[data-texture="linen"] .sec::before { opacity: .06; background-image: url("../theme-assets/textures/linen.svg"); background-size: 160px 160px; }
+/* kraft (Đất Nung): noise thô + sợi ngắn */
+[data-texture="kraft"] .sec::before { opacity: .1; background-image: url("../theme-assets/textures/kraft.svg"); background-size: 200px 200px; }
+/* rice-paper (Sen Chàm): giấy dó, sợi dài */
+[data-texture="rice-paper"] .sec::before { opacity: .08; background-image: url("../theme-assets/textures/rice-paper.svg"); background-size: 400px 400px; }
+/* grain-fine (Mực & Giấy, Pastel Hàn) */
+[data-texture="grain-fine"] .sec::before { opacity: .035; background-image: url("../theme-assets/textures/grain-fine.svg"); background-size: 128px 128px; }
+[data-mode="dark"][data-texture="grain-fine"] .sec::before { opacity: .05; }
+/* sand (Biển Đảo) */
+[data-texture="sand"] .sec::before { opacity: .07; background-image: url("../theme-assets/textures/sand.svg"); background-size: 200px 200px; }
+
+/* watercolor-wash (Hoa Lá Màu Nước): 1 vệt màu nước ở góc, xen kẽ: section lẻ góc trên-phải accent .5, chẵn góc dưới-trái
+   accent-2 .42. overflow: clip để vệt không đè section kề, không tạo cuộn ngang. */
+[data-texture="watercolor-wash"] .sec { overflow: clip; }
+[data-texture="watercolor-wash"] .sec::before {
+  inset: auto; top: -40px; right: -60px; width: min(78vw, 440px); aspect-ratio: 1; opacity: .5;
+  background: var(--c-accent);
+  -webkit-mask: url("../theme-assets/textures/watercolor-wash.svg") 50% 50% / contain no-repeat;
+  mask: url("../theme-assets/textures/watercolor-wash.svg") 50% 50% / contain no-repeat;
+}
+[data-texture="watercolor-wash"] .sec:nth-of-type(even)::before {
+  top: auto; right: auto; bottom: -40px; left: -60px; rotate: 180deg; background: var(--c-accent-2, var(--c-accent)); opacity: .42;
+}
+[data-mode="dark"][data-texture="watercolor-wash"] .sec::before { filter: none; mix-blend-mode: normal; opacity: .14; }
+
+/* velvet (Đêm Nhung): noise sáng (không đảo màu) + vignette tối 2 mép trái/phải (thay body::after bị nền section che) */
+[data-texture="velvet"] .sec::before {
+  /* T03: opacity 1, alpha nằm trong từng lớp (trước: cả 2 lớp chung opacity .06 -> vignette chỉ còn 3%, không thấy) */
+  opacity: 1; filter: none; mix-blend-mode: normal;
+  background-image: linear-gradient(90deg, rgba(0, 0, 0, .28), transparent 14%, transparent 86%, rgba(0, 0, 0, .28)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .9 0 0 0 0 .8 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 100% 100%, 160px 160px; background-repeat: no-repeat, repeat;
+}
+
+/* Cover (Còn mở #12): texture dạng tile lên màn cover, dùng opacity .06 của cover.css (không sửa cover.css).
+   watercolor-wash không áp cho cover (cover giữ nền phẳng + "nền bàn"). */
+[data-texture="paper-aged"] .cover::before { background-image: url("../theme-assets/textures/paper-aged.svg"); background-size: 240px 240px; }
+[data-texture="linen"] .cover::before { background-image: url("../theme-assets/textures/linen.svg"); background-size: 160px 160px; }
+[data-texture="kraft"] .cover::before { background-image: url("../theme-assets/textures/kraft.svg"); background-size: 200px 200px; }
+[data-texture="rice-paper"] .cover::before { background-image: url("../theme-assets/textures/rice-paper.svg"); background-size: 400px 400px; }
+[data-texture="grain-fine"] .cover::before { background-image: url("../theme-assets/textures/grain-fine.svg"); background-size: 128px 128px; }
+[data-texture="sand"] .cover::before { background-image: url("../theme-assets/textures/sand.svg"); background-size: 200px 200px; }

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 28" width="336" height="112">
+<!-- heart-burst: xem thử 3 biến thể (ô 24×24 tâm 0,0; màu mẫu #C9A86A/#8A6A3B). Dữ liệu thật: bursts.json -->
+<g transform="translate(14 14)"><title>v1 w=0.6</title><path d="M0 8.9C-11.5 0.5 -7.9 -10 0 -3.7C7.9 -10 11.6 0.5 0 8.9Z" fill="#C9A86A"/><path d="M-6.6-4.6C-5.6-7.4-3-7.6-1.8-6" fill="none" stroke="#FFFFFF" stroke-width="1.3" stroke-linecap="round" stroke-opacity="0.55"/></g>
+<g transform="translate(42 14)"><title>v2 w=0.25</title><path d="M0 8.2C-10.6 0.5 -7.2 -9.1 0 -3.4C7.2 -9.1 10.6 0.5 0 8.2Z" fill="none" stroke="#C9A86A" stroke-width="1.8" stroke-linecap="round"/></g>
+<g transform="translate(70 14)"><title>v3 w=0.15</title><path d="M-3 6.6C-9.9 3.6 -9.1 -2.2 -4.4 0.1C-1.1 -3.9 2 1 -3 6.6Z" fill="#C9A86A"/><path d="M4.1 0.5C0.5 -3.9 2.9 -7.7 5.4 -4.5C9.1 -6.1 9.4 -1.7 4.1 0.5Z" fill="#C9A86A" fill-opacity="0.7"/></g>
+</svg>

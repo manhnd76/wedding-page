@@ -11,7 +11,7 @@ import { ENVELOPE_FIXED_PALETTE, ENVELOPE_META, envelopeGeom } from '@shared/env
 import { contrast } from '@shared/theme/contrast';
 import { PRESETS } from '@shared/theme/presets';
 import { envelopeFixed, inkOn, type ResolvedTheme } from '@shared/theme/resolve';
-import { Segmented, Toggle } from '../ui/ui';
+import { Segmented, Toggle } from '../../ui/ui';
 
 interface Pal { paper: string; paper2: string; edge: string; ink: string; liner: string; seal: string; onSeal: string }
 

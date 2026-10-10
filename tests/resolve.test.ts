@@ -3,7 +3,11 @@ import { mergeWithDefaults } from '@shared/config/merge';
 import { resolveTheme, REVEAL_PACKS, themeCssVars } from '@shared/theme/resolve';
 import { PRESETS } from '@shared/theme/presets';
 import { FONT_PRESET_MAP, fontStack } from '@shared/fonts/registry';
-import { CAPABILITIES } from '@shared/capabilities';
+import { CAPABILITIES, isSupported, type CapabilityKey } from '@shared/capabilities';
+import {
+  BURSTS_ON_OPEN, DIVIDERS, HEADING_FONTS, OPEN_STYLES, ORNAMENT_SETS, PARTICLE_TYPES, PHOTO_FRAMES, REVEAL_ATOMS, REVEAL_STYLES, TEXTURES, THEME_IDS,
+} from '@shared/config/enums';
+import { MOTIF_SETS } from '@shared/config/enums';
 
 const cfg = (o: Record<string, unknown> = {}) => mergeWithDefaults(o).config;
 const raw = (o: Record<string, unknown> = {}) => resolveTheme(cfg(o), { applyCapabilities: false });
@@ -99,19 +103,52 @@ describe('capabilities v1 (fallback + cảnh báo)', () => {
       ornamentSet: 'luxe', texture: 'velvet', photoFrame: 'deco-cut', divider: 'deco-fan', mode: 'dark', particles: { types: ['gold-dust', 'firefly'] },
     });
   });
-  it('giá trị config chưa có ở v1 -> fallback khai báo + warning', () => {
+  /**
+   * Không phụ thuộc capability (solution-v4a-2bc.md 0.9): mỗi nhóm tự chọn 1 giá trị hợp lệ theo schema nhưng
+   * CHƯA có trong `CAPABILITIES` (enum − supported); nhóm đã đủ thì bỏ qua. Số cảnh báo = số nhóm đã chọn.
+   */
+  it('giá trị config chưa hỗ trợ -> fallback khai báo + warning (tự chọn theo capability)', () => {
+    const missing = <T extends string>(key: CapabilityKey, list: readonly T[]): T | undefined =>
+      list.find((v) => !isSupported(key, v));
+    const theme = missing('theme', THEME_IDS);
+    const photoFrame = missing('photoFrame', PHOTO_FRAMES);
+    const ornamentSet = missing('ornamentSet', ORNAMENT_SETS);
+    const texture = missing('texture', TEXTURES);
+    const divider = missing('divider', DIVIDERS);
+    const openStyle = missing('openStyle', OPEN_STYLES);
+    const burst = missing('burstOnOpen', BURSTS_ON_OPEN);
+    const heading = missing('font', HEADING_FONTS);
+    const particle = missing('particle', PARTICLE_TYPES);
+    const revealStyle = missing('revealStyle', REVEAL_STYLES);
+    const atom = missing('revealAtom', REVEAL_ATOMS);
+    const otherParticle = CAPABILITIES.particle.supported.find((t) => t !== CAPABILITIES.particle.fallback)!;
+
     const r = resolveTheme(cfg({
-      theme: { preset: 'hong-phan', photoFrame: 'polaroid' }, cover: { openStyle: 'light-gather' }, fonts: { heading: 'prata' },
-      effects: { particles: { types: ['snow', 'heart'] }, reveal: { style: 'cinematic', heading: 'split-chars' } },
+      theme: { ...(theme ? { preset: theme } : {}), ...(photoFrame ? { photoFrame } : {}), ...(ornamentSet ? { ornamentSet } : {}), ...(texture ? { texture } : {}) },
+      sections: divider ? { divider } : {},
+      cover: openStyle ? { openStyle } : {},
+      fonts: heading ? { heading } : {},
+      effects: {
+        burst: burst ? { onOpen: burst } : {},
+        particles: particle ? { types: [particle, otherParticle] } : {},
+        reveal: { ...(revealStyle ? { style: revealStyle } : {}), ...(atom ? { heading: atom } : {}) },
+      },
     }));
-    expect(r.preset).toBe('tram-vang');
-    expect(r.photoFrame).toBe('arch');
-    expect(r.openStyle).toBe('envelope');
-    expect(r.fonts.heading).toBe('playfair-display');
-    expect(r.particles.types).toEqual(['petal-rose', 'heart']);
-    expect(r.reveal.style).toBe('soft');
-    expect(r.reveal.heading).toBe('fade-up');
-    expect(r.warnings.length).toBe(7);
+    const picked = [theme, photoFrame, ornamentSet, texture, divider, openStyle, burst, heading, particle, revealStyle, atom].filter(Boolean);
+
+    if (theme) expect(r.preset).toBe(CAPABILITIES.theme.fallback);
+    if (photoFrame) expect(r.photoFrame).toBe(CAPABILITIES.photoFrame.fallback);
+    if (ornamentSet) expect(r.ornamentSet).toBe(CAPABILITIES.ornamentSet.fallback);
+    if (texture) expect(r.texture).toBe(CAPABILITIES.texture.fallback);
+    if (divider) expect(r.divider).toBe(CAPABILITIES.divider.fallback);
+    if (openStyle) expect(r.openStyle).toBe(CAPABILITIES.openStyle.fallback);
+    if (burst) expect(r.burstOnOpen).toBe(CAPABILITIES.burstOnOpen.fallback);
+    if (heading) expect(r.fonts.heading).toBe(PRESETS['tram-vang'].fonts.heading);
+    if (particle) expect(r.particles.types).toEqual([CAPABILITIES.particle.fallback, otherParticle]);
+    if (revealStyle) expect(r.reveal.style).toBe(CAPABILITIES.revealStyle.fallback);
+    if (atom) expect(r.reveal.heading).toBe(REVEAL_PACKS[r.reveal.style].heading);
+    expect(r.warnings, r.warnings.join('\n')).toHaveLength(picked.length);
+    for (const v of picked) expect(r.warnings.some((w) => w.includes(`"${v}"`)), `cảnh báo cho "${v}"`).toBe(true);
   });
   it('5 font preset dùng được ở v1', () => {
     for (const fp of Object.keys(FONT_PRESET_MAP)) {
@@ -127,5 +164,35 @@ describe('capabilities v1 (fallback + cảnh báo)', () => {
       '--c-line', '--c-line-strong', '--c-overlay', '--c-success', '--c-danger', '--ff-heading', '--ff-script', '--ff-body', '--fs-k'];
     for (const k of keys) expect(v[k], k).toBeTruthy();
     expect(v['--ff-script']).toContain('Great Vibes');
+  });
+});
+
+// v4a-1 (solution-v4a-2bc.md 3.2: khối describe motif riêng)
+describe('v4a-1: hoạ tiết nền B2 (theme.motif)', () => {
+  it('mặc định Trầm Vàng: tắt hoạ tiết, cap .05', () => {
+    expect(resolveTheme(cfg()).motif).toEqual({ set: 'none', placements: [], intensity: 'medium', motion: 'auto', cap: 0.05 });
+  });
+  it('4 theme bật mặc định (decisions 2026-10-09)', () => {
+    const on = THEME_IDS.filter((id) => resolveTheme(cfg({ theme: { preset: id } })).motif.set !== 'none');
+    expect(on.sort()).toEqual(['bien-dao', 'dem-nhung', 'sen-cham', 'son-do']);
+  });
+  it('config chọn bộ thắng preset; "theme" theo preset', () => {
+    expect(resolveTheme(cfg({ theme: { preset: 'son-do', motif: { set: 'chu-hy' } } })).motif.set).toBe('chu-hy');
+    expect(resolveTheme(cfg({ theme: { preset: 'son-do' } })).motif.set).toBe('dong-son');
+  });
+  it('bộ chưa có capability -> fallback none + cảnh báo (chỉ khi do config chọn)', () => {
+    const unsupported = MOTIF_SETS.find((s) => !isSupported('motifSet', s));
+    if (!unsupported) return; // v4a-1 bật đủ 7 bộ
+    const r = resolveTheme(cfg({ theme: { motif: { set: unsupported } } }));
+    expect(r.motif.set).toBe('none');
+    expect(r.warnings.some((w) => w.includes(unsupported))).toBe(true);
+  });
+  it('primaryColor/overrides.accent -> cap tính lại từ token cuối cùng', () => {
+    const a = resolveTheme(cfg({ theme: { preset: 'son-do' } })).motif.cap;
+    const b = resolveTheme(cfg({ theme: { preset: 'son-do', overrides: { accent: '#3B1A14' } } })).motif.cap;
+    expect(b).toBeLessThan(a);
+  });
+  it('applyCapabilities: false giữ nguyên giá trị', () => {
+    expect(raw({ theme: { motif: { set: 'la-canh' } } }).motif.set).toBe('la-canh');
   });
 });

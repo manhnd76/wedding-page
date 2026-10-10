@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock admin v4a-2a: Hiện nội dung khi cuộn (B1)</title>
+<!--
+  Mock tài liệu tĩnh (ui-ux-designer, design-v4a-2a.md §5.2). KHÔNG phải code ứng dụng.
+  Token + component bắt chước src/admin/admin.css (nền #F7F6F3, primary #2F4A43, font hệ thống theo decisions 2026-10-08).
+  Dữ liệu: Trầm Vàng, thứ tự mặc định, mode auto, "Hai bên gia đình" ghim Tạp chí.
+-->
+<style>
+:root { --a-bg:#f7f6f3; --a-surface:#fff; --a-text:#1f2523; --a-muted:#5b625f; --a-line:#d9d6cf; --a-line-strong:#8a8f8c;
+  --a-primary:#2f4a43; --a-primary-soft:#e3ebe8; --a-warn:#8a5a00; --a-warn-bg:#fff4d6; --a-info-bg:#e8eef7; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--a-bg); color: var(--a-text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+main { max-width: 640px; padding: 16px; }
+h2 { font-size: 1.15rem; margin: .5rem 0 .75rem; }
+.lbl { font-weight: 600; margin: .9rem 0 .3rem; display: block; }
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.chip { min-height: 44px; padding: 0 .9rem; border: 1px solid var(--a-line-strong); border-radius: 22px; background: var(--a-surface); font: inherit; color: var(--a-text); }
+.chip[aria-checked="true"] { background: var(--a-primary); color: #fff; border-color: var(--a-primary); }
+.seg-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+.seg-opt { display: inline-flex; align-items: center; min-height: 44px; padding: 0 1rem; border: 1px solid var(--a-line-strong); border-radius: 22px; background: var(--a-surface); }
+.seg-opt.is-on { background: var(--a-primary); color: #fff; border-color: var(--a-primary); }
+.help { color: var(--a-muted); font-size: .88rem; margin: .4rem 0 0; }
+.help b { color: var(--a-text); font-weight: 600; }
+.note-warn { background: var(--a-warn-bg); color: var(--a-warn); border-radius: 8px; padding: .5rem .7rem; font-size: .88rem; margin: .5rem 0 0; }
+.btn { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; padding: 0 1rem; border-radius: 8px; border: 1px solid var(--a-line-strong); background: var(--a-surface); font: inherit; font-weight: 600; color: var(--a-text); }
+.btn-sm { min-height: 44px; padding: 0 .7rem; }
+.mt { margin-top: .75rem; }
+details { margin: .75rem 0 0; }
+summary { min-height: 44px; display: block; padding-block: .6rem; font-weight: 600; color: var(--a-primary); list-style: none; cursor: pointer; }
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "▸"; display: inline-block; margin-right: .4rem; transition: transform .16s; }
+details[open] summary::before { transform: rotate(90deg); }
+summary .cnt { font-weight: 400; color: var(--a-muted); }
+.rows { list-style: none; margin: .25rem 0 0; padding: 0; display: grid; gap: 8px; }
+.row { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 10px; padding: .5rem .6rem; display: grid; grid-template-columns: 1fr auto; gap: .35rem .5rem; align-items: center; }
+.row.is-pin { border-color: var(--a-primary); }
+.name { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem; font-weight: 600; }
+.num { color: var(--a-muted); font-variant-numeric: tabular-nums; min-width: 1.6em; }
+.badge { font-size: .78rem; padding: 0 .4rem; border-radius: 6px; background: var(--a-primary-soft); color: var(--a-primary); font-weight: 600; }
+.badge--muted { background: #eeece7; color: var(--a-muted); }
+select { min-height: 48px; width: 100%; border: 1px solid var(--a-line-strong); border-radius: 8px; padding: 0 .6rem; font: inherit; background: var(--a-surface); color: var(--a-text); }
+.foot { color: var(--a-muted); font-size: .85rem; margin: .5rem 0 0; }
+@media (min-width: 720px) {
+  .row { grid-template-columns: 220px 1fr auto; }
+  .name { grid-column: auto; }
+}
+</style>
+</head>
+<body>
+<main>
+  <h2>Hiện nội dung khi cuộn</h2>
+  <span class="lbl" id="l-pack">Gói chính</span>
+  <div class="chips" role="radiogroup" aria-labelledby="l-pack">
+    <button class="chip" role="radio" aria-checked="true">Theo theme (Mềm mại) ✓</button>
+    <button class="chip" role="radio" aria-checked="false">Mềm mại</button>
+    <button class="chip" role="radio" aria-checked="false">Tạp chí</button>
+    <button class="chip" role="radio" aria-checked="false">Từng chữ</button>
+    <button class="chip" role="radio" aria-checked="false">Nhẹ nhàng</button>
+    <button class="chip" role="radio" aria-checked="false">Vui tươi</button>
+    <button class="chip" role="radio" aria-checked="false">Điện ảnh</button>
+  </div>
+  <span class="lbl" id="l-mode">Cách áp dụng</span>
+  <div class="seg-row" role="radiogroup" aria-labelledby="l-mode">
+    <label class="seg-opt is-on">● Xen kẽ tự động</label>
+    <label class="seg-opt">Giống nhau mọi phần</label>
+  </div>
+  <p class="help">Tiêu đề và ảnh ở các phần nổi bật đổi kiểu trong bộ <b>Mềm mại · Tạp chí · Từng chữ</b>. Phần thông tin (Sự kiện, Mừng cưới, Xác nhận…) giữ Mềm mại cho dễ đọc.</p>
+  <button class="btn mt">↻ Xem thử 3 phần</button>
+
+  <details open id="reveal-sections">
+    <summary>Từng phần <span class="cnt">· 5 phần khác gói chính · 1 phần chọn riêng</span></summary>
+    <ol class="rows">
+      <li class="row"><span class="name"><span class="num"></span>Ảnh bìa</span>
+        <select aria-label="Kiểu hiện của phần Ảnh bìa"><option>Tự động · Mềm mại</option></select><button class="btn btn-sm" aria-label="Xem thử kiểu hiện phần Ảnh bìa">▶ Xem</button></li>
+      <li class="row"><span class="name"><span class="num">01</span>Cô dâu &amp; Chú rể</span>
+        <select aria-label="Kiểu hiện của phần Cô dâu và Chú rể"><option>Tự động · Từng chữ</option></select><button class="btn btn-sm">▶ Xem</button></li>
+      <li class="row is-pin"><span class="name"><span class="num">02</span>Hai bên gia đình <span class="badge">Chọn riêng</span></span>
+        <select aria-label="Kiểu hiện của phần Hai bên gia đình"><option>Tạp chí</option></select><button class="btn btn-sm">▶ Xem</button></li>
+      <li class="row"><span class="name"><span class="num">03</span>Lời mời</span>
+        <select aria-label="Kiểu hiện của phần Lời mời"><option>Tự động · Từng chữ</option></select><button class="btn btn-sm">▶ Xem</button></li>
+      <li class="row"><span class="name"><span class="num">04</span>Sự kiện <span class="badge badge--muted">Phần thông tin</span></span>
+        <select aria-label="Kiểu hiện của phần Sự kiện"><option>Tự động · Mềm mại</option></select><button class="btn btn-sm">▶ Xem</button></li>
+      <li class="row"><span class="name"><span class="num"></span>Đếm ngược <span class="badge badge--muted">Phần thông tin</span></span>
+        <select aria-label="Kiểu hiện của phần Đếm ngược"><option>Tự động · Mềm mại</option></select><button class="btn btn-sm">▶ Xem</button></li>
+      <li class="row"><span class="name"><span class="num">06</span>Album</span>
+        <select aria-label="Kiểu hiện của phần Album"><option>Tự động · Tạp chí</option></select><button class="btn btn-sm">▶ Xem</button></li>
+      <li class="row"><span class="name"><span class="num"></span>Lời cảm ơn</span>
+        <select aria-label="Kiểu hiện của phần Lời cảm ơn"><option>Tự động · Từng chữ</option></select><button class="btn btn-sm">▶ Xem</button></li>
+    </ol>
+    <p class="foot">… (Lịch trình, Mừng cưới, Lời chúc, Xác nhận, Chân trang lược bớt trong mock)</p>
+    <button class="btn mt">Bỏ chọn riêng ở mọi phần (1)</button>
+    <p class="foot">1 phần đang tắt hoặc chưa có nội dung không có trong danh sách.</p>
+  </details>
+</main>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Divider wave-ocean: hai lớp sóng (lớp sau mờ), bọt sóng chấm. Tự vẽ (ui-ux-designer v4a-1). -->
+<symbol id="divider" viewBox="0 0 160 24"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path pathLength="100" d="M8 15q6-4.2 12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0" stroke-width="1.2"/><path pathLength="100" d="M14 10.5q6-3 12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0t12 0" opacity=".5"/></g><g fill="currentColor" opacity=".7"><circle pathLength="100" cx="80" cy="5.5" r="1"/><circle pathLength="100" cx="56" cy="6.2" r="0.7"/><circle pathLength="100" cx="104" cy="6.2" r="0.7"/></g></symbol>
+</svg>

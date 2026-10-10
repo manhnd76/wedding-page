@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+<!-- Divider deco-fan (quạt art-deco), tách độc lập từ ornament luxe#divider để dùng với bộ họa tiết bất kỳ. -->
+<symbol id="divider" viewBox="0 0 160 24"><g fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="square">
+<path pathLength="100" d="M4 15H58M10 18H58M102 15h54M102 18h48"/><path pathLength="100" d="M64 18a16 16 0 0 1 32 0Z"/><path pathLength="100" d="M71 18a9 9 0 0 1 18 0"/>
+<path pathLength="100" d="M80 18V2M80 18 66.1 10M80 18 72 4.1M80 18 88 4.1M80 18 93.9 10"/>
+<path pathLength="100" d="M60.5 13.5 62.5 15.5 60.5 17.5 58.5 15.5ZM99.5 13.5 101.5 15.5 99.5 17.5 97.5 15.5Z"/></g></symbol>
+</svg>

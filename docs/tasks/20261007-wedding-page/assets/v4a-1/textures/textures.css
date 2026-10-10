@@ -1,0 +1,62 @@
+/*
+ * Texture theme.texture (design 1.6.6, v5 / v4a-1) - ui-ux-designer.
+ *
+ * SỬA KIẾN TRÚC (phát hiện khi đọc code v2.3): texture hiện là `body::before` fixed z 0 dưới `#app` (z 1),
+ * nhưng mọi section có nền đặc (.tone-bg / .tone-surface) -> texture bị che gần như toàn bộ.
+ * Đề xuất: texture thành lớp RIÊNG MỖI SECTION (cuộn theo giấy, đúng cảm giác thiệp in):
+ *   .sec { isolation: isolate; }                       -> lớp z 0 nằm trên nền section, dưới nội dung
+ *   .sec-in { position: relative; z-index: 1; }
+ *   .sec::before { content:""; position:absolute; inset:0; z-index:0; pointer-events:none; }  (texture)
+ *   Hero có ảnh / Cảm ơn có ảnh: không texture (ảnh đã có hạt).
+ * Ảnh texture là file SVG cùng origin (CSP img-src 'self'); chỉ rule khớp data-texture mới tải ảnh -> tự lazy theo theme.
+ * Texture KHÔNG bao giờ animate (design 1.6.6). Theme tối: đảo màu noise bằng filter tĩnh (vẽ 1 lần).
+ * Opacity đã chọn để texture "cảm thấy được" ở 1x nhưng không làm giảm tương phản chữ quá 0.1:1 (noise trung bình alpha ~.5).
+ */
+.sec { isolation: isolate; }
+.sec > .sec-in { position: relative; z-index: 1; }
+.sec::before { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none; background-repeat: repeat; }
+.sec-hero:not(.no-img)::before, .sec-thankyou.has-img::before { content: none; }
+[data-mode="dark"] .sec::before { filter: invert(1); mix-blend-mode: screen; }
+
+/* paper (đã có, chuyển từ body::before sang đây, giữ data-URI cũ) - opacity .05 */
+[data-texture="paper"] .sec::before { opacity: .05; background-image: url("data:image/svg+xml,..."); /* giữ nguyên chuỗi trong base.css */ }
+
+/* paper-aged (Hoài Cổ): giấy ố + vết foxing + tối dần 2 mép trái/phải (liền mạch giữa các section vì chỉ theo trục ngang) */
+[data-texture="paper-aged"] .sec::before {
+  opacity: .08;
+  background-image: linear-gradient(90deg, rgba(90, 60, 30, .9), transparent 9%, transparent 91%, rgba(90, 60, 30, .9)), url("./paper-aged.svg");
+  background-size: 100% 100%, 240px 240px; background-repeat: no-repeat, repeat;
+}
+
+/* linen (Lục Bảo): sợi vải bằng noise dị hướng (không dùng 2 lớp repeating-linear-gradient 1px: moiré trên DPR cao) */
+[data-texture="linen"] .sec::before { opacity: .06; background-image: url("./linen.svg"); background-size: 160px 160px; }
+
+/* kraft (Đất Nung): noise thô + sợi ngắn */
+[data-texture="kraft"] .sec::before { opacity: .1; background-image: url("./kraft.svg"); background-size: 200px 200px; }
+
+/* rice-paper (Sen Chàm): giấy dó, sợi dài */
+[data-texture="rice-paper"] .sec::before { opacity: .08; background-image: url("./rice-paper.svg"); background-size: 400px 400px; }
+
+/* grain-fine (Mực & Giấy, Pastel Hàn) */
+[data-texture="grain-fine"] .sec::before { opacity: .035; background-image: url("./grain-fine.svg"); background-size: 128px 128px; }
+[data-mode="dark"][data-texture="grain-fine"] .sec::before { opacity: .05; }
+
+/* sand (Biển Đảo) */
+[data-texture="sand"] .sec::before { opacity: .07; background-image: url("./sand.svg"); background-size: 200px 200px; }
+
+/* watercolor-wash (Hoa Lá Màu Nước): KHÔNG phủ cả section mà là 1 vệt màu nước ở góc, xen kẽ:
+   section lẻ: góc trên-phải màu accent; section chẵn: góc dưới-trái màu accent-2 (fallback accent). Mask = watercolor-wash.svg. */
+[data-texture="watercolor-wash"] .sec { overflow: clip; } /* vệt tràn mép không đè section kề + không tạo cuộn ngang */
+[data-texture="watercolor-wash"] .sec::before {
+  inset: auto; top: -40px; right: -60px; width: min(78vw, 440px); aspect-ratio: 1; opacity: .5;
+  background: var(--c-accent);
+  -webkit-mask: url("./watercolor-wash.svg") 50% 50% / contain no-repeat; mask: url("./watercolor-wash.svg") 50% 50% / contain no-repeat;
+}
+[data-texture="watercolor-wash"] .sec:nth-of-type(even)::before {
+  top: auto; right: auto; bottom: -40px; left: -60px; rotate: 180deg; background: var(--c-accent-2, var(--c-accent)); opacity: .42;
+}
+/* chữ vẫn đọc tốt: vệt nằm ở góc, accent sáng (L > .75) ở opacity .5 -> nền tối đi tối đa ~4%, muted vẫn ≥ 5.2:1 (đo ở design 1.7.5). */
+[data-mode="dark"][data-texture="watercolor-wash"] .sec::before { filter: none; mix-blend-mode: normal; opacity: .14; }
+
+/* velvet (đã có): noise chuyển sang .sec::before. Vignette body::after hiện CŨNG bị nền section che -> đổi thành gradient tối 2 mép trái/phải trong .sec::before (cùng cách paper-aged):
+   background-image: linear-gradient(90deg, rgba(0,0,0,.5), transparent 12%, transparent 88%, rgba(0,0,0,.5)), <noise velvet>; (không đảo màu: [data-texture=velvet] .sec::before { filter: none; mix-blend-mode: normal; }) */

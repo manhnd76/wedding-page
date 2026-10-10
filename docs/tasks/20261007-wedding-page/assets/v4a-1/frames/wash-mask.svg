@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500" preserveAspectRatio="none">
+<!-- Frame wash-mask: mask alpha cho ảnh, mép loang (displacement + blur). Dùng mask-size 100% 100%. Tự vẽ (ui-ux-designer v4a-1). -->
+<filter id="w" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".018" numOctaves="3" seed="4" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="46" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation="4"/><feComponentTransfer><feFuncA type="table" tableValues="0 .35 .8 1 1"/></feComponentTransfer></filter><rect x="34" y="34" width="332" height="432" rx="18" filter="url(#w)"/>
+</svg>

@@ -6,6 +6,13 @@ import {
   TEXTURES, THEME_IDS, WISH_FLY, isHex, isOneOf,
 } from './enums.ts';
 import type { SectionItem, WeddingConfig } from './types.ts';
+// [v4a-1] imports >>>
+import { MOTIF_INTENSITIES, MOTIF_MOTIONS, MOTIF_SETS } from './enums.ts';
+import { sanitizeMotifPlacements } from '../theme/parts.ts';
+// [v4a-1] imports <<<
+// [v4a-2a] imports >>>
+import { REVEAL_MODES } from './enums.ts';
+// [v4a-2a] imports <<<
 
 type Obj = Record<string, unknown>;
 
@@ -70,6 +77,21 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
   fix('theme.ornamentSet', themeOr(ORNAMENT_SETS, t.ornamentSet), () => t.ornamentSet, (v) => (t.ornamentSet = v), 'theme');
   fix('theme.texture', themeOr(TEXTURES, t.texture), () => t.texture, (v) => (t.texture = v), 'theme');
   fix('theme.photoFrame', themeOr(PHOTO_FRAMES, t.photoFrame), () => t.photoFrame, (v) => (t.photoFrame = v), 'theme');
+  // [v4a-1] >>>
+  // B2 hoạ tiết nền (solution Rev 5 mục 10.1): config cũ không có `theme.motif` -> deepMerge điền "theme"
+  if (!isObj(t.motif)) t.motif = { ...d.theme.motif };
+  const mo = t.motif;
+  fix('theme.motif.set', mo.set === 'none' || themeOr(MOTIF_SETS, mo.set), () => mo.set, (v) => (mo.set = v), 'theme');
+  if (mo.placements !== 'theme') {
+    const clean = sanitizeMotifPlacements(mo.placements);
+    if (!clean.length || JSON.stringify(clean) !== JSON.stringify(mo.placements)) {
+      warnings.push(`config.theme.motif.placements không hợp lệ (${JSON.stringify(mo.placements)}) -> ${clean.length ? JSON.stringify(clean) : '"theme"'}`);
+    }
+    mo.placements = clean.length ? clean : 'theme';
+  }
+  fix('theme.motif.intensity', themeOr(MOTIF_INTENSITIES, mo.intensity), () => mo.intensity, (v) => (mo.intensity = v), 'theme');
+  fix('theme.motif.motion', isOneOf(MOTIF_MOTIONS, mo.motion), () => mo.motion, (v) => (mo.motion = v), 'auto');
+  // [v4a-1] <<<
 
   const f = cfg.fonts;
   fix('fonts.preset', themeOr(FONT_PRESETS, f.preset), () => f.preset, (v) => (f.preset = v), 'theme');
@@ -104,6 +126,9 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
       r[role] = null;
     }
   }
+  // [v4a-2a] >>>
+  fix('effects.reveal.mode', isOneOf(REVEAL_MODES, r.mode), () => r.mode, (v) => (r.mode = v), 'auto');
+  // [v4a-2a] <<<
   const as = e.autoScroll;
   fix('effects.autoScroll.mode', isOneOf(AUTO_SCROLL_MODES, as.mode), () => as.mode, (v) => (as.mode = v), 'flow');
   as.speed = clampInt(as.speed, AUTO_SCROLL_LIMITS.speed[0], AUTO_SCROLL_LIMITS.speed[1], 45);
@@ -122,6 +147,15 @@ export function mergeWithDefaults(migrated: unknown): SanitizeResult {
   const s = cfg.sections;
   fix('sections.divider', themeOr(DIVIDERS, s.divider), () => s.divider, (v) => (s.divider = v), 'theme');
   s.items = normalizeSectionItems(s.items, warnings);
+  // [v4a-2a] >>> ghim reveal theo section (solution-v4a-2a.md 1.2): cần danh sách id nên đặt sau normalizeSectionItems
+  {
+    // đọc bản gốc (deepMerge đã đổi mảng/chuỗi thành {}) để cảnh báo; dựng object mới (không gán khoá động)
+    const raw: unknown = (((migrated as Obj | null)?.effects as Obj | undefined)?.reveal as Obj | undefined)?.sections ?? {};
+    const ids = new Set(s.items.map((x) => x.id));
+    r.sections = Object.fromEntries((isObj(raw) ? Object.entries(raw) : [['', raw] as [string, unknown]]).filter(([k, v]) => (ids.has(k) && isOneOf(REVEAL_STYLES, v))
+      || !warnings.push(`config.effects.reveal.sections${k ? `.${k}` : ''} = ${JSON.stringify(v)}: không hợp lệ hoặc không có phần này -> bỏ`))) as typeof r.sections;
+  }
+  // [v4a-2a] <<<
 
   const ct = cfg.content;
   fix('content.countdown.style', isOneOf(COUNTDOWN_STYLES, ct.countdown.style), () => ct.countdown.style, (v) => (ct.countdown.style = v), 'flip');
