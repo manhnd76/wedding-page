@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "publish": {
-    "id": "",
-    "at": ""
+    "id": "07a5e61b-7f40-433f-9c42-4262147a9650",
+    "at": "2026-10-11T04:34:13.206Z"
   },
   "meta": {
-    "siteUrl": "",
+    "siteUrl": "https://wedding-page.t-manhnd76.workers.dev/",
     "title": "Minh Anh & Thuỳ Linh · 12.12.2026",
     "description": "Trân trọng kính mời bạn đến chung vui ngày trọng đại của chúng tôi. Tổ chức ngày 12 tháng 12, 2026.",
     "ogImage": {
@@ -81,13 +81,13 @@
       "enabled": true,
       "speed": 45,
       "startDelayMs": 2500,
-      "mode": "flow",
+      "mode": "steady",
       "dwellMs": 1200
     }
   },
   "music": {
     "enabled": true,
-    "src": "content/audio/sample-chime.455e8abf.wav",
+    "src": "content/audio/videoplayback.f651ace0.m4a",
     "title": "Nhạc mẫu (thay bằng bài của bạn)",
     "autoplayAfterOpen": true,
     "loop": true,
@@ -103,7 +103,7 @@
   },
   "cover": {
     "enabled": true,
-    "openStyle": "flower-gate",
+    "openStyle": "envelope",
     "background": "paper",
     "backgroundImage": null,
     "eyebrow": "Thiệp mời cưới",
@@ -162,7 +162,7 @@
       {
         "id": "loveStory",
         "type": "loveStory",
-        "enabled": false
+        "enabled": true
       },
       {
         "id": "album",
@@ -354,14 +354,28 @@
         {
           "year": "2019",
           "title": "Lần đầu gặp nhau",
-          "text": "Một buổi chiều mưa ở Hà Nội.",
-          "photo": null
+          "text": "Một buổi chiều ở Hà Nội.",
+          "photo": {
+            "src": "content/images/story/03-cong-ken-3a4ea6c8.54095e66.webp",
+            "w": 1007,
+            "h": 1200,
+            "alt": "Ảnh cưới của Minh Anh và Thuỳ Linh",
+            "dominantColor": "#f6b170",
+            "updatedAt": "2026-10-11T04:14:52.644Z"
+          }
         },
         {
           "year": "2025",
           "title": "Lời cầu hôn",
           "text": "Và cô ấy đã nói đồng ý.",
-          "photo": null
+          "photo": {
+            "src": "content/images/story/ngang.a769fdb6.webp",
+            "w": 1024,
+            "h": 720,
+            "alt": "Ảnh cưới của Minh Anh và Thuỳ Linh",
+            "dominantColor": "#2f2725",
+            "updatedAt": "2026-10-11T04:19:06.428Z"
+          }
         }
       ]
     },

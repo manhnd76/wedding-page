@@ -1,25 +1,39 @@
 {
   "schemaVersion": 1,
   "publish": {
-    "id": "c755359f-e187-42aa-92eb-f14d3675ad68",
-    "at": "2026-10-10T01:50:02.412Z"
+    "id": "",
+    "at": ""
   },
   "meta": {
     "siteUrl": "",
     "title": "Minh Anh & Thuỳ Linh · 12.12.2026",
     "description": "Trân trọng kính mời bạn đến chung vui ngày trọng đại của chúng tôi. Tổ chức ngày 12 tháng 12, 2026.",
-    "ogImage": null,
+    "ogImage": {
+      "src": "content/images/og/og-ruoc-dau.ed1a35af.jpg",
+      "w": 1200,
+      "h": 630,
+      "alt": "Minh Anh và Thuỳ Linh mặc áo dài đỏ trong lễ rước dâu",
+      "dominantColor": "#f3a764"
+    },
     "favicon": null,
     "locale": "vi_VN",
     "noindex": true
   },
   "theme": {
-    "preset": "tram-vang",
+    "preset": "mau-nuoc",
     "primaryColor": null,
     "overrides": {},
     "ornamentSet": "theme",
-    "texture": "theme",
-    "photoFrame": "theme"
+    "texture": "paper",
+    "photoFrame": "theme",
+    "motif": {
+      "set": "la-canh",
+      "placements": [
+        "corners"
+      ],
+      "intensity": "light",
+      "motion": "auto"
+    }
   },
   "fonts": {
     "preset": "theme",
@@ -50,7 +64,9 @@
       "heading": null,
       "block": null,
       "image": null,
-      "ornament": null
+      "ornament": null,
+      "mode": "auto",
+      "sections": {}
     },
     "parallax": true,
     "kenBurns": true,
@@ -87,21 +103,9 @@
   },
   "cover": {
     "enabled": true,
-    "openStyle": "theme",
+    "openStyle": "flower-gate",
     "background": "paper",
-    "backgroundImage": {
-      "src": "content/images/cover/serene-anime-bride-with-lily-bou.98cf0d8d.webp",
-      "w": 551,
-      "h": 978,
-      "alt": "Ảnh cưới của Minh Anh và Thuỳ Linh",
-      "dominantColor": "#d39152",
-      "updatedAt": "2026-10-10T01:41:35.593Z",
-      "lqip": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAYAA4DASIAAhEBAxEB/8QAGAAAAgMAAAAAAAAAAAAAAAAAAAQCBQb/xAAoEAABAgUCBQUBAAAAAAAAAAABAgMABAUREiFBIjFRgZETYXGxwfD/xAAWAQEBAQAAAAAAAAAAAAAAAAAAAQL/xAAZEQACAwEAAAAAAAAAAAAAAAAAAREhQWH/2gAMAwEAAhEDEQA/AFG2nJp1uXlhd5agAFDhCdclE7W08xFxJQtSVGxSSORH3r5i2o1LVNIanWlqS8zMY5AiwTjrp3hetSZkp5WOSm3CVJWTe53F+t/yCdwVqjT0qkmnygbU8VqJyULcIVvbfoO0LVilzVSxQ2/b0zqld8T73A5/3yQRnZHD/9k=",
-      "focalPoint": {
-        "x": 0.52,
-        "y": 0.28
-      }
-    },
+    "backgroundImage": null,
     "eyebrow": "Thiệp mời cưới",
     "dateText": "12 · 12 · 2026",
     "monogram": "M & L",
@@ -198,11 +202,16 @@
     "hero": {
       "eyebrow": "Save the Date",
       "image": {
-        "src": "content/images/hero/hero.6c286d3b.svg",
-        "w": 900,
-        "h": 1600,
-        "alt": "Minh Anh và Thuỳ Linh trong ngày chụp ảnh cưới",
-        "dominantColor": "#c9a88a"
+        "src": "content/images/hero/le-cuoi-chan-dung.62a019ea.webp",
+        "w": 864,
+        "h": 1536,
+        "alt": "Minh Anh và Thuỳ Linh trong trang phục cưới, cô dâu ôm bó tulip trắng",
+        "dominantColor": "#eedbd1",
+        "lqip": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAAYAA4DASIAAhEBAxEB/8QAFwAAAwEAAAAAAAAAAAAAAAAAAAQGBf/EACMQAAICAgICAQUAAAAAAAAAAAECAxEABCExQXESBlFhoeH/xAAWAQEBAQAAAAAAAAAAAAAAAAAEAgP/xAAYEQADAQEAAAAAAAAAAAAAAAAAAQIhEf/aAAwDAQACEQMRAD8AqduVYUaWSlhRSzt5Ffj1eKaW7q7gKQbAnaNVLsoI7HB/njH93TbY1HhVwPmhUlh8gLB5rz6OS/0rDJBs78U0QjmiKISLWxR8dHq7q+T98M5zrEKt4izY1medRI9uXZQBXmCh+uauj75/QwwzStRE4z//2Q==",
+        "focalPoint": {
+          "x": 0.5,
+          "y": 0.12
+        }
       },
       "dateText": "12 · 12 · 2026",
       "lunarText": "Tức ngày 3 tháng 11 năm Bính Ngọ"
@@ -217,12 +226,11 @@
         "fullName": "Nguyễn Minh Anh",
         "shortName": "Minh Anh",
         "photo": {
-          "src": "content/images/couple/elegant-groom-in-a-charcoal-suit.a3f3d115.webp",
-          "w": 747,
-          "h": 934,
-          "alt": "Chú rể Nguyễn Minh Anh",
-          "dominantColor": "#fdf6ea",
-          "updatedAt": "2026-10-10T01:42:51.095Z"
+          "src": "content/images/couple/chu-re.ce8c566a.webp",
+          "w": 720,
+          "h": 900,
+          "alt": "Chú rể Nguyễn Minh Anh mặc vest đen hai hàng khuy",
+          "dominantColor": "#474040"
         },
         "bio": "Con trai của ông Nguyễn Văn Bình và bà Lê Thị Hoa"
       },
@@ -232,12 +240,11 @@
         "fullName": "Trần Thuỳ Linh",
         "shortName": "Thuỳ Linh",
         "photo": {
-          "src": "content/images/couple/serene-anime-bride-with-lily-bou.df43f61c.webp",
-          "w": 747,
-          "h": 934,
-          "alt": "Cô dâu Trần Thuỳ Linh",
-          "dominantColor": "#bb8150",
-          "updatedAt": "2026-10-10T01:43:09.866Z"
+          "src": "content/images/couple/co-dau.d92a5db7.webp",
+          "w": 720,
+          "h": 900,
+          "alt": "Cô dâu Trần Thuỳ Linh trong váy cưới trắng trễ vai, cầm bó hoa ly",
+          "dominantColor": "#fcf9f4"
         },
         "bio": "Con gái của ông Trần Văn Long và bà Phạm Thị Mai"
       }
@@ -365,60 +372,68 @@
       "previewCount": 6,
       "images": [
         {
-          "src": "content/images/album/album-01.0ae1e384.svg",
-          "w": 900,
-          "h": 1200,
-          "alt": "Ảnh cưới 1",
-          "dominantColor": "#c9a88a"
+          "src": "content/images/album/01-ruoc-dau.dba43915.webp",
+          "thumb": "content/images/album/01-ruoc-dau-thumb.ffe451dd.webp",
+          "w": 1536,
+          "h": 1024,
+          "alt": "Lễ rước dâu: cô dâu chú rể mặc áo dài đỏ đi qua hàng dây đỏ bạn bè giăng",
+          "dominantColor": "#d8292b"
         },
         {
-          "src": "content/images/album/album-02.8205508d.svg",
-          "w": 1200,
-          "h": 800,
-          "alt": "Ảnh cưới 2",
-          "dominantColor": "#b08968"
+          "src": "content/images/album/02-co-dau.6ee4ab4f.webp",
+          "thumb": "content/images/album/02-co-dau-thumb.fc0d2d9e.webp",
+          "w": 1024,
+          "h": 1536,
+          "alt": "Cô dâu Thuỳ Linh trong váy cưới trắng trễ vai",
+          "dominantColor": "#fedcbe"
         },
         {
-          "src": "content/images/album/album-03.119cf6ca.svg",
-          "w": 900,
-          "h": 1200,
-          "alt": "Ảnh cưới 3",
-          "dominantColor": "#c2a3b5"
+          "src": "content/images/album/03-cong-ken.3a4ea6c8.webp",
+          "thumb": "content/images/album/03-cong-ken-thumb.dc1d55eb.webp",
+          "w": 1149,
+          "h": 1369,
+          "alt": "Minh Anh cõng Thuỳ Linh dạo công viên",
+          "dominantColor": "#f8b172"
         },
         {
-          "src": "content/images/album/album-04.a60cf6a2.svg",
-          "w": 1000,
-          "h": 1000,
-          "alt": "Ảnh cưới 4",
-          "dominantColor": "#9fb3a6"
+          "src": "content/images/album/04-canh-dong-hoa.9cad470c.webp",
+          "thumb": "content/images/album/04-canh-dong-hoa-thumb.85579919.webp",
+          "w": 1254,
+          "h": 1254,
+          "alt": "Hai bạn tựa vai nhau giữa cánh đồng hoa cúc dưới trời xanh",
+          "dominantColor": "#a9abb8"
         },
         {
-          "src": "content/images/album/album-05.80990f1f.svg",
-          "w": 1200,
-          "h": 800,
-          "alt": "Ảnh cưới 5",
-          "dominantColor": "#d2a679"
+          "src": "content/images/album/05-chu-re.87706068.webp",
+          "thumb": "content/images/album/05-chu-re-thumb.96372850.webp",
+          "w": 1024,
+          "h": 1536,
+          "alt": "Chú rể Minh Anh trong bộ vest đen",
+          "dominantColor": "#28272c"
         },
         {
-          "src": "content/images/album/album-06.0e56e4f4.svg",
-          "w": 900,
-          "h": 1350,
-          "alt": "Ảnh cưới 6",
-          "dominantColor": "#a98b76"
+          "src": "content/images/album/06-cong-vien.18b56a8b.webp",
+          "thumb": "content/images/album/06-cong-vien-thumb.803b2347.webp",
+          "w": 1334,
+          "h": 1179,
+          "alt": "Hai bạn ngồi trên cỏ, nắm tay và nhìn nhau cười",
+          "dominantColor": "#028ebc"
         },
         {
-          "src": "content/images/album/album-07.09bc9c79.svg",
-          "w": 1200,
-          "h": 900,
-          "alt": "Ảnh cưới 7",
-          "dominantColor": "#8d9db5"
+          "src": "content/images/album/07-anh-cuoi.ce2e3b0f.webp",
+          "thumb": "content/images/album/07-anh-cuoi-thumb.bb99dcb5.webp",
+          "w": 1024,
+          "h": 1536,
+          "alt": "Ảnh cưới chân dung: cô dâu váy ren trắng, chú rể vest đen",
+          "dominantColor": "#eedbd1"
         },
         {
-          "src": "content/images/album/album-08.9f4cd63f.svg",
-          "w": 900,
-          "h": 1200,
-          "alt": "Ảnh cưới 8",
-          "dominantColor": "#c48e7e"
+          "src": "content/images/album/08-tai-tho.a8132e16.webp",
+          "thumb": "content/images/album/08-tai-tho-thumb.77166dae.webp",
+          "w": 1448,
+          "h": 1086,
+          "alt": "Hai bạn đeo băng đô tai thỏ, chống cằm cười",
+          "dominantColor": "#313035"
         }
       ]
     },
@@ -493,11 +508,15 @@
       "message": "Sự hiện diện và lời chúc của quý khách là niềm vinh hạnh lớn lao, kỷ niệm khó quên trong ngày trọng đại của chúng tôi.",
       "signature": "Minh Anh & Thuỳ Linh",
       "photo": {
-        "src": "content/images/thankyou/thankyou.17db1789.svg",
+        "src": "content/images/thankyou/cam-on-cong-vien.6ee09bb1.webp",
         "w": 1200,
-        "h": 800,
-        "alt": "Minh Anh và Thuỳ Linh",
-        "dominantColor": "#d2a679"
+        "h": 1061,
+        "alt": "Minh Anh và Thuỳ Linh ngồi trên cỏ, nắm tay nhau trong công viên",
+        "dominantColor": "#028ebc",
+        "focalPoint": {
+          "x": 0.36,
+          "y": 0.2
+        }
       },
       "signatureSvg": null
     },

@@ -1,11 +1,11 @@
 {
   "schema": 1,
-  "createdAt": "2026-10-10T11:51:04.825Z",
+  "createdAt": "2026-10-11T04:34:23.494Z",
   "reason": "publish",
-  "publishId": "db5f1838-0d4d-46fd-8466-0e27cf2d1da3",
+  "publishId": "07a5e61b-7f40-433f-9c42-4262147a9650",
   "restoredPublishId": null,
-  "backupPublishId": "c755359f-e187-42aa-92eb-f14d3675ad68",
-  "fromCommit": "89b484785f4a064147f5b646bf3120838d60b163",
+  "backupPublishId": null,
+  "fromCommit": "66b784b26688b59e0757cd454c6223b1d5ad2931",
   "files": [
     {
       "path": "public/content/config.json",
@@ -13,28 +13,28 @@
       "existed": true
     },
     {
-      "path": "public/content/images/cover/watercolor-anime-wedding-portrai.22a90380.webp",
+      "path": "public/content/images/story/03-cong-ken-3a4ea6c8.54095e66.webp",
       "backupPath": null,
       "existed": false,
-      "slot": "cover.backgroundImage"
+      "slot": "content.loveStory.items[0].photo"
     },
     {
-      "path": "public/content/images/hero/watercolor-anime-wedding-portrai.9ee17bad.webp",
+      "path": "public/content/images/story/ngang.a769fdb6.webp",
       "backupPath": null,
       "existed": false,
-      "slot": "content.hero.image"
+      "slot": "content.loveStory.items[1].photo"
     },
     {
-      "path": "public/content/images/cover/serene-anime-bride-with-lily-bou.98cf0d8d.webp",
-      "backupPath": "backup/files/public/content/images/cover/serene-anime-bride-with-lily-bou.98cf0d8d.webp",
-      "existed": true,
-      "slot": "cover.backgroundImage"
+      "path": "public/content/audio/videoplayback.f651ace0.m4a",
+      "backupPath": null,
+      "existed": false,
+      "slot": "music.src"
     },
     {
-      "path": "public/content/images/hero/hero.6c286d3b.svg",
-      "backupPath": "backup/files/public/content/images/hero/hero.6c286d3b.svg",
+      "path": "public/content/audio/sample-chime.455e8abf.wav",
+      "backupPath": "backup/files/public/content/audio/sample-chime.455e8abf.wav",
       "existed": true,
-      "slot": "content.hero.image"
+      "slot": "music.src"
     }
   ]
 }
