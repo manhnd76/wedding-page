@@ -138,3 +138,9 @@
 ## Sau designer review v4a-2c (2026-10-10)
 - Người duyệt đồng ý cả 6 giả định: Q1 burst phát từ nút được bỏ qua vùng loại trừ form; Q2 đưa script sinh module hạt vào repo; Q3 sao lấp lánh `double-door` dùng vàng nhạt cố định `#F3D48C/#FFF8E6` cho mọi theme; Q4 `leaf-maple` cỡ [18, 28]; Q5 tăng cỡ confetti, `gift-box` giữ cỡ riêng; Q6 giữ vệt bắn phụ `ink-spread`.
 - FE sửa 11 lỗi P01–P11 (vòng 1/3) -> designer xác nhận lại các ID cần mắt người -> commit.
+
+## Ảnh mặc định từ /img (2026-10-11)
+- Người duyệt thêm 9 ảnh vào `img/`; yêu cầu designer chọn 1 bộ hiệu ứng phù hợp và dùng các ảnh làm nội dung mặc định.
+- Áp dụng cho **cả `main` (config mẫu `public/content/config.json` + ảnh) và `cloudflare-feat-v1`** (thay luôn config/ảnh đã publish từ admin ở nhánh đó; bản cũ còn trong lịch sử git).
+- `img/` (PNG gốc ~21MB) **không commit**, thêm vào `.gitignore`; FE nén ảnh vào `public/content/images/`.
+- Người duyệt chốt (theo design-default-images.md): theme **`mau-nuoc`** + 2 chỉnh (texture `paper`, kiểu mở `flower-gate`); thêm **lớp phủ (scrim) đáy hero** cho theme sáng (1 rule CSS); **bỏ ảnh Lotus Wall**, selfie tai thỏ để cuối album; **bật** hoạ tiết `la-canh` 4 góc mức Nhạt. Giả định chấp nhận: OG = Red Ribbons (chấp nhận biển chữ méo nhỏ), không bật loveStory.

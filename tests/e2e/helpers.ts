@@ -3,11 +3,23 @@
  * Mật khẩu: biến môi trường WP_ADMIN_TEST_PASSWORD hoặc ghép chuỗi lúc chạy (không có literal trong repo).
  */
 import { expect, type Page } from '@playwright/test';
+import { e2eBaseConfig } from './fx-helpers';
 
 export const ADMIN_PASSWORD = process.env.WP_ADMIN_TEST_PASSWORD ?? ['manh', '111'].join('');
 
+/**
+ * Bản build (:4173): `/content/config.json` (bản "đang xuất bản" mà admin đọc) = config mẫu ⊕ `E2E_STYLE_BASE`
+ * - test admin không phụ thuộc theme/kiểu mở/hoạ tiết mà config mẫu đang ghim (backlog B5/S4).
+ * Máy chủ dev (`base` khác rỗng) KHÔNG chặn: test xuất bản/khôi phục cần đọc lại đúng file đã ghi.
+ */
+export async function useE2eBaseConfig(page: Page): Promise<void> {
+  const body = JSON.stringify(e2eBaseConfig());
+  await page.route(/\/content\/config\.json(\?|$)/, (r) => r.fulfill({ status: 200, contentType: 'application/json', body }));
+}
+
 /** Xoá localStorage/sessionStorage/IndexedDB của admin rồi mở lại /admin/ (màn Đăng nhập). */
 export async function fresh(page: Page, base = ''): Promise<void> {
+  if (!base) await useE2eBaseConfig(page);
   await page.goto(`${base}/admin/`);
   await page.evaluate(async () => {
     localStorage.clear();

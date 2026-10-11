@@ -136,7 +136,8 @@ describe('plugin inject-config-og: v4a-1 (divider sprite, preview-assets, --moti
     for (const u of Object.values(j.dividers)) expect(u).toMatch(/^\/ornaments\/divider-[a-z-]+\.[0-9a-f]{8}\.svg$/);
   });
   it('son-do -> styleText chứa --motif-cap, #wp-resolved có motif', () => {
-    const s = st((c) => { c.theme.preset = 'son-do'; });
+    // motif "Theo theme" (config mẫu có thể ghim bộ hoạ tiết riêng, vd mau-nuoc + la-canh)
+    const s = st((c) => { c.theme.preset = 'son-do'; c.theme.motif = { set: 'theme', placements: 'theme', intensity: 'theme', motion: 'auto' }; });
     expect(s.styleText).toContain('--motif-cap:0.6');
     expect(s.resolved.motif).toMatchObject({ set: 'dong-son', placements: ['title', 'band'], intensity: 'light', cap: 0.6 });
   });
