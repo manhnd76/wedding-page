@@ -24,3 +24,8 @@
 ## B4. Vẽ lại asset `watercolor-wash` (hoãn 2026-10-10)
 - Từ design-review-v4a-1-2b.md: **T02** (vệt màu nước thành "khối" phẳng, theme Màu Nước) và **O04** (cover Màu Nước + `ink-spread` trơn nhất trong 12 theme). Lỗi gốc ở spec/asset của designer.
 - Việc: ui-ux-designer vẽ lại `assets/v4a-1/textures/watercolor-wash.svg` (+ spec) -> FE áp dụng. Chưa xếp giai đoạn.
+
+## B5. Lỗi nhỏ designer phát hiện khi chọn ảnh mặc định (2026-10-11, design-default-images.md §3.7)
+- S2: tiêu đề thank-you trên desktop rớt 1 chữ xuống dòng riêng.
+- S3: kiểu mở `polaroid`, `moon-gate` bỏ qua focal point của ảnh.
+- S4: e2e phong bì tự skip khi config mẫu không dùng kiểu mở envelope (config mẫu mới dùng `flower-gate`) -> cần ép config trong test.

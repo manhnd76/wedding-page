@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { e2eBaseConfig } from './fx-helpers';
 
 /** Thu thập lỗi console (cho phép warn). */
 function watchConsole(page: Page) {
@@ -204,9 +205,9 @@ test.describe('360×740', () => {
   test.use({ viewport: { width: 360, height: 740 } });
 
   test('phong bì ngang: tên cặp đôi ở trên, "Kính gửi + tên khách" trên mặt phong bì; ~2s, không khung nào bị cắt', async ({ page }) => {
-    const built = await builtTheme();
-    test.skip(built.openStyle !== 'envelope', `config mẫu đang dùng kiểu mở ${built.openStyle}`);
+    // S4/B5: không skip theo config mẫu - ép phong bì mẫu `classic` (gợi ý của Trầm Vàng = đường mặc định cũ)
     const errors = watchConsole(page);
+    await useEnvelope(page, 'classic');
     // đo thời lượng mức "Vừa" -> giả lập máy khoẻ (máy CI/cloud ≤ 4 nhân bị tự hạ cấp, phong bì ngắn hơn)
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => 8 });
@@ -214,7 +215,7 @@ test.describe('360×740', () => {
     });
     await page.goto('/?to=gia-%C4%91%C3%ACnh-anh-M%E1%BA%A1nh');
     await expect(page.locator('.cv-cta')).toBeEnabled({ timeout: 6000 });
-    await expect(page.locator('.cover')).toHaveAttribute('data-env', built.envelope!.style);
+    await expect(page.locator('.cover')).toHaveAttribute('data-env', 'classic');
     await expect(page.locator('.env-prefix')).toHaveText('Kính gửi');
     await expect(page.locator('.env-guest')).toHaveText('Gia đình anh Mạnh');
     const box = async (sel: string) => (await page.locator(sel).first().boundingBox())!;
@@ -291,10 +292,12 @@ test('tự cuộn: chạy sau khi mở, dừng hẳn khi wheel / chạm, nút Ti
 
 // ---------------------------------------------------------------- v2.3: design-review-envelopes E01/E02/E05/E10/E11
 
-/** Bỏ config inline của bản build -> guest đọc `/content/config.json` (đã ghi đè mẫu phong bì) và resolve lúc chạy. */
+/**
+ * Bỏ config inline của bản build -> guest đọc `/content/config.json` (đã ghi đè mẫu phong bì) và resolve lúc chạy.
+ * Nền = config mẫu ⊕ `E2E_STYLE_BASE` (Trầm Vàng, theo theme): không phụ thuộc theme/kiểu mở config mẫu đang ghim.
+ */
 async function useEnvelope(page: Page, style: string): Promise<void> {
-  const { readFileSync } = await import('node:fs');
-  const cfg = JSON.parse(readFileSync('public/content/config.json', 'utf8')) as { cover: { openStyle: string; envelope: { style: string; guestOnFront: boolean } } };
+  const cfg = e2eBaseConfig() as { cover: { openStyle: string; envelope: { style: string; guestOnFront: boolean } } };
   cfg.cover.openStyle = 'envelope';
   cfg.cover.envelope = { ...cfg.cover.envelope, style, guestOnFront: true };
   await page.route(/\/content\/config\.json/, (r) => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(cfg) }));

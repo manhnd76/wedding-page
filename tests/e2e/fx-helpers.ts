@@ -45,12 +45,38 @@ export function sampleConfig(): Json {
 }
 
 /**
- * Mở guest preview với config = config mẫu ⊕ `patch`.
+ * Nền kiểu dáng CỐ ĐỊNH cho e2e (backlog B5/S4, 2026-10-11): Trầm Vàng + mọi thành phần "Theo theme"
+ * (= kiểu dáng hiệu lực của config mẫu trước khi đổi sang bộ ảnh mặc định mau-nuoc/flower-gate).
+ * Config mẫu là file người dùng sửa được -> test chỉ lấy NỘI DUNG (chữ, ảnh) của mẫu, không phụ thuộc
+ * theme/kiểu mở/hoạ tiết mẫu đang ghim. Test nào cần kiểu dáng khác thì tự ghi trong `patch`.
+ */
+export const E2E_STYLE_BASE = {
+  theme: {
+    preset: 'tram-vang', primaryColor: null, overrides: {}, ornamentSet: 'theme', texture: 'theme', photoFrame: 'theme',
+    motif: { set: 'theme', placements: 'theme', intensity: 'theme', motion: 'auto' },
+  },
+  fonts: { preset: 'theme', heading: 'theme', script: 'theme', body: 'theme', scaleStep: 0 },
+  effects: {
+    intensity: 'medium',
+    particles: { enabled: true, types: 'theme', color: 'theme' },
+    burst: { onOpen: 'theme' },
+    reveal: { style: 'theme', heading: null, block: null, image: null, ornament: null, mode: 'auto', sections: {} },
+  },
+  cover: { openStyle: 'theme', background: 'paper', backgroundImage: null },
+} as const;
+
+/** Config mẫu ⊕ `E2E_STYLE_BASE`: nội dung của mẫu, kiểu dáng cố định cho e2e. */
+export function e2eBaseConfig(): Json {
+  return deepMerge(sampleConfig(), E2E_STYLE_BASE);
+}
+
+/**
+ * Mở guest preview với config = config mẫu ⊕ `E2E_STYLE_BASE` ⊕ `patch`.
  * `fx = null` (mặc định): cover hiện và chờ khách chạm (nếu `cover.enabled`); `fx.target = 'cover'`: cover tự mở.
  * Stash chỉ ghi cho đúng URL preview (guest so `href`), ghi lại ở mỗi lần tải trang.
  */
 export async function bootPreview(page: Page, patch: unknown = {}, fx: FxReplayOpts | null = null, options: PreviewOptionsLite = {}): Promise<Json> {
-  const config = deepMerge(sampleConfig(), patch);
+  const config = deepMerge(e2eBaseConfig(), patch);
   await page.addInitScript(({ key, path, boot }) => {
     if (location.pathname + location.search !== path) return;
     try { sessionStorage.setItem(key, JSON.stringify({ ...boot, href: location.href })); } catch { /* ignore */ }
